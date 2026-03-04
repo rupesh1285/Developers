@@ -1,108 +1,48 @@
+/* ================= LOGIN LOGIC ================= */
 async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  // 1. Get values from the input fields
+  const emailElement = document.getElementById("email");
+  const passwordElement = document.getElementById("password");
 
-  const response = await fetch("http://localhost:5000/api/auth/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ email, password })
-  });
-
-  const data = await response.json();
-
-  if (response.ok) {
-    localStorage.setItem("token", data.token);
-    window.location.href = "dashboard.html";
-  } else {
-    document.getElementById("message").innerText = data.message;
-  }
-}
-
-
-async function loadDashboard() {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    window.location.href = "login.html";
+  if (!emailElement || !passwordElement) {
+    console.error("Email or Password inputs not found!");
     return;
   }
 
-  const response = await fetch("http://localhost:5000/api/progress/summary", {
-    headers: {
-      "Authorization": "Bearer " + token
+  const email = emailElement.value;
+  const password = passwordElement.value;
+
+  try {
+    // 2. Send data to backend
+    const response = await fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await response.json();
+
+    // 3. Handle Success
+    if (response.ok) {
+      // Save the token
+      localStorage.setItem("token", data.token);
+      
+      // Redirect to your MAIN page (problems.html)
+      window.location.href = "problems.html"; 
+    } 
+    // 4. Handle Error
+    else {
+      const msgElement = document.getElementById("message");
+      if(msgElement) {
+        msgElement.innerText = data.message;
+      } else {
+        alert("Login failed: " + data.message);
+      }
     }
-  });
-
-  const data = await response.json();
-
-  document.getElementById("total").innerText = data.totalProblems;
-  document.getElementById("solved").innerText = data.solvedProblems;
-  document.getElementById("percentage").innerText = data.percentage;
-
-  document.getElementById("progressBar").style.width =
-    data.percentage + "%";
-}
-
-// Auto-run if dashboard page
-if (window.location.pathname.includes("dashboard.html")) {
-  loadDashboard();
-}
-
-async function loadProblems() {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    window.location.href = "login.html";
-    return;
+  } catch (err) {
+    console.error("Login Error:", err);
+    alert("Something went wrong connecting to the server.");
   }
-
-  const resProblems = await fetch("http://localhost:5000/api/problems");
-  const problems = await resProblems.json();
-
-  const resProgress = await fetch("http://localhost:5000/api/progress", {
-    headers: { "Authorization": "Bearer " + token }
-  });
-  const progress = await resProgress.json();
-
-  const solvedIds = progress.map(p => p.problem._id);
-
-  const container = document.getElementById("problemList");
-  container.innerHTML = "";
-
-  problems.forEach(problem => {
-    const div = document.createElement("div");
-
-    const isSolved = solvedIds.includes(problem._id);
-
-    div.innerHTML = `
-      <p>
-        <strong>${problem.title}</strong>
-        (${problem.difficulty})
-        <button onclick="markSolved('${problem._id}')"
-          ${isSolved ? "disabled" : ""}>
-          ${isSolved ? "Solved" : "Mark Solved"}
-        </button>
-      </p>
-    `;
-
-    container.appendChild(div);
-  });
-}
-
-async function markSolved(problemId) {
-  const token = localStorage.getItem("token");
-
-  await fetch("http://localhost:5000/api/progress/" + problemId, {
-    method: "POST",
-    headers: { "Authorization": "Bearer " + token }
-  });
-
-  loadProblems(); // refresh list
-}
-
-// Auto-run if problems page
-if (window.location.pathname.includes("problems.html")) {
-  loadProblems();
 }

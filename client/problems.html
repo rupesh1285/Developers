@@ -193,54 +193,75 @@
 
         async function loadProblems() {
             try {
-
+                console.log("1. Starting loadProblems...");
                 const token = localStorage.getItem("token");
+                if (!token) console.error("!! NO TOKEN FOUND in LocalStorage !!");
 
-                /* fetch problems */
+                /* 1. Fetch all problems */
                 const resProblems = await fetch("http://localhost:5000/api/problems");
                 const problems = await resProblems.json();
+                console.log(`2. Loaded ${problems.length} problems from backend.`);
 
-                /* fetch user progress */
+                /* 2. Fetch user progress */
                 let progress = [];
-
                 try {
-
                     const resProgress = await fetch("http://localhost:5000/api/progress", {
-                        headers: {
-                            "Authorization": "Bearer " + token
-                        }
+                        headers: { "Authorization": "Bearer " + token }
                     });
 
                     if (resProgress.ok) {
                         progress = await resProgress.json();
+                        console.log(`3. Loaded ${progress.length} progress records.`);
+                        console.log("Sample Progress Record:", progress[0]); // Check the structure in console
+                    } else {
+                        console.error("3. Failed to load progress. Status:", resProgress.status);
                     }
-
                 } catch (err) {
-                    console.log("Progress not loaded yet");
+                    console.error("3. Error fetching progress:", err);
                 }
 
-                /* solved and starred lists */
+                /* =========================================
+                   3. THE BULLETPROOF MATCHING LOGIC
+                   ========================================= */
+
+                // Helper to safely get ID string whether it's an Object or String
+                const getID = (item) => {
+                    if (!item) return "undefined";
+                    // If p.problem is populated (is an object), use ._id, otherwise use item itself
+                    return (typeof item === 'object' && item._id) ? String(item._id) : String(item);
+                };
+
                 const solvedIds = progress
-                    .filter(p => p.solved)
-                    .map(p => p.problem._id);
+                    .filter(p => p.solved === true)
+                    .map(p => getID(p.problem));
 
                 const starredIds = progress
-                    .filter(p => p.starred)
-                    .map(p => p.problem._id);
+                    .filter(p => p.starred === true)
+                    .map(p => getID(p.problem));
 
-                problemsData = problems;
+                console.log("4. Solved IDs List:", solvedIds);
+
+                /* 4. Render the list */
+                const problemsPanel = document.getElementById("problems-panel");
+                problemsData = problems; // Update global variable
                 problemsPanel.innerHTML = "";
 
                 problems.forEach((problem, index) => {
+
+                    // Safely convert problem._id to string for comparison
+                    const currentId = String(problem._id);
+
+                    const isSolved = solvedIds.includes(currentId);
+                    const isStarred = starredIds.includes(currentId);
+
+                    // Debug specific problem if needed
+                    if (index === 0) console.log(`Problem 1 (${currentId}) - Solved? ${isSolved}`);
 
                     const difficultyClass =
                         problem.difficulty === "Easy" ? "easy" :
                             problem.difficulty === "Medium" ? "medium" :
                                 problem.difficulty === "Basic" ? "basic" :
                                     "hard";
-
-                    const isSolved = solvedIds.includes(problem._id);
-                    const isStarred = starredIds.includes(problem._id);
 
                     const strip = document.createElement("div");
                     strip.classList.add("problem-strip");
@@ -253,31 +274,26 @@
                 </div>
 
                 <div class="problem-right">
-
                     <img 
-src="${isSolved ? "assets/tick.png" : "assets/checkbox.png"}"
-class="checkbox-icon ${isSolved ? "checked" : ""}"
-style="${isSolved ? 'filter:invert(48%) sepia(82%) saturate(400%) hue-rotate(85deg) brightness(95%) contrast(90%)' : 'filter:brightness(0) invert(1)'}"
->
-
+                        src="${isSolved ? "assets/tick.png" : "assets/checkbox.png"}"
+                        class="checkbox-icon ${isSolved ? "checked" : ""}"
+                        style="${isSolved ? 'filter:invert(48%) sepia(82%) saturate(400%) hue-rotate(85deg) brightness(95%) contrast(90%)' : 'filter:brightness(0) invert(1)'}"
+                    >
                     <span class="difficulty ${difficultyClass}">
                         ${problem.difficulty}
                     </span>
-
                    <img 
-src="${isStarred ? "assets/star-filled.png" : "assets/star.png"}"
-class="star-icon ${isStarred ? "active" : ""}"
-style="${isStarred ? 'filter:none' : 'filter:brightness(0) invert(1)'}"
->
-
+                        src="${isStarred ? "assets/star-filled.png" : "assets/star.png"}"
+                        class="star-icon ${isStarred ? "active" : ""}"
+                        style="${isStarred ? 'filter:none' : 'filter:brightness(0) invert(1)'}"
+                    >
                 </div>
             `;
-
                     problemsPanel.appendChild(strip);
                 });
 
             } catch (err) {
-                console.error("Error loading problems:", err);
+                console.error("CRITICAL ERROR in loadProblems:", err);
             }
         }
 
@@ -285,12 +301,14 @@ style="${isStarred ? 'filter:none' : 'filter:brightness(0) invert(1)'}"
 
         /* ================= EVENT DELEGATION ================= */
 
+        /* ================= EVENT DELEGATION (FIXED COLORS) ================= */
+
         problemsPanel.addEventListener("click", async function (e) {
 
             const strip = e.target.closest(".problem-strip");
             if (!strip) return;
 
-            /* CHECKBOX */
+            /* CHECKBOX LOGIC */
             if (e.target.classList.contains("checkbox-icon")) {
 
                 e.stopPropagation();
@@ -298,31 +316,31 @@ style="${isStarred ? 'filter:none' : 'filter:brightness(0) invert(1)'}"
                 const token = localStorage.getItem("token");
                 const problemId = strip.dataset.id;
 
-                /* UI toggle */
+                /* UI toggle with COLOR FIX */
                 if (!e.target.classList.contains("checked")) {
-
+                    // Turn ON (Green)
                     e.target.src = "assets/tick.png";
                     e.target.classList.add("checked");
-
+                    // Apply the Green Filter
+                    e.target.style.filter = "invert(48%) sepia(82%) saturate(400%) hue-rotate(85deg) brightness(95%) contrast(90%)";
                 } else {
-
+                    // Turn OFF (White)
                     e.target.src = "assets/checkbox.png";
                     e.target.classList.remove("checked");
-
+                    // Apply the White Filter
+                    e.target.style.filter = "brightness(0) invert(1)";
                 }
 
-                /* backend save */
+                /* Backend save */
                 await fetch("http://localhost:5000/api/progress/toggle-solved/" + problemId, {
                     method: "POST",
-                    headers: {
-                        "Authorization": "Bearer " + token
-                    }
+                    headers: { "Authorization": "Bearer " + token }
                 });
 
                 return;
             }
 
-            /* STAR */
+            /* STAR LOGIC */
             if (e.target.classList.contains("star-icon")) {
 
                 e.stopPropagation();
@@ -330,40 +348,40 @@ style="${isStarred ? 'filter:none' : 'filter:brightness(0) invert(1)'}"
                 const token = localStorage.getItem("token");
                 const problemId = strip.dataset.id;
 
-                /* UI toggle */
-                if (e.target.classList.contains("active")) {
-
-                    e.target.src = "assets/star.png";
-                    e.target.classList.remove("active");
-
-                } else {
-
+                /* UI toggle with COLOR FIX */
+                if (!e.target.classList.contains("active")) {
+                    // Turn ON (Filled Star)
                     e.target.src = "assets/star-filled.png";
                     e.target.classList.add("active");
-
+                    // Remove filter to show original star color
+                    e.target.style.filter = "none";
+                } else {
+                    // Turn OFF (Empty White Star)
+                    e.target.src = "assets/star.png";
+                    e.target.classList.remove("active");
+                    // Apply White Filter
+                    e.target.style.filter = "brightness(0) invert(1)";
                 }
 
-                /* backend save */
+                /* Backend save */
                 await fetch("http://localhost:5000/api/progress/toggle-star/" + problemId, {
                     method: "POST",
-                    headers: {
-                        "Authorization": "Bearer " + token
-                    }
+                    headers: { "Authorization": "Bearer " + token }
                 });
 
                 return;
             }
 
-            /* PROBLEM SWITCH */
-
+            /* PROBLEM DETAILS SWITCH (Existing logic) */
+            // ... keep your existing logic for opening the side panel here ...
             if (strip.classList.contains("active-problem")) {
                 strip.classList.remove("active-problem");
-                rightPanel.innerHTML = `
-            <div style="padding:30px;color:var(--text-muted)">
-                Hey Ralph 👋<br><br>
-                Click a problem to view its details.
-            </div>
-        `;
+                // Reset right panel content...
+                document.getElementById("right-panel").innerHTML = `
+                    <div style="padding:30px;color:var(--text-muted)">
+                        Hey Ralph 👋<br><br>
+                        Click a problem to view its details.
+                    </div>`;
                 return;
             }
 
@@ -373,36 +391,34 @@ style="${isStarred ? 'filter:none' : 'filter:brightness(0) invert(1)'}"
 
             strip.classList.add("active-problem");
 
-            const problemId = strip.dataset.id;
-            const problem = problemsData.find(p => p._id === problemId);
+            // Re-fetch details for right panel
+            const problem = problemsData.find(p => p._id === strip.dataset.id);
+            const rightPanel = document.getElementById("right-panel");
 
+            // ... (Your existing Right Panel HTML generation code) ...
             rightPanel.innerHTML = `
-        <div class="problem-details">
-            <h2 class="details-title">${problem.title}</h2>
-
-            <div class="details-block">
-                <span class="section-label">Problem Statement:</span>
-                <p class="details-text">${problem.description || ""}</p>
-            </div>
-
-            <div class="details-block">
-                <span class="section-label">Examples:</span>
-                ${(problem.examples || []).map(ex => `
-                    <pre class="example-box">
+                <div class="problem-details">
+                    <h2 class="details-title">${problem.title}</h2>
+                    <div class="details-block">
+                        <span class="section-label">Problem Statement:</span>
+                        <p class="details-text">${problem.description || ""}</p>
+                    </div>
+                    <div class="details-block">
+                        <span class="section-label">Examples:</span>
+                        ${(problem.examples || []).map(ex => `
+                            <pre class="example-box">
 Input: ${ex.input}
 Output: ${ex.output}
 Explanation: ${ex.explanation || ""}
-                    </pre>
-                `).join("")}
-            </div>
-
-            <div class="details-block">
-                <div><span class="section-label">Time Complexity:</span> ${problem.timeComplexity || ""}</div>
-                <div><span class="section-label">Space Complexity:</span> ${problem.spaceComplexity || ""}</div>
-            </div>
-        </div>
-    `;
-
+                            </pre>
+                        `).join("")}
+                    </div>
+                    <div class="details-block">
+                        <div><span class="section-label">Time Complexity:</span> ${problem.timeComplexity || ""}</div>
+                        <div><span class="section-label">Space Complexity:</span> ${problem.spaceComplexity || ""}</div>
+                    </div>
+                </div>
+            `;
         });
 
     </script>

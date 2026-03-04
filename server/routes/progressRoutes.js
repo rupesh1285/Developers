@@ -11,32 +11,32 @@ const router = express.Router();
 ========================= */
 
 router.post("/:problemId", protect, async (req, res) => {
-  try {
+    try {
 
-    const { problemId } = req.params;
+        const { problemId } = req.params;
 
-    const alreadySolved = await Progress.findOne({
-      user: req.user,
-      problem: problemId
-    });
+        const alreadySolved = await Progress.findOne({
+            user: req.user,
+            problem: problemId
+        });
 
-    if (alreadySolved) {
-      return res.status(400).json({ message: "Already marked as solved" });
+        if (alreadySolved) {
+            return res.status(400).json({ message: "Already marked as solved" });
+        }
+
+        const progress = new Progress({
+            user: req.user,
+            problem: problemId,
+            solved: true
+        });
+
+        await progress.save();
+
+        res.status(201).json({ message: "Marked as solved" });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
-    const progress = new Progress({
-      user: req.user,
-      problem: problemId,
-      solved: true
-    });
-
-    await progress.save();
-
-    res.status(201).json({ message: "Marked as solved" });
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
 
@@ -45,32 +45,32 @@ router.post("/:problemId", protect, async (req, res) => {
 ========================= */
 
 router.post("/toggle-solved/:problemId", protect, async (req, res) => {
-  try {
+    try {
 
-    const { problemId } = req.params;
+        const { problemId } = req.params;
 
-    let progress = await Progress.findOne({
-      user: req.user,
-      problem: problemId
-    });
+        let progress = await Progress.findOne({
+            user: req.user,
+            problem: problemId
+        });
 
-    if (!progress) {
-      progress = new Progress({
-        user: req.user,
-        problem: problemId,
-        solved: true
-      });
-    } else {
-      progress.solved = !progress.solved;
+        if (!progress) {
+            progress = new Progress({
+                user: req.user,
+                problem: problemId,
+                solved: true
+            });
+        } else {
+            progress.solved = !progress.solved;
+        }
+
+        await progress.save();
+
+        res.json(progress);
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
-    await progress.save();
-
-    res.json(progress);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
 
@@ -79,32 +79,32 @@ router.post("/toggle-solved/:problemId", protect, async (req, res) => {
 ========================= */
 
 router.post("/toggle-star/:problemId", protect, async (req, res) => {
-  try {
+    try {
 
-    const { problemId } = req.params;
+        const { problemId } = req.params;
 
-    let progress = await Progress.findOne({
-      user: req.user,
-      problem: problemId
-    });
+        let progress = await Progress.findOne({
+            user: req.user,
+            problem: problemId
+        });
 
-    if (!progress) {
-      progress = new Progress({
-        user: req.user,
-        problem: problemId,
-        starred: true
-      });
-    } else {
-      progress.starred = !progress.starred;
+        if (!progress) {
+            progress = new Progress({
+                user: req.user,
+                problem: problemId,
+                starred: true
+            });
+        } else {
+            progress.starred = !progress.starred;
+        }
+
+        await progress.save();
+
+        res.json(progress);
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
-    await progress.save();
-
-    res.json(progress);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
 
@@ -113,17 +113,17 @@ router.post("/toggle-star/:problemId", protect, async (req, res) => {
 ========================= */
 
 router.get("/", protect, async (req, res) => {
-  try {
+    try {
 
-    const progress = await Progress.find({
-      user: req.user
-    }).populate("problem");
+        const progress = await Progress.find({
+            user: req.user
+        });
 
-    res.json(progress);
+        res.json(progress);
 
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 
@@ -132,29 +132,29 @@ router.get("/", protect, async (req, res) => {
 ========================= */
 
 router.get("/summary", protect, async (req, res) => {
-  try {
+    try {
 
-    const totalProblems = await Problem.countDocuments();
+        const totalProblems = await Problem.countDocuments();
 
-    const solvedProblems = await Progress.countDocuments({
-      user: req.user,
-      solved: true
-    });
+        const solvedProblems = await Progress.countDocuments({
+            user: req.user,
+            solved: true
+        });
 
-    const percentage =
-      totalProblems === 0
-        ? 0
-        : Math.round((solvedProblems / totalProblems) * 100);
+        const percentage =
+            totalProblems === 0
+                ? 0
+                : Math.round((solvedProblems / totalProblems) * 100);
 
-    res.json({
-      totalProblems,
-      solvedProblems,
-      percentage
-    });
+        res.json({
+            totalProblems,
+            solvedProblems,
+            percentage
+        });
 
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 module.exports = router;
