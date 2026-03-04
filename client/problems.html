@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="style_dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
+</head>
+
+<body>
+
+    <div class="bg-glow"></div>
+
+    <nav class="navbar">
+        <img src="assets/logo.png" class="logo">
+        <div class="profile-pill">
+            <img src="assets/profile.png">
+            <div class="profile-name">Ralph Lauren</div>
+        </div>
+    </nav>
+
+    <div class="dashboard">
+
+        <div class="left-strip"></div>
+
+        <!-- MIDDLE PANEL -->
+        <div class="middle-panel">
+
+            <!-- Progress Section -->
+            <div class="progress-section">
+                <div class="progress-left">
+                    <div class="progress-circle">
+                        <div class="circle-inner">
+                            <span class="progress-text">72<span>/4875</span></span>
+                        </div>
+                    </div>
+                    <div class="progress-label">Solved</div>
+                </div>
+
+                <div class="progress-right">
+                    <div class="progress-row"><span>Basic</span>
+                        <div class="bar basic-bar"></div>
+                    </div>
+                    <div class="progress-row"><span>Easy</span>
+                        <div class="bar easy-bar"></div>
+                    </div>
+                    <div class="progress-row"><span>Med.</span>
+                        <div class="bar medium-bar"></div>
+                    </div>
+                    <div class="progress-row"><span>Hard</span>
+                        <div class="bar hard-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Filters -->
+            <div class="filters-section">
+
+                <div class="search-bar">
+                    <img src="assets/search.png" class="search-icon">
+                    <input type="text" id="search-input">
+                </div>
+
+                <div class="filters-group">
+
+                    <div class="filter">
+                        <span class="filter-text">Difficulty</span>
+                        <img src="assets/dropdown.png" class="dropdown-icon">
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item">Difficulty</div>
+                            <div class="dropdown-item">Basic</div>
+                            <div class="dropdown-item">Easy</div>
+                            <div class="dropdown-item">Medium</div>
+                            <div class="dropdown-item">Hard</div>
+                        </div>
+                    </div>
+
+                    <div class="filter">
+                        <span class="filter-text">All Problems</span>
+                        <img src="assets/dropdown.png" class="dropdown-icon">
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item">All Problems</div>
+                            <div class="dropdown-item">Solved</div>
+                            <div class="dropdown-item">Unsolved</div>
+                            <div class="dropdown-item">Starred</div>
+                        </div>
+                    </div>
+
+                    <div class="filter-circle">
+                        <img src="assets/filter.png" class="filter-icon">
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Problems -->
+            <div class="problems-panel" id="problems-panel"></div>
+
+        </div>
+
+        <!-- Partition -->
+        <div class="partition-bar"></div>
+
+        <!-- RIGHT PANEL -->
+        <div class="right-panel" id="right-panel">
+            <div style="padding:30px;color:var(--text-muted)">
+                Hey Ralph 👋<br><br>
+                Click a problem to view its details.
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+
+        /* ================= SEARCH TYPE EFFECT ================= */
+
+        const texts = [
+            "Search problem",
+            "Search in a sorted array",
+            "Find first occurrence",
+            "Binary search implementation"
+        ];
+
+        const input = document.getElementById("search-input");
+        let textIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+
+        function typeEffect() {
+            if (document.activeElement === input) {
+                setTimeout(typeEffect, 100);
+                return;
+            }
+
+            const currentText = texts[textIndex];
+
+            if (!isDeleting) {
+                input.placeholder = currentText.substring(0, charIndex++);
+                if (charIndex > currentText.length) {
+                    setTimeout(() => isDeleting = true, 1000);
+                }
+            } else {
+                input.placeholder = currentText.substring(0, charIndex--);
+                if (charIndex < 0) {
+                    isDeleting = false;
+                    textIndex = (textIndex + 1) % texts.length;
+                }
+            }
+
+            setTimeout(typeEffect, isDeleting ? 40 : 60);
+        }
+        typeEffect();
+
+        /* ================= DROPDOWN ================= */
+
+        document.querySelectorAll(".filter").forEach(filter => {
+
+            const text = filter.querySelector(".filter-text");
+            const items = filter.querySelectorAll(".dropdown-item");
+
+            filter.addEventListener("click", (e) => {
+                e.stopPropagation();
+                document.querySelectorAll(".filter").forEach(f => {
+                    if (f !== filter) f.classList.remove("active");
+                });
+                filter.classList.toggle("active");
+            });
+
+            items.forEach(item => {
+                item.addEventListener("click", (e) => {
+                    text.textContent = item.textContent;
+                    filter.classList.remove("active");
+                    e.stopPropagation();
+                });
+            });
+        });
+
+        document.addEventListener("click", () => {
+            document.querySelectorAll(".filter").forEach(f => f.classList.remove("active"));
+        });
+
+        /* ================= FETCH PROBLEMS ================= */
+
+        const problemsPanel = document.getElementById("problems-panel");
+        const rightPanel = document.getElementById("right-panel");
+
+        let problemsData = [];
+
+        async function loadProblems() {
+            try {
+
+                const token = localStorage.getItem("token");
+
+                /* fetch problems */
+                const resProblems = await fetch("http://localhost:5000/api/problems");
+                const problems = await resProblems.json();
+
+                /* fetch user progress */
+                let progress = [];
+
+                try {
+
+                    const resProgress = await fetch("http://localhost:5000/api/progress", {
+                        headers: {
+                            "Authorization": "Bearer " + token
+                        }
+                    });
+
+                    if (resProgress.ok) {
+                        progress = await resProgress.json();
+                    }
+
+                } catch (err) {
+                    console.log("Progress not loaded yet");
+                }
+
+                /* solved and starred lists */
+                const solvedIds = progress
+                    .filter(p => p.solved)
+                    .map(p => p.problem._id);
+
+                const starredIds = progress
+                    .filter(p => p.starred)
+                    .map(p => p.problem._id);
+
+                problemsData = problems;
+                problemsPanel.innerHTML = "";
+
+                problems.forEach((problem, index) => {
+
+                    const difficultyClass =
+                        problem.difficulty === "Easy" ? "easy" :
+                            problem.difficulty === "Medium" ? "medium" :
+                                problem.difficulty === "Basic" ? "basic" :
+                                    "hard";
+
+                    const isSolved = solvedIds.includes(problem._id);
+                    const isStarred = starredIds.includes(problem._id);
+
+                    const strip = document.createElement("div");
+                    strip.classList.add("problem-strip");
+                    strip.dataset.id = problem._id;
+
+                    strip.innerHTML = `
+                <div class="problem-left">
+                    <span class="problem-number">${index + 1}.</span>
+                    <span class="problem-title">${problem.title}</span>
+                </div>
+
+                <div class="problem-right">
+
+                    <img 
+src="${isSolved ? "assets/tick.png" : "assets/checkbox.png"}"
+class="checkbox-icon ${isSolved ? "checked" : ""}"
+style="${isSolved ? 'filter:invert(48%) sepia(82%) saturate(400%) hue-rotate(85deg) brightness(95%) contrast(90%)' : 'filter:brightness(0) invert(1)'}"
+>
+
+                    <span class="difficulty ${difficultyClass}">
+                        ${problem.difficulty}
+                    </span>
+
+                   <img 
+src="${isStarred ? "assets/star-filled.png" : "assets/star.png"}"
+class="star-icon ${isStarred ? "active" : ""}"
+style="${isStarred ? 'filter:none' : 'filter:brightness(0) invert(1)'}"
+>
+
+                </div>
+            `;
+
+                    problemsPanel.appendChild(strip);
+                });
+
+            } catch (err) {
+                console.error("Error loading problems:", err);
+            }
+        }
+
+        loadProblems();
+
+        /* ================= EVENT DELEGATION ================= */
+
+        problemsPanel.addEventListener("click", async function (e) {
+
+            const strip = e.target.closest(".problem-strip");
+            if (!strip) return;
+
+            /* CHECKBOX */
+            if (e.target.classList.contains("checkbox-icon")) {
+
+                e.stopPropagation();
+
+                const token = localStorage.getItem("token");
+                const problemId = strip.dataset.id;
+
+                /* UI toggle */
+                if (!e.target.classList.contains("checked")) {
+
+                    e.target.src = "assets/tick.png";
+                    e.target.classList.add("checked");
+
+                } else {
+
+                    e.target.src = "assets/checkbox.png";
+                    e.target.classList.remove("checked");
+
+                }
+
+                /* backend save */
+                await fetch("http://localhost:5000/api/progress/toggle-solved/" + problemId, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    }
+                });
+
+                return;
+            }
+
+            /* STAR */
+            if (e.target.classList.contains("star-icon")) {
+
+                e.stopPropagation();
+
+                const token = localStorage.getItem("token");
+                const problemId = strip.dataset.id;
+
+                /* UI toggle */
+                if (e.target.classList.contains("active")) {
+
+                    e.target.src = "assets/star.png";
+                    e.target.classList.remove("active");
+
+                } else {
+
+                    e.target.src = "assets/star-filled.png";
+                    e.target.classList.add("active");
+
+                }
+
+                /* backend save */
+                await fetch("http://localhost:5000/api/progress/toggle-star/" + problemId, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    }
+                });
+
+                return;
+            }
+
+            /* PROBLEM SWITCH */
+
+            if (strip.classList.contains("active-problem")) {
+                strip.classList.remove("active-problem");
+                rightPanel.innerHTML = `
+            <div style="padding:30px;color:var(--text-muted)">
+                Hey Ralph 👋<br><br>
+                Click a problem to view its details.
+            </div>
+        `;
+                return;
+            }
+
+            document.querySelectorAll(".problem-strip").forEach(s =>
+                s.classList.remove("active-problem")
+            );
+
+            strip.classList.add("active-problem");
+
+            const problemId = strip.dataset.id;
+            const problem = problemsData.find(p => p._id === problemId);
+
+            rightPanel.innerHTML = `
+        <div class="problem-details">
+            <h2 class="details-title">${problem.title}</h2>
+
+            <div class="details-block">
+                <span class="section-label">Problem Statement:</span>
+                <p class="details-text">${problem.description || ""}</p>
+            </div>
+
+            <div class="details-block">
+                <span class="section-label">Examples:</span>
+                ${(problem.examples || []).map(ex => `
+                    <pre class="example-box">
+Input: ${ex.input}
+Output: ${ex.output}
+Explanation: ${ex.explanation || ""}
+                    </pre>
+                `).join("")}
+            </div>
+
+            <div class="details-block">
+                <div><span class="section-label">Time Complexity:</span> ${problem.timeComplexity || ""}</div>
+                <div><span class="section-label">Space Complexity:</span> ${problem.spaceComplexity || ""}</div>
+            </div>
+        </div>
+    `;
+
+        });
+
+    </script>
+
+</body>
+
+</html>

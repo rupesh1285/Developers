@@ -1,0 +1,477 @@
+:root {
+  --bg-main: #121212;
+  --bg-surface: #1E1E1E;
+  --border-color: #2A2A2A;
+  --accent: #6ea0ea;
+  --text-primary: #FFFFFF;
+  --text-muted: #9CA3AF;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: radial-gradient(circle at 50% 35%, #1c1c1c 0%, #121212 60%);
+  color: var(--text-primary);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ================= Accent Glow ================= */
+
+.bg-glow {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(61,126,255,0.08) 0%, transparent 60%);
+  z-index: -1;
+}
+
+/* ================= Navbar ================= */
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 60px;
+}
+
+.logo {
+  height: 50px;
+}
+
+/* ================= Profile Pill ================= */
+
+.profile-pill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 150px;
+  height: 40px;
+  padding: 0 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 30px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.profile-pill:hover {
+  border-color: #fff;
+}
+
+.profile-pill img {
+  height: 22px;
+  filter: brightness(0) invert(1);
+}
+
+.profile-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ================= Dashboard ================= */
+
+.dashboard {
+  display: flex;
+  height: calc(100vh - 98px);
+  padding: 10px 15px 20px;
+  gap: 15px;
+}
+
+/* ================= Left Strip ================= */
+
+.left-strip {
+  width: 110px;
+  height: 100%;
+  background: rgba(30,30,30,0.35);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+}
+
+/* ================= Middle Panel ================= */
+
+.middle-panel {
+  flex: 1.2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 18px 20px;
+}
+
+/* ================= Progress Section ================= */
+
+.progress-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 35px;
+  border-radius: 20px;
+  background: rgba(110,160,234,0.12);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(110,160,234,0.4);
+}
+
+.progress-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.progress-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent) 0% 30%, #2A2A2A 30% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle-inner {
+  width: 82px;
+  height: 82px;
+  background: var(--bg-main);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-text {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.progress-text span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.progress-label {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.progress-right {
+  width: 45%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.bar {
+  width: 65%;
+  height: 6px;
+  border-radius: 10px;
+  background: #2A2A2A;
+  position: relative;
+  overflow: hidden;
+}
+
+.easy-bar::after { content:""; position:absolute; inset:0; width:60%; background:linear-gradient(90deg,#22c55e,#16a34a);}
+.medium-bar::after { content:""; position:absolute; inset:0; width:40%; background:linear-gradient(90deg,#facc15,#f59e0b);}
+.hard-bar::after { content:""; position:absolute; inset:0; width:25%; background:linear-gradient(90deg,#ef4444,#dc2626);}
+.basic-bar::after { content:""; position:absolute; inset:0; width:50%; background:linear-gradient(90deg,#60a5fa,#6ea0ea);}
+
+/* ================= Divider ================= */
+
+.divider {
+  height: 1px;
+  margin: 4px 0 6px;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent);
+}
+
+/* ================= Filters ================= */
+
+.filters-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.filters-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-bar {
+  width: 45%;
+  height: 40px;
+  border-radius: 30px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  gap: 10px;
+}
+
+.search-icon {
+  height: 14px;
+  filter: brightness(0) invert(1);
+}
+
+#search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 14px;
+  width: 100%;
+}
+
+/* ================= Filter Pills ================= */
+
+.filter {
+  position: relative;
+  height: 40px;
+  min-width: 140px;
+  padding: 0 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 30px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
+.dropdown-icon {
+  height: 14px;
+  width: 14px;
+  filter: brightness(0) invert(1);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 45px;
+  left: 0;
+  width: 100%;
+  background: rgba(30,30,30,0.98);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  display: none;
+  flex-direction: column;
+  z-index: 2000;
+}
+
+.dropdown-item {
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: rgba(110,160,234,0.15);
+}
+
+.filter.active .dropdown-menu {
+  display: flex;
+}
+
+.filter-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-icon {
+  height: 14px;
+  filter: brightness(0) invert(1);
+}
+
+/* ================= Problems Panel ================= */
+
+.problems-panel {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background: rgba(30,30,30,0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  scroll-behavior: smooth;
+}
+
+.problems-panel::-webkit-scrollbar {
+  display: none;
+}
+
+/* ================= Problem Strip ================= */
+
+.problem-strip {
+  position: relative;
+  height: 50px;
+  margin: 8px 16px;
+  padding: 0 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.problem-strip:hover {
+  background: rgba(110,160,234,0.05);
+}
+
+.problem-strip.active-problem {
+  box-shadow:
+    0 0 22px rgba(110,160,234,0.35),
+    0 10px 25px rgba(0,0,0,0.45);
+  background: rgba(110,160,234,0.07);
+  transform: translateY(-4px) scale(1.015);
+}
+
+.problem-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.problem-number {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.problem-title {
+  font-size: 14px;
+}
+
+.problem-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.checkbox-icon {
+  height: 16px;
+  cursor: pointer;
+  filter: brightness(0) invert(1);
+}
+
+.difficulty {
+  width: 70px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border-radius: 20px;
+}
+
+.easy { background:#1e3a2f; color:#4ade80; }
+.medium { background:#3a2a1e; color:#facc15; }
+.hard { background:#3a1e1e; color:#f87171; }
+.basic { background:#1e2a3a; color:#60a5fa; }
+
+.star-icon {
+  height: 16px;
+  cursor: pointer;
+  filter: brightness(0) invert(1);
+}
+
+/* ================= Right Panel ================= */
+
+.right-panel {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  background: rgba(30,30,30,0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 28px;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+.right-panel::-webkit-scrollbar {
+  display: none;
+}
+
+/* Details Layout */
+
+.problem-details {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.details-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.details-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.section-label {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.details-text {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.example-box {
+  background: rgba(255,255,255,0.05);
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.details-complexity {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.partition-bar {
+  width: 8px;
+  height: 100%;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+
+  flex-shrink: 0;   /* 🔥 THIS FIXES IT */
+}

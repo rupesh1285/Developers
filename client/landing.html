@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>FINALIST</title>
+  <link rel="stylesheet" href="style_land.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
+
+</head>
+
+<body>
+
+  <header class="navbar">
+
+    <div class="logo-container">
+      <img src="assets/logo.png" alt="FINALIST Logo" class="logo">
+    </div>
+
+    <a href="login.html" class="btn nav-button">
+      Sign In
+      <img src="assets/enter.png" class="btn-icon">
+    </a>
+
+  </header>
+
+  <main class="hero">
+
+    <h1 class="hero-title">
+      Track Your <span class="accent-text">Interview</span> Journey
+    </h1>
+
+    <p class="hero-subtitle">
+      Stay consistent. Solve smarter.
+      <span class="accent-text">Become the FINALIST.</span>
+    </p>
+
+    <div class="hero-divider"></div>
+
+    <a href="signup.html" class="btn hero-button">
+      Get Started
+    </a>
+
+  </main>
+
+  <div class="bg-glow"></div>
+
+  <script>
+    if (localStorage.getItem("token")) {
+      window.location.href = "problems.html";
+    }
+  </script>
+
+</body>
+
+</html>

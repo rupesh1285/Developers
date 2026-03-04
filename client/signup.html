@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>FINALIST - Sign Up</title>
+    <link rel="stylesheet" href="signup.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
+
+</head>
+
+<body>
+
+    <div class="split-container">
+
+        <!-- LEFT GLASS PANEL -->
+        <div class="left-panel">
+
+            <div class="panel-top">
+                <img src="assets/logo.png" class="logo" alt="FINALIST Logo">
+                <p class="join-text">
+                    Already have an account? <a href="login.html">Log in</a>
+                </p>
+            </div>
+
+            <div class="form-wrapper">
+
+                <h1 class="form-title">Sign Up</h1>
+
+                <form id="signupForm">
+
+                    <div class="name-row">
+                        <div class="input-group">
+                            <label>First Name</label>
+                            <input type="text" id="firstName" placeholder="First name" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Last Name</label>
+                            <input type="text" id="lastName" placeholder="Last name" required>
+                        </div>
+                    </div>
+
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="Email" required>
+
+                    <!-- CREATE PASSWORD -->
+                    <label>Create Password</label>
+                    <div class="password-field">
+                        <input type="password" id="password" placeholder="Create Password" required>
+                        <span class="toggle-password" data-target="password">
+                            <img src="assets/eye-closed.png">
+                        </span>
+                    </div>
+
+                    <!-- CONFIRM PASSWORD -->
+                    <label>Confirm Password</label>
+                    <div class="password-field">
+                        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                        <span class="toggle-password" data-target="confirmPassword">
+                            <img src="assets/eye-closed.png">
+                        </span>
+                    </div>
+
+                    <p class="error-message" id="passwordError"></p>
+
+                    <button type="submit" class="primary-btn">
+                        Create Account
+                        <img src="assets/enter.png" class="btn-icon">
+                    </button>
+
+                </form>
+
+                <div class="divider"></div>
+
+                <div class="oauth-row">
+                    <button class="oauth-btn">
+                        <img src="assets/google.png">
+                        Continue with Google
+                    </button>
+
+                    <button class="oauth-btn">
+                        <img src="assets/github.png">
+                        Continue with GitHub
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+
+            <div class="right-content">
+                <h2>
+                    Start your journey.<br>
+                    Stay consistent.<br>
+                    <span class="accent-text">Reach the FINALIST stage.</span>
+                </h2>
+
+                <div class="pill-container">
+                    <div class="pill">1000+ Problems</div>
+                    <div class="pill">Structured Tracking</div>
+                    <div class="pill">Completely Free</div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="bg-glow"></div>
+
+    <script>
+        if (localStorage.getItem("token")) {
+            window.location.href = "problems.html";
+        }
+        // ===== Eye Toggle (Both Password Fields) =====
+        document.querySelectorAll(".toggle-password").forEach(toggle => {
+            toggle.addEventListener("click", function () {
+                const input = document.getElementById(this.dataset.target);
+                const icon = this.querySelector("img");
+
+                const isPassword = input.type === "password";
+                input.type = isPassword ? "text" : "password";
+
+                icon.src = isPassword
+                    ? "assets/eye-open.png"
+                    : "assets/eye-closed.png";
+            });
+        });
+
+
+        // ===== Signup Logic =====
+        const form = document.getElementById("signupForm");
+        const firstName = document.getElementById("firstName");
+        const lastName = document.getElementById("lastName");
+        const email = document.getElementById("email");
+        const password = document.getElementById("password");
+        const confirmPassword = document.getElementById("confirmPassword");
+        const errorText = document.getElementById("passwordError");
+
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault(); // Always prevent page reload
+
+            // Password match check
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.classList.add("input-error");
+                errorText.style.display = "block";
+                errorText.textContent = "Passwords do not match.";
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:5000/api/auth/signup", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        name: firstName.value.trim() + " " + lastName.value.trim(),
+                        email: email.value.trim(),
+                        password: password.value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    errorText.style.display = "block";
+                    errorText.textContent = data.message;
+                    return;
+                }
+
+                // Success → auto login
+                localStorage.setItem("token", data.token);
+                window.location.href = "problems.html";
+
+            } catch (error) {
+                errorText.style.display = "block";
+                errorText.textContent = "Something went wrong. Please try again.";
+            }
+        });
+
+
+        // ===== Live Remove Password Error =====
+        confirmPassword.addEventListener("input", function () {
+            if (password.value === confirmPassword.value) {
+                confirmPassword.classList.remove("input-error");
+                errorText.style.display = "none";
+            }
+        });
+
+        window.addEventListener("pageshow", function () {
+            document.getElementById("signupForm").reset();
+        });
+    </script>

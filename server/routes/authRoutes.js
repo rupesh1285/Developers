@@ -1,12 +1,11 @@
-const jwt = require("jsonwebtoken");
-
 const express = require("express");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const router = express.Router();
 
-// Signup Route
+// ================= SIGNUP =================
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -29,15 +28,25 @@ router.post("/signup", async (req, res) => {
 
     await newUser.save();
 
-    res.status(201).json({ message: "User registered successfully" });
+    // Generate token
+    const token = jwt.sign(
+      { id: newUser._id },
+      "mysecretkey",
+      { expiresIn: "1d" }
+    );
+
+    res.status(201).json({
+      message: "User registered successfully",
+      token
+    });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Server error during signup" });
   }
 });
 
-// Login Route
 
+// ================= LOGIN =================
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -64,7 +73,7 @@ router.post("/login", async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Server error during login" });
   }
 });
 

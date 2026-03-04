@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>FINALIST - Sign In</title>
+    <link rel="stylesheet" href="style_auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
+</head>
+
+<body>
+
+    <div class="split-container">
+
+        <!-- LEFT GLASS PANEL -->
+        <div class="left-panel">
+
+            <!-- TOP CORNER BAR (FULL PANEL WIDTH) -->
+            <div class="panel-top">
+                <img src="assets/logo.png" class="logo" alt="FINALIST Logo">
+                <p class="join-text">
+                    Not a member? <a href="signup.html">Join</a>
+                </p>
+            </div>
+
+            <!-- FORM CENTERED -->
+            <div class="form-wrapper">
+
+                <h1 class="form-title">Sign In</h1>
+
+                <form id="loginForm">
+
+                    <label>Email</label>
+                    <input type="email" placeholder="Email" required>
+
+                    <label>Password</label>
+
+                    <div class="password-field">
+                        <input type="password" id="passwordInput" placeholder="Password" required>
+                        <span class="toggle-password" id="togglePassword">
+                            <img src="assets/eye-closed.png" id="eyeIcon" alt="toggle password">
+                        </span>
+                    </div>
+                    <p class="error-message" id="loginError" style="display:none;"></p>
+
+                    <button type="submit" class="primary-btn">
+                        Sign In
+                        <img src="assets/enter.png" class="btn-icon">
+                    </button>
+
+                </form>
+
+                <div class="divider"></div>
+
+                <div class="oauth-row">
+                    <button class="oauth-btn">
+                        <img src="assets/google.png">
+                        Continue with Google
+                    </button>
+
+                    <button class="oauth-btn">
+                        <img src="assets/github.png">
+                        Continue with GitHub
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+
+            <div class="right-content">
+                <h2>
+                    Track progress.<br>
+                    Build discipline.<br>
+                    <span class="accent-text">Become the FINALIST.</span>
+                </h2>
+
+                <div class="pill-container">
+                    <div class="pill">1000+ Problems</div>
+                    <div class="pill">100% Free</div>
+                    <div class="pill">Structured Tracking</div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="bg-glow"></div>
+
+<script>
+  // Redirect if already logged in
+  if (localStorage.getItem("token")) {
+    window.location.href = "problems.html";
+  }
+
+  const togglePassword = document.getElementById("togglePassword");
+  const passwordInput = document.getElementById("passwordInput");
+  const eyeIcon = document.getElementById("eyeIcon");
+  const form = document.getElementById("loginForm");
+  const emailInput = form.querySelector("input[type='email']");
+  const errorText = document.getElementById("loginError");
+
+  // Password toggle
+  togglePassword.addEventListener("click", function () {
+    const isPassword = passwordInput.type === "password";
+    passwordInput.type = isPassword ? "text" : "password";
+    eyeIcon.src = isPassword
+      ? "assets/eye-open.png"
+      : "assets/eye-closed.png";
+  });
+
+  // Login submit
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showError(data.message);
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      window.location.href = "problems.html";
+
+    } catch (error) {
+      showError("Login failed. Please try again.");
+    }
+  });
+
+  function showError(message) {
+    errorText.style.display = "block";
+    errorText.textContent = message;
+
+    emailInput.classList.add("input-error");
+    passwordInput.classList.add("input-error");
+  }
+
+  // Remove error when typing
+  emailInput.addEventListener("input", clearError);
+  passwordInput.addEventListener("input", clearError);
+
+  function clearError() {
+    errorText.style.display = "none";
+    emailInput.classList.remove("input-error");
+    passwordInput.classList.remove("input-error");
+  }
+</script>
+</body>
+
+</html>
