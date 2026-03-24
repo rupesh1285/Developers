@@ -32,7 +32,23 @@
   --mouse-x: 50%;
   --mouse-y: 50%;
 }
+/* =========================================
+   GLOBAL PAGE TRANSITION (NATIVE FEEL)
+   ========================================= */
+body {
+  animation: pageFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
+@keyframes pageFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 /* ---------- GLOBAL ---------- */
 * {
   margin: 0;
@@ -931,30 +947,145 @@ body {
   }
 }
 
+/* ============================= */
+/* ======== MOBILE RESPONSIVE ======== */
+/* ============================= */
 @media (max-width: 768px) {
+  /* 🌟 1. Center the Glow & Stop it from tracking the finger */
+  body {
+    --mouse-x: 50% !important;
+    --mouse-y: 20vh !important; /* Locks the glow safely behind the headline */
+    background-image:
+      radial-gradient(500px circle at 50% 15vh, rgba(110, 160, 234, 0.06), transparent 50%),
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px) !important;
+  }
+
+  /* 🌟 2. Navbar & Sign-In Button Reduction */
   .navbar {
     padding: 16px 20px;
   }
+  .btn-secondary.nav-button {
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: 20px;
+  }
+  .logo-container span {
+    font-size: 1rem !important;
+  }
 
+  /* 🌟 3. Typography & Spacing (Preventing 3 lines) */
   .hero {
-    padding: 40px 16px 0;
+    padding: 20px 16px 0;
   }
-
   .hero-title {
-    font-size: 42px;
+    font-size: 30px; /* Shrunk to keep words together */
     letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 12px;
   }
-
+  #dynamic-headline {
+    gap: 6px; /* Tighter word spacing */
+    min-height: 70px; /* Reduced vertical jump space */
+  }
   .hero-subtitle {
-    font-size: 18px;
+    font-size: 15px;
+    line-height: 1.3;
+    padding: 0 5px;
+    margin-bottom: 18px;
+  }
+  .hero-description {
+    font-size: 14px;
+    padding: 0 10px;
+    margin-bottom: 20px;
   }
 
+/* 🌟 4. The Pills (Bulletproof Sizing) */
   .feature-pills {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 10px;
+    width: 100%;
+  }
+  
+  .pill {
+    flex: 0 0 calc(50% - 4px) !important; 
+    height: 38px;
+    padding: 0 4px; 
+    
+    font-size: 10.5px; /* Shrunk by 0.5px to guarantee safety on narrow phones */
+    letter-spacing: -0.3px; /* Slightly tighter kerning */
+    justify-content: center;
+    white-space: nowrap; 
+    overflow: hidden; 
+  }
+
+  .pill:nth-child(1), 
+  .pill:nth-child(2), 
+  .pill:nth-child(3) {
+    width: auto !important; 
+  }
+
+  /* 🌟 5. The Mockup Transformation & Click-To-Fill */
+  .app-mockup {
+    display: flex !important;
+    width: 92vw !important;
+    height: 320px;
+    margin-top: 20px;
+    transition: box-shadow 0.4s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  .mockup-body {
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .mockup-sidebar {
+    width: 100%;
+    height: 30px;
+    flex-shrink: 0;
+  }
+
+  .mockup-content {
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    padding: 20px;
+    gap: 25px;
   }
 
-  .app-mockup {
-    display: none;
+  .mockup-ring-wrapper {
+    width: 80px;
+    height: 40px;
   }
+
+  .mockup-ring {
+    width: 80px;
+    height: 80px;
+    border-width: 6px;
+  }
+
+  .mockup-bars {
+    width: 100%;
+    align-items: center;
+    margin-top: 0;
+  }
+
+  .m-bar {
+    width: 25%; /* Reset to empty state */
+  }
+
+  /* 🌟 Click-to-Fill Physics (Overrides the Desktop Hover) */
+  .app-mockup:hover .m-bar { width: 25%; } /* Disable hover stretching */
+  .app-mockup:hover .mockup-ring { transform: rotate(-180deg); } 
+  
+  /* Triggered via Javascript Click */
+  .app-mockup.filled .m-bar:nth-child(1) { width: 95% !important; }
+  .app-mockup.filled .m-bar:nth-child(2) { width: 80% !important; }
+  .app-mockup.filled .m-bar:nth-child(3) { width: 100% !important; }
+  .app-mockup.filled .mockup-ring { transform: rotate(-45deg) !important; }
 }

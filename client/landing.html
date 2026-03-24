@@ -47,13 +47,14 @@
     </p>
 
     <div class="feature-pills">
-      <div class="pill"><i class="ri-code-box-line"></i> 1000+ Curated Problems</div>
+      <div class="pill"><i class="ri-code-box-line"></i> 1000+ Problems</div>
       <div class="pill"><i class="ri-pie-chart-line"></i> Instant Analytics</div>
-      <div class="pill"><i class="ri-timer-line"></i> Built-in Solve Timer</div>
+      <div class="pill"><i class="ri-timer-line"></i> Built-in Timer</div>
     </div>
 
     <p class="hero-description" id="hero-desc">
-      The definitive preparation workspace for software engineers. Master algorithms in a <strong>high-performance IDE</strong>, track your proficiency through <strong>real-time analytics</strong>, and accelerate problem-solving with <strong>context-aware AI integration</strong>.
+      Master algorithms in a <strong>high-performance IDE</strong> with <strong>real-time analytics</strong> and
+      <strong>context-aware AI</strong>.
     </p>
 
     <a href="signup.html" class="btn btn-primary hero-button">
@@ -102,52 +103,94 @@
       document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
     });
 
-    /* =========================================
-       2. HIGH-VISIBILITY FLOATING RUNES
+ /* =========================================
+       2. RESPONSIVE FLOATING RUNES (Desktop vs Mobile)
        ========================================= */
     const runes = ['{}', '</>', '[]', '=>', '();', '&&', '||', '!='];
     const runesContainer = document.getElementById('runes-container');
 
-    setInterval(() => {
+    function spawnRune() {
+      // Check the screen size right now
+      const isMobile = window.innerWidth <= 768;
+      
       const rune = document.createElement('div');
       rune.className = 'rune';
       rune.textContent = runes[Math.floor(Math.random() * runes.length)];
       rune.style.left = Math.random() * 100 + 'vw';
-      rune.style.animationDuration = (Math.random() * 6 + 6) + 's';
-      rune.style.fontSize = (Math.random() * 10 + 14) + 'px';
+      
+      // Apply different physics and styling based on the device
+      if (isMobile) {
+        rune.style.animationDuration = (Math.random() * 8 + 10) + 's'; // Slower float
+        rune.style.fontSize = (Math.random() * 10 + 12) + 'px'; // Smaller text
+        rune.style.opacity = "0.6"; // Dimmer
+        setTimeout(() => rune.remove(), 18000); // Wait longer to delete
+      } else {
+        rune.style.animationDuration = (Math.random() * 6 + 6) + 's'; // Faster float
+        rune.style.fontSize = (Math.random() * 10 + 14) + 'px'; // Larger text
+        rune.style.opacity = "1"; // Full brightness
+        setTimeout(() => rune.remove(), 12000); // Delete faster
+      }
+      
       runesContainer.appendChild(rune);
 
-      setTimeout(() => rune.remove(), 12000);
-    }, 400);
+      // Schedule the next spawn: 2 seconds for mobile, 0.4 seconds for desktop
+      const nextSpawnRate = isMobile ? 2000 : 400;
+      setTimeout(spawnRune, nextSpawnRate);
+    }
+
+    // Kick off the infinite loop
+    spawnRune();
 
     /* =========================================
-       3. DASHBOARD MOCKUP (Hover-Only 3D Tilt)
-       ========================================= */
+           3. DASHBOARD MOCKUP (Tilt & Click)
+           ========================================= */
     const mockup = document.getElementById('dashboard-mockup');
 
     if (mockup) {
+      // 🌟 NEW: Click to fill the bars (replaces hover on mobile)
+      mockup.addEventListener('click', () => {
+        mockup.classList.toggle('filled');
+      });
+
+      // Desktop Hover Tilt (Disabled on mobile)
       mockup.addEventListener('mousemove', (e) => {
+        if (window.innerWidth <= 768) return;
         const rect = mockup.getBoundingClientRect();
-        // Calculate mouse position relative to the dashboard itself
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // Tilt from the side according to mouse position
         const xRotation = ((y - rect.height / 2) / rect.height) * -12;
         const yRotation = ((x - rect.width / 2) / rect.width) * 12;
 
         mockup.style.transform = `perspective(1500px) rotateX(${xRotation}deg) rotateY(${yRotation}deg)`;
-
-        // Move the glass glare effect
         const glarePos = (x / rect.width) * 200 - 100;
         mockup.style.setProperty('--glare-x', `${glarePos}%`);
       });
 
       mockup.addEventListener('mouseleave', () => {
-        // Reset tilt smoothly when mouse leaves the dashboard
+        if (window.innerWidth <= 768) return;
         mockup.style.transform = `perspective(1500px) rotateX(0deg) rotateY(0deg)`;
         mockup.style.setProperty('--glare-x', `-100%`);
       });
+
+
+      // 🌟 NEW: Mobile Gyroscope Tilt (Reverse Physics & Butter Smooth)
+      if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', (e) => {
+          if (window.innerWidth > 768) return; // Only apply on phones
+
+          let tiltX = e.beta || 0; // Front-to-back tilt
+          let tiltY = e.gamma || 0; // Left-to-right tilt
+
+          // 🌟 THE FIX: Reversed the multipliers (+0.4 and -0.4) 
+          // Now, if you tilt the phone down, the mockup looks UP at you.
+          // Lowered the multiplier to 0.4 to remove jitter and make it feel heavy/premium.
+          const xRotation = Math.max(-14, Math.min(14, (tiltX - 45) * 0.4));
+          const yRotation = Math.max(-14, Math.min(14, tiltY * -0.4));
+
+          mockup.style.transform = `perspective(1500px) rotateX(${xRotation}deg) rotateY(${yRotation}deg)`;
+        });
+      }
     }
 
     /* =========================================
@@ -196,9 +239,9 @@
       });
     }
 
-function swapHeading() {
+    function swapHeading() {
       const currentWords = headlineElement.querySelectorAll(".dyn-word");
-      
+
       // 1. Animate current words OUT from left to right (🌟 BLITZ SPEED)
       currentWords.forEach((word, index) => {
         setTimeout(() => {
@@ -209,8 +252,8 @@ function swapHeading() {
 
       // 2. Wait for the out-animation to finish, then build the next heading
       // 🌟 THE FIX: The buffer is now a microscopic 50ms instead of 200ms
-      const totalOutTime = (currentWords.length * 25) + 50; 
-      
+      const totalOutTime = (currentWords.length * 25) + 50;
+
       setTimeout(() => {
         currentHeadingIndex = (currentHeadingIndex + 1) % headings.length;
         buildHeading(headings[currentHeadingIndex]);
