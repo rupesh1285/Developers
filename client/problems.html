@@ -3,73 +3,149 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="style_dashboard.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FINALIST Dashboard</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
     <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 </head>
 
 <body>
-
     <div class="bg-glow"></div>
+    <div class="runes-container" id="runes-container"></div>
+
+    <div id="global-preloader">
+        <div class="loader-content">
+            <svg class="loader-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M25 20 L75 20 L75 35 L45 35 L45 45 L65 45 L65 60 L45 60 L45 80 L25 80 Z"
+                    fill="url(#loader-glow)" />
+                <defs>
+                    <linearGradient id="loader-glow" x1="0" y1="0" x2="100" y2="100">
+                        <stop offset="0%" stop-color="#6ea0ea" />
+                        <stop offset="100%" stop-color="#3b82f6" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <div class="loading-bar-container">
+                <div class="loading-bar"></div>
+            </div>
+            <div class="loading-text">INITIALIZING WORKSPACE...</div>
+        </div>
+    </div>
 
     <nav class="navbar">
-        <img src="assets/logo.png" class="logo">
-        <div class="profile-pill">
-            <img src="assets/profile.png">
-            <div class="profile-name">Ralph Lauren</div>
+        <div class="brand-logo">
+            <svg class="brand-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M25 20 L75 20 L75 35 L45 35 L45 45 L65 45 L65 60 L45 60 L45 80 L25 80 Z"
+                    fill="url(#brand-glow)" />
+                <defs>
+                    <linearGradient id="brand-glow" x1="0" y1="0" x2="100" y2="100">
+                        <stop offset="0%" stop-color="#6ea0ea" />
+                        <stop offset="100%" stop-color="#3b82f6" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <span class="brand-text">FINALIST</span>
+        </div>
+
+        <div class="navbar-right" style="display: flex; align-items: center; gap: 20px;">
+            <div class="nav-timer" id="nav-timer">
+                <button class="timer-btn" id="watch-toggle" title="Start/Pause"><i class="ri-play-fill"
+                        id="toggle-icon"></i></button>
+                <div class="timer-display" id="watch-display">00:00:00</div>
+                <button class="timer-btn reset" id="watch-reset" title="Reset"><i class="ri-refresh-line"></i></button>
+            </div>
+
+            <div class="profile-container" style="position: relative;">
+                <div id="profile-btn">
+                    <div class="profile-avatar" id="nav-avatar-container">
+                        <img src="" id="nav-avatar-img" alt="Profile" style="display: none;">
+                        <i class="ri-user-fill" id="nav-avatar-fallback"></i>
+                    </div>
+                    <span class="profile-name">Developer</span>
+                    <i class="ri-arrow-down-s-line chevron"></i>
+                </div>
+                <div id="profile-menu">
+                    <div class="profile-info">
+                        <strong>Developer Name</strong>
+                        <span>developer@finalist.com</span>
+                    </div>
+                    <div id="logout-btn" class="menu-item danger">
+                        <i class="ri-logout-box-r-line"></i><span>Sign Out</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
 
     <div class="dashboard">
-
-        <div class="left-strip"></div>
-
-        <!-- MIDDLE PANEL -->
-        <div class="middle-panel">
-
-            <!-- Progress Section -->
+        <div class="middle-panel expanded">
             <div class="progress-section">
                 <div class="progress-left">
-                    <div class="progress-circle">
-                        <div class="circle-inner">
-                            <span class="progress-text">72<span>/4875</span></span>
+                    <div class="circular-progress">
+                        <svg width="120" height="120" viewBox="0 0 120 120" class="circle-svg">
+                            <defs>
+                                <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#d946ef; stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#8b5cf6; stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="60" cy="60" r="50" class="circle-bg"></circle>
+                            <circle cx="60" cy="60" r="50" class="circle-progress" id="total-circle"></circle>
+                        </svg>
+                        <div class="circle-text">
+                            <span id="total-solved-count">0 / 0</span>
+                            <span class="total-label">Solved</span>
                         </div>
                     </div>
-                    <div class="progress-label">Solved</div>
                 </div>
-
                 <div class="progress-right">
-                    <div class="progress-row"><span>Basic</span>
-                        <div class="bar basic-bar"></div>
+                    <div class="progress-row"><span class="bar-label">Basic</span>
+                        <div class="bar-track">
+                            <div class="bar-fill basic-bar" style="width: 0%"></div>
+                        </div><span class="bar-stat" id="basic-stat">0/0</span>
                     </div>
-                    <div class="progress-row"><span>Easy</span>
-                        <div class="bar easy-bar"></div>
+                    <div class="progress-row"><span class="bar-label">Easy</span>
+                        <div class="bar-track">
+                            <div class="bar-fill easy-bar" style="width: 0%"></div>
+                        </div><span class="bar-stat" id="easy-stat">0/0</span>
                     </div>
-                    <div class="progress-row"><span>Med.</span>
-                        <div class="bar medium-bar"></div>
+                    <div class="progress-row"><span class="bar-label">Med.</span>
+                        <div class="bar-track">
+                            <div class="bar-fill medium-bar" style="width: 0%"></div>
+                        </div><span class="bar-stat" id="medium-stat">0/0</span>
                     </div>
-                    <div class="progress-row"><span>Hard</span>
-                        <div class="bar hard-bar"></div>
+                    <div class="progress-row"><span class="bar-label">Hard</span>
+                        <div class="bar-track">
+                            <div class="bar-fill hard-bar" style="width: 0%"></div>
+                        </div><span class="bar-stat" id="hard-stat">0/0</span>
                     </div>
                 </div>
             </div>
 
             <div class="divider"></div>
 
-            <!-- Filters -->
             <div class="filters-section">
-
-                <div class="search-bar">
-                    <img src="assets/search.png" class="search-icon">
-                    <input type="text" id="search-input">
+                <div class="search-wrapper">
+                    <i class="ri-search-line search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Search..." autocomplete="off">
                 </div>
-
-                <div class="filters-group">
-
-                    <div class="filter">
-                        <span class="filter-text">Difficulty</span>
-                        <img src="assets/dropdown.png" class="dropdown-icon">
+                <div class="filters-actions">
+                    <div class="filter-pill" id="diff-dropdown">
+                        <span class="filter-text">Difficulty</span><i class="ri-arrow-down-s-line chevron-icon"></i>
                         <div class="dropdown-menu">
                             <div class="dropdown-item">Difficulty</div>
                             <div class="dropdown-item">Basic</div>
@@ -78,10 +154,8 @@
                             <div class="dropdown-item">Hard</div>
                         </div>
                     </div>
-
-                    <div class="filter">
-                        <span class="filter-text">All Problems</span>
-                        <img src="assets/dropdown.png" class="dropdown-icon">
+                    <div class="filter-pill" id="status-dropdown">
+                        <span class="filter-text">Status</span><i class="ri-arrow-down-s-line chevron-icon"></i>
                         <div class="dropdown-menu">
                             <div class="dropdown-item">All Problems</div>
                             <div class="dropdown-item">Solved</div>
@@ -89,340 +163,1195 @@
                             <div class="dropdown-item">Starred</div>
                         </div>
                     </div>
-
-                    <div class="filter-circle">
-                        <img src="assets/filter.png" class="filter-icon">
+                    <div class="filter-pill-wrapper" style="position: relative;">
+                        <div class="icon-btn filter-trigger" id="topic-btn" title="Topic Filter">
+                            <i class="ri-filter-3-line"></i>
+                            <div class="filter-badge" id="filter-badge" style="display: none;">0</div>
+                        </div>
+                        <div class="topic-menu" id="topic-menu">
+                            <div class="topic-header">
+                                <div class="topic-search-box"><i class="ri-search-line"></i><input type="text"
+                                        id="topic-search" placeholder="Search tags..."></div>
+                                <span class="clear-all-btn" id="clear-all-tags" style="display: none;">Clear</span>
+                            </div>
+                            <div class="topics-container" id="selected-topics" style="display: none;"></div>
+                            <div class="topic-divider" id="topic-divider" style="display: none;"></div>
+                            <div class="topics-container" id="available-topics"></div>
+                        </div>
                     </div>
-
                 </div>
             </div>
 
-            <!-- Problems -->
             <div class="problems-panel" id="problems-panel"></div>
-
         </div>
 
-        <!-- Partition -->
-        <div class="partition-bar"></div>
+        <div class="right-panel collapsed" id="right-panel"></div>
 
-        <!-- RIGHT PANEL -->
-        <div class="right-panel" id="right-panel">
-            <div style="padding:30px;color:var(--text-muted)">
-                Hey Ralph 👋<br><br>
-                Click a problem to view its details.
+        <div class="vertical-divider" id="vertical-divider">
+            <button class="panel-fold-btn" id="panel-fold-btn" data-tooltip="Fold" style="display: none;">
+                <i class="ri-arrow-right-double-line"></i>
+            </button>
+        </div>
+
+        <div class="stats-panel" id="stats-panel">
+            <div class="stat-card stat-small"
+                style="padding: 15px; display: flex; align-items: center; justify-content: space-between;">
+                <div class="streak-main" style="flex: 1; padding-right: 20px; min-width: 0;">
+                    <div class="streak-top">
+                        <i class="ri-fire-fill streak-icon"></i>
+                        <div class="streak-info"><span class="streak-count" id="streak-count-val">0</span><span
+                                class="streak-label">Day Streak</span></div>
+                    </div>
+                    <div class="streak-week" id="streak-week-container"></div>
+                </div>
+                <div class="streak-secondary">
+                    <div class="stat-mini"><span class="stat-mini-label">Max Streak</span><span class="stat-mini-value"
+                            id="max-streak-val">0 Days</span></div>
+                    <div class="stat-mini"><span class="stat-mini-label">Time Spent</span><span class="stat-mini-value"
+                            id="time-spent-val">0 hrs</span></div>
+                </div>
             </div>
-        </div>
+            <div class="stat-card stat-medium"
+                style="flex-direction: column; padding: 15px 20px; align-items: flex-start;">
+                <div
+                    style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 10px;">
+                    <span class="section-label" style="margin-bottom: 0;">Activity Log</span><span
+                        style="font-size: 11px; color: var(--text-muted);">Last 16 Weeks</span>
+                </div>
+                <div class="heatmap-container" id="activity-heatmap"></div>
+            </div>
+            <div class="stat-card stat-large" style="flex-direction: column; padding: 20px; align-items: flex-start;">
+                <span class="section-label" style="margin-bottom: 15px;">Topic Distribution</span>
+                <div class="bubbles-container" id="topic-bubbles"></div>
+            </div>
 
+        </div>
     </div>
 
     <script>
+        /* =========================================================
+           0. GLOBALS & UTILITIES
+        ========================================================= */
+        document.addEventListener('mousemove', (e) => {
+            document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
+            document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+        });
 
-        /* ================= SEARCH TYPE EFFECT ================= */
-
-        const texts = [
-            "Search problem",
-            "Search in a sorted array",
-            "Find first occurrence",
-            "Binary search implementation"
-        ];
-
-        const input = document.getElementById("search-input");
-        let textIndex = 0;
-        let charIndex = 0;
-        let isDeleting = false;
-
-        function typeEffect() {
-            if (document.activeElement === input) {
-                setTimeout(typeEffect, 100);
-                return;
-            }
-
-            const currentText = texts[textIndex];
-
-            if (!isDeleting) {
-                input.placeholder = currentText.substring(0, charIndex++);
-                if (charIndex > currentText.length) {
-                    setTimeout(() => isDeleting = true, 1000);
-                }
-            } else {
-                input.placeholder = currentText.substring(0, charIndex--);
-                if (charIndex < 0) {
-                    isDeleting = false;
-                    textIndex = (textIndex + 1) % texts.length;
-                }
-            }
-
-            setTimeout(typeEffect, isDeleting ? 40 : 60);
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlToken = urlParams.get('token');
+        if (urlToken) {
+            localStorage.setItem('token', urlToken);
+            window.history.replaceState({}, document.title, "/problems.html");
         }
-        typeEffect();
 
-        /* ================= DROPDOWN ================= */
-
-        document.querySelectorAll(".filter").forEach(filter => {
-
-            const text = filter.querySelector(".filter-text");
-            const items = filter.querySelectorAll(".dropdown-item");
-
-            filter.addEventListener("click", (e) => {
-                e.stopPropagation();
-                document.querySelectorAll(".filter").forEach(f => {
-                    if (f !== filter) f.classList.remove("active");
-                });
-                filter.classList.toggle("active");
-            });
-
-            items.forEach(item => {
-                item.addEventListener("click", (e) => {
-                    text.textContent = item.textContent;
-                    filter.classList.remove("active");
-                    e.stopPropagation();
-                });
-            });
-        });
-
-        document.addEventListener("click", () => {
-            document.querySelectorAll(".filter").forEach(f => f.classList.remove("active"));
-        });
-
-        /* ================= FETCH PROBLEMS ================= */
-
+        let problemsData = [], solvedIds = [], starredIds = [];
+        let currentUser = { name: "Developer", email: "coder@finalist.com" };
         const problemsPanel = document.getElementById("problems-panel");
         const rightPanel = document.getElementById("right-panel");
+        const searchInput = document.getElementById("search-input");
+        const getID = (item) => (typeof item === 'object' && item._id) ? String(item._id) : String(item);
 
-        let problemsData = [];
+        // 🌟 Configure Marked to use Highlight.js for beautiful AI code blocks
+        marked.setOptions({
+            highlight: function (code, lang) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            },
+            langPrefix: 'hljs language-'
+        });
 
-        async function loadProblems() {
-            try {
-                console.log("1. Starting loadProblems...");
-                const token = localStorage.getItem("token");
-                if (!token) console.error("!! NO TOKEN FOUND in LocalStorage !!");
+        /* =========================================================
+           1. AUTH & PROFILE
+        ========================================================= */
+        const profileBtn = document.getElementById("profile-btn");
+        const profileMenu = document.getElementById("profile-menu");
+        const logoutBtn = document.getElementById("logout-btn");
 
-                /* 1. Fetch all problems */
-                const resProblems = await fetch("http://localhost:5000/api/problems");
-                const problems = await resProblems.json();
-                console.log(`2. Loaded ${problems.length} problems from backend.`);
+        profileBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            profileMenu.classList.toggle("active");
+            profileBtn.classList.toggle("active");
+        });
 
-                /* 2. Fetch user progress */
-                let progress = [];
-                try {
-                    const resProgress = await fetch("http://localhost:5000/api/progress", {
-                        headers: { "Authorization": "Bearer " + token }
-                    });
+        document.addEventListener("click", (e) => {
+            if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
+                profileMenu.classList.remove("active");
+                profileBtn.classList.remove("active");
+            }
+        });
 
-                    if (resProgress.ok) {
-                        progress = await resProgress.json();
-                        console.log(`3. Loaded ${progress.length} progress records.`);
-                        console.log("Sample Progress Record:", progress[0]); // Check the structure in console
-                    } else {
-                        console.error("3. Failed to load progress. Status:", resProgress.status);
-                    }
-                } catch (err) {
-                    console.error("3. Error fetching progress:", err);
-                }
+        logoutBtn.addEventListener("click", () => {
+            localStorage.clear();
+            window.location.href = "login.html";
+        });
 
-                /* =========================================
-                   3. THE BULLETPROOF MATCHING LOGIC
-                   ========================================= */
+        /* =========================================================
+                   2. STOPWATCH & PERSISTENT TIME TRACKING
+                ========================================================= */
+        const watchDisplay = document.getElementById("watch-display");
+        const toggleIcon = document.getElementById("toggle-icon");
 
-                // Helper to safely get ID string whether it's an Object or String
-                const getID = (item) => {
-                    if (!item) return "undefined";
-                    // If p.problem is populated (is an object), use ._id, otherwise use item itself
-                    return (typeof item === 'object' && item._id) ? String(item._id) : String(item);
-                };
+        // Load persistent data from LocalStorage
+        let timerInterval;
+        let elapsedTime = parseInt(localStorage.getItem('finalist_timer_elapsed')) || 0;
+        let cumulativeTime = parseInt(localStorage.getItem('finalist_cumulative_time')) || 0;
+        let isRunning = localStorage.getItem('finalist_timer_running') === 'true';
+        let lastTick = parseInt(localStorage.getItem('finalist_last_tick')) || Date.now();
 
-                const solvedIds = progress
-                    .filter(p => p.solved === true)
-                    .map(p => getID(p.problem));
+        function formatTime(ms) {
+            let h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
+            return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
+        }
 
-                const starredIds = progress
-                    .filter(p => p.starred === true)
-                    .map(p => getID(p.problem));
-
-                console.log("4. Solved IDs List:", solvedIds);
-
-                /* 4. Render the list */
-                const problemsPanel = document.getElementById("problems-panel");
-                problemsData = problems; // Update global variable
-                problemsPanel.innerHTML = "";
-
-                problems.forEach((problem, index) => {
-
-                    // Safely convert problem._id to string for comparison
-                    const currentId = String(problem._id);
-
-                    const isSolved = solvedIds.includes(currentId);
-                    const isStarred = starredIds.includes(currentId);
-
-                    // Debug specific problem if needed
-                    if (index === 0) console.log(`Problem 1 (${currentId}) - Solved? ${isSolved}`);
-
-                    const difficultyClass =
-                        problem.difficulty === "Easy" ? "easy" :
-                            problem.difficulty === "Medium" ? "medium" :
-                                problem.difficulty === "Basic" ? "basic" :
-                                    "hard";
-
-                    const strip = document.createElement("div");
-                    strip.classList.add("problem-strip");
-                    strip.dataset.id = problem._id;
-
-                    strip.innerHTML = `
-                <div class="problem-left">
-                    <span class="problem-number">${index + 1}.</span>
-                    <span class="problem-title">${problem.title}</span>
-                </div>
-
-                <div class="problem-right">
-                    <img 
-                        src="${isSolved ? "assets/tick.png" : "assets/checkbox.png"}"
-                        class="checkbox-icon ${isSolved ? "checked" : ""}"
-                        style="${isSolved ? 'filter:invert(48%) sepia(82%) saturate(400%) hue-rotate(85deg) brightness(95%) contrast(90%)' : 'filter:brightness(0) invert(1)'}"
-                    >
-                    <span class="difficulty ${difficultyClass}">
-                        ${problem.difficulty}
-                    </span>
-                   <img 
-                        src="${isStarred ? "assets/star-filled.png" : "assets/star.png"}"
-                        class="star-icon ${isStarred ? "active" : ""}"
-                        style="${isStarred ? 'filter:none' : 'filter:brightness(0) invert(1)'}"
-                    >
-                </div>
-            `;
-                    problemsPanel.appendChild(strip);
-                });
-
-            } catch (err) {
-                console.error("CRITICAL ERROR in loadProblems:", err);
+        // 🌟 Live updates the Analytics panel whenever you cross a new hour
+        function updateCumulativeUI() {
+            const timeSpentVal = document.getElementById('time-spent-val');
+            if (timeSpentVal) {
+                const hrs = Math.floor(cumulativeTime / 3600000);
+                timeSpentVal.textContent = `${hrs} hrs`;
             }
         }
 
-        loadProblems();
+        function tick() {
+            const now = Date.now();
+            const delta = now - lastTick; // Calculate exact ms passed since last frame
+            lastTick = now;
+            localStorage.setItem('finalist_last_tick', lastTick);
 
-        /* ================= EVENT DELEGATION ================= */
+            elapsedTime += delta;
+            cumulativeTime += delta; // Add to global hour tracker
 
-        /* ================= EVENT DELEGATION (FIXED COLORS) ================= */
+            localStorage.setItem('finalist_timer_elapsed', elapsedTime);
+            localStorage.setItem('finalist_cumulative_time', cumulativeTime);
 
-        problemsPanel.addEventListener("click", async function (e) {
+            watchDisplay.textContent = formatTime(elapsedTime);
+            updateCumulativeUI();
+        }
 
-            const strip = e.target.closest(".problem-strip");
-            if (!strip) return;
+        function startTimer() {
+            isRunning = true;
+            localStorage.setItem('finalist_timer_running', 'true');
+            toggleIcon.className = "ri-pause-fill";
+            lastTick = Date.now();
+            localStorage.setItem('finalist_last_tick', lastTick);
+            timerInterval = setInterval(tick, 1000);
+        }
 
-            /* CHECKBOX LOGIC */
-            if (e.target.classList.contains("checkbox-icon")) {
+        function pauseTimer() {
+            isRunning = false;
+            localStorage.setItem('finalist_timer_running', 'false');
+            toggleIcon.className = "ri-play-fill";
+            clearInterval(timerInterval);
+        }
 
-                e.stopPropagation();
-
-                const token = localStorage.getItem("token");
-                const problemId = strip.dataset.id;
-
-                /* UI toggle with COLOR FIX */
-                if (!e.target.classList.contains("checked")) {
-                    // Turn ON (Green)
-                    e.target.src = "assets/tick.png";
-                    e.target.classList.add("checked");
-                    // Apply the Green Filter
-                    e.target.style.filter = "invert(48%) sepia(82%) saturate(400%) hue-rotate(85deg) brightness(95%) contrast(90%)";
-                } else {
-                    // Turn OFF (White)
-                    e.target.src = "assets/checkbox.png";
-                    e.target.classList.remove("checked");
-                    // Apply the White Filter
-                    e.target.style.filter = "brightness(0) invert(1)";
-                }
-
-                /* Backend save */
-                await fetch("http://localhost:5000/api/progress/toggle-solved/" + problemId, {
-                    method: "POST",
-                    headers: { "Authorization": "Bearer " + token }
-                });
-
-                return;
-            }
-
-            /* STAR LOGIC */
-            if (e.target.classList.contains("star-icon")) {
-
-                e.stopPropagation();
-
-                const token = localStorage.getItem("token");
-                const problemId = strip.dataset.id;
-
-                /* UI toggle with COLOR FIX */
-                if (!e.target.classList.contains("active")) {
-                    // Turn ON (Filled Star)
-                    e.target.src = "assets/star-filled.png";
-                    e.target.classList.add("active");
-                    // Remove filter to show original star color
-                    e.target.style.filter = "none";
-                } else {
-                    // Turn OFF (Empty White Star)
-                    e.target.src = "assets/star.png";
-                    e.target.classList.remove("active");
-                    // Apply White Filter
-                    e.target.style.filter = "brightness(0) invert(1)";
-                }
-
-                /* Backend save */
-                await fetch("http://localhost:5000/api/progress/toggle-star/" + problemId, {
-                    method: "POST",
-                    headers: { "Authorization": "Bearer " + token }
-                });
-
-                return;
-            }
-
-            /* PROBLEM DETAILS SWITCH (Existing logic) */
-            // ... keep your existing logic for opening the side panel here ...
-            if (strip.classList.contains("active-problem")) {
-                strip.classList.remove("active-problem");
-                // Reset right panel content...
-                document.getElementById("right-panel").innerHTML = `
-                    <div style="padding:30px;color:var(--text-muted)">
-                        Hey Ralph 👋<br><br>
-                        Click a problem to view its details.
-                    </div>`;
-                return;
-            }
-
-            document.querySelectorAll(".problem-strip").forEach(s =>
-                s.classList.remove("active-problem")
-            );
-
-            strip.classList.add("active-problem");
-
-            // Re-fetch details for right panel
-            const problem = problemsData.find(p => p._id === strip.dataset.id);
-            const rightPanel = document.getElementById("right-panel");
-
-            // ... (Your existing Right Panel HTML generation code) ...
-            rightPanel.innerHTML = `
-                <div class="problem-details">
-                    <h2 class="details-title">${problem.title}</h2>
-                    <div class="details-block">
-                        <span class="section-label">Problem Statement:</span>
-                        <p class="details-text">${problem.description || ""}</p>
-                    </div>
-                    <div class="details-block">
-                        <span class="section-label">Examples:</span>
-                        ${(problem.examples || []).map(ex => `
-                            <pre class="example-box">
-Input: ${ex.input}
-Output: ${ex.output}
-Explanation: ${ex.explanation || ""}
-                            </pre>
-                        `).join("")}
-                    </div>
-                    <div class="details-block">
-                        <div><span class="section-label">Time Complexity:</span> ${problem.timeComplexity || ""}</div>
-                        <div><span class="section-label">Space Complexity:</span> ${problem.spaceComplexity || ""}</div>
-                    </div>
-                </div>
-            `;
+        document.getElementById("watch-toggle").addEventListener("click", () => {
+            if (isRunning) pauseTimer();
+            else startTimer();
         });
 
-    </script>
+        document.getElementById("watch-reset").addEventListener("click", () => {
+            pauseTimer();
+            elapsedTime = 0;
+            localStorage.setItem('finalist_timer_elapsed', 0);
+            watchDisplay.textContent = "00:00:00";
+        });
 
+        // 🌟 BOOT SEQUENCE: Recovers lost time if tab was closed while running!
+        if (isRunning) {
+            const now = Date.now();
+            const missed = now - lastTick;
+            // Limit recovery to 24 hours to prevent crazy math bugs if you leave for a month
+            if (missed > 0 && missed < 86400000) {
+                elapsedTime += missed;
+                cumulativeTime += missed;
+            }
+            startTimer();
+        } else {
+            watchDisplay.textContent = formatTime(elapsedTime);
+            updateCumulativeUI();
+        }
+
+        // 🌟 RESTORED: Search Bar Typing Effect
+        const typeTexts = ["Search 'Two Sum'", "Search 'Trapping Rain Water'", "Search 'LRU Cache'", "Search 'Valid Palindrome'", "Search 'Merge K Sorted Lists'"];
+        let tIndex = 0, cIndex = 0, isDeleting = false, cursorBlink = true;
+
+        function typeEffect() {
+            if (document.activeElement === searchInput) {
+                searchInput.placeholder = "";
+                return setTimeout(typeEffect, 500);
+            }
+            const current = typeTexts[tIndex];
+            if (isDeleting) cIndex--; else cIndex++;
+            let displayText = current.substring(0, cIndex);
+            searchInput.placeholder = displayText + (cursorBlink ? "|" : "");
+            let typeSpeed = isDeleting ? 30 : 60;
+
+            if (!isDeleting && cIndex === current.length) { typeSpeed = 2000; isDeleting = true; }
+            else if (isDeleting && cIndex === 0) { isDeleting = false; tIndex = (tIndex + 1) % typeTexts.length; typeSpeed = 500; }
+            setTimeout(typeEffect, typeSpeed);
+        }
+        setInterval(() => {
+            if (document.activeElement !== searchInput) {
+                cursorBlink = !cursorBlink;
+                if (cIndex === typeTexts[tIndex].length || cIndex === 0) {
+                    let displayText = typeTexts[tIndex].substring(0, cIndex);
+                    searchInput.placeholder = displayText + (cursorBlink ? "|" : "");
+                }
+            }
+        }, 450);
+        setTimeout(typeEffect, 1000);
+
+        /* =========================================================
+           3. TAG FILTER LOGIC (🌟 RESTORED)
+        ========================================================= */
+        let selectedTags = [];
+        let allTags = [];
+
+        const topicBtn = document.getElementById("topic-btn");
+        const topicMenu = document.getElementById("topic-menu");
+        const topicSearch = document.getElementById("topic-search");
+        const selectedContainer = document.getElementById("selected-topics");
+        const availableContainer = document.getElementById("available-topics");
+        const topicDivider = document.getElementById("topic-divider");
+        const clearAllBtn = document.getElementById("clear-all-tags");
+        const filterBadge = document.getElementById("filter-badge");
+
+        function extractTags() {
+            const tagSet = new Set();
+            problemsData.forEach(p => { if (p.tags && Array.isArray(p.tags)) p.tags.forEach(tag => tagSet.add(tag)); });
+            allTags = Array.from(tagSet).sort();
+        }
+
+        topicBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (!topicMenu.classList.contains("active")) extractTags();
+            topicMenu.classList.toggle("active");
+            renderTopicMenu();
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!topicBtn.contains(e.target) && !topicMenu.contains(e.target)) topicMenu.classList.remove("active");
+        });
+
+        topicSearch.addEventListener("input", (e) => renderTopicMenu(e.target.value));
+
+        clearAllBtn.addEventListener("click", () => {
+            selectedTags = [];
+            localStorage.setItem("finalist_tags", JSON.stringify(selectedTags));
+            topicSearch.value = ""; renderTopicMenu(); applyFilters();
+        });
+
+        function renderTopicMenu(filterText = "") {
+            selectedContainer.innerHTML = ""; availableContainer.innerHTML = "";
+            if (selectedTags.length > 0) {
+                topicBtn.classList.add("active-filter");
+                filterBadge.style.display = "flex"; filterBadge.textContent = selectedTags.length;
+                clearAllBtn.style.display = "block";
+                selectedContainer.style.display = "flex"; topicDivider.style.display = "block";
+
+                selectedTags.forEach(tag => {
+                    const pill = document.createElement("div"); pill.className = "topic-pill-item selected"; pill.innerHTML = `${tag} <i class="ri-close-line"></i>`;
+                    pill.onclick = (e) => { e.stopPropagation(); selectedTags = selectedTags.filter(t => t !== tag); localStorage.setItem("finalist_tags", JSON.stringify(selectedTags)); renderTopicMenu(topicSearch.value); applyFilters(); };
+                    selectedContainer.appendChild(pill);
+                });
+            } else {
+                topicBtn.classList.remove("active-filter"); filterBadge.style.display = "none";
+                clearAllBtn.style.display = "none"; selectedContainer.style.display = "none"; topicDivider.style.display = "none";
+            }
+
+            const available = allTags.filter(t => !selectedTags.includes(t) && t.toLowerCase().includes(filterText.toLowerCase()));
+            available.forEach(tag => {
+                const pill = document.createElement("div"); pill.className = "topic-pill-item"; pill.textContent = tag;
+                pill.onclick = (e) => { e.stopPropagation(); selectedTags.push(tag); localStorage.setItem("finalist_tags", JSON.stringify(selectedTags)); topicSearch.value = ""; renderTopicMenu(); applyFilters(); };
+                availableContainer.appendChild(pill);
+            });
+        }
+
+        /* =========================================================
+           4. DATA FETCHING (On Load)
+        ========================================================= */
+        async function loadProblems() {
+            try {
+                const token = localStorage.getItem("token");
+                const [resProblems, resProgress, resProfile, resAnalytics] = await Promise.all([
+                    fetch("/api/problems", { headers: { "Authorization": "Bearer " + token } }),
+                    fetch("/api/progress", { headers: { "Authorization": "Bearer " + token } }),
+                    fetch("/api/auth/profile", { headers: { "Authorization": "Bearer " + token } }),
+                    fetch("/api/progress/analytics", { headers: { "Authorization": "Bearer " + token } })
+                ]);
+
+                if (resProblems.ok) problemsData = await resProblems.json();
+                const validIds = problemsData.map(p => p._id);
+
+                if (resProgress.ok) {
+                    const progress = await resProgress.json();
+                    solvedIds = progress.filter(p => p.solved).map(p => getID(p.problem)).filter(id => validIds.includes(id));
+                    starredIds = progress.filter(p => p.starred).map(p => getID(p.problem)).filter(id => validIds.includes(id));
+                }
+
+                if (resProfile.ok) {
+                    currentUser = await resProfile.json();
+                    document.querySelector(".profile-name").textContent = currentUser.name;
+                    document.querySelector(".profile-info strong").textContent = currentUser.name;
+                    document.querySelector(".profile-info span").textContent = currentUser.email;
+
+                    const avatarImg = document.getElementById("nav-avatar-img");
+                    if (currentUser.avatar && currentUser.avatar.length > 5) {
+                        avatarImg.src = currentUser.avatar;
+                    } else {
+                        avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=1a1d27&color=6ea0ea&bold=true&font-size=0.4`;
+                    }
+                    avatarImg.style.display = "block";
+                    document.getElementById("nav-avatar-fallback").style.display = "none";
+                }
+
+                if (resAnalytics.ok) renderAnalytics(await resAnalytics.json());
+
+                // Restore UI Filters
+                const savedDiff = localStorage.getItem("finalist_diff");
+                if (savedDiff) document.querySelector("#diff-dropdown .filter-text").textContent = savedDiff;
+                const savedStatus = localStorage.getItem("finalist_status");
+                if (savedStatus) document.querySelector("#status-dropdown .filter-text").textContent = savedStatus;
+
+                const savedTags = localStorage.getItem("finalist_tags");
+                if (savedTags) selectedTags = JSON.parse(savedTags);
+
+                updateStatsLocally();
+                renderTopicMenu();
+                applyFilters();
+
+                // Restore Layout
+                if (localStorage.getItem("finalist_analytics_state") === "hidden") collapseAnalytics();
+                else if (localStorage.getItem("finalist_analytics_width")) document.getElementById("stats-panel").style.width = localStorage.getItem("finalist_analytics_width");
+
+                const savedProblemId = localStorage.getItem("finalist_active_problem");
+                if (savedProblemId) {
+                    const strip = document.querySelector(`.problem-strip[data-id="${savedProblemId}"]`);
+                    if (strip) strip.click();
+                    else { rightPanel.classList.add("collapsed"); document.querySelector(".middle-panel").classList.add("expanded"); }
+                } else {
+                    rightPanel.classList.add("collapsed"); document.querySelector(".middle-panel").classList.add("expanded");
+                }
+                // 🌟 REMOVE PRELOADER ON SUCCESS
+                setTimeout(() => document.getElementById('global-preloader').classList.add('hidden'), 300);
+            } catch (err) {
+                console.error("Critical Load Error:", err);
+                // 🌟 REMOVE PRELOADER EVEN IF THERE IS AN ERROR SO IT DOESN'T GET STUCK
+                setTimeout(() => document.getElementById('global-preloader').classList.add('hidden'), 300);
+            }
+        }
+
+        /* =========================================================
+           5. LIST RENDERING & FILTERING
+        ========================================================= */
+        function renderList(list) {
+            problemsPanel.innerHTML = "";
+            list.forEach((problem) => {
+                const isSolved = solvedIds.includes(String(problem._id));
+                const isStarred = starredIds.includes(String(problem._id));
+                const diffClass = problem.difficulty.toLowerCase();
+
+                const strip = document.createElement("div");
+                strip.className = "problem-strip";
+                strip.dataset.id = problem._id;
+                strip.innerHTML = `
+                    <div class="problem-left"><span class="problem-number">${problem.problemNumber}.</span><span class="problem-title">${problem.title}</span></div>
+                    <div class="problem-right">
+                        <i class="${isSolved ? 'ri-checkbox-circle-fill checked' : 'ri-checkbox-blank-circle-line'} checkbox-icon" style="color: ${isSolved ? '#4ade80' : 'var(--text-muted)'}"></i>
+                        <span class="difficulty ${diffClass}">${problem.difficulty}</span>
+                        <i class="${isStarred ? 'ri-star-fill active' : 'ri-star-line'} star-icon"></i>
+                    </div>`;
+                problemsPanel.appendChild(strip);
+            });
+        }
+
+        function updateStatsLocally() {
+            const total = problemsData.length, solved = solvedIds.length;
+            document.getElementById("total-solved-count").textContent = `${solved} / ${total}`;
+            document.getElementById("total-circle").style.strokeDashoffset = 314 - ((total === 0 ? 0 : solved / total) * 314);
+            ["Basic", "Easy", "Medium", "Hard"].forEach(diff => {
+                const diffTotal = problemsData.filter(p => p.difficulty === diff).length;
+                const diffSolved = problemsData.filter(p => p.difficulty === diff && solvedIds.includes(String(p._id))).length;
+                const bar = document.querySelector(`.${diff.toLowerCase()}-bar`), statText = document.getElementById(`${diff.toLowerCase()}-stat`);
+                if (bar) bar.style.width = `${diffTotal === 0 ? 0 : (diffSolved / diffTotal) * 100}%`;
+                if (statText) statText.textContent = `${diffSolved}/${diffTotal}`;
+            });
+        }
+
+        function applyFilters() {
+            const query = searchInput.value.toLowerCase();
+            const dFilter = document.querySelector("#diff-dropdown .filter-text").textContent;
+            const sFilter = document.querySelector("#status-dropdown .filter-text").textContent;
+
+            const filtered = problemsData.filter(p => {
+                const matchSearch = p.title.toLowerCase().includes(query);
+                const matchDiff = (dFilter === "Difficulty" || p.difficulty === dFilter);
+                let matchStatus = true;
+                if (sFilter === "Solved") matchStatus = solvedIds.includes(String(p._id));
+                else if (sFilter === "Unsolved") matchStatus = !solvedIds.includes(String(p._id));
+                else if (sFilter === "Starred") matchStatus = starredIds.includes(String(p._id));
+
+                // 🌟 RESTORED: Tag Logic
+                const matchTags = selectedTags.length === 0 || (p.tags && p.tags.some(t => selectedTags.includes(t)));
+
+                return matchSearch && matchDiff && matchStatus && matchTags;
+            });
+            renderList(filtered);
+        }
+
+        searchInput.addEventListener("input", applyFilters);
+
+        document.querySelectorAll(".filter-pill").forEach(pill => {
+            pill.addEventListener("click", (e) => { e.stopPropagation(); document.querySelectorAll(".filter-pill").forEach(f => { if (f !== pill) f.classList.remove("active"); }); pill.classList.toggle("active"); });
+            pill.querySelectorAll(".dropdown-item").forEach(item => {
+                item.addEventListener("click", (e) => {
+                    e.stopPropagation(); pill.querySelector(".filter-text").textContent = item.textContent; pill.classList.remove("active");
+                    if (pill.id === "diff-dropdown") localStorage.setItem("finalist_diff", item.textContent);
+                    if (pill.id === "status-dropdown") localStorage.setItem("finalist_status", item.textContent);
+                    applyFilters();
+                });
+            });
+        });
+        // 🌟 FIX 1: Close Status & Difficulty Dropdowns on Outside Click
+        document.addEventListener("click", (e) => {
+            if (!e.target.closest('.filter-pill')) {
+                document.querySelectorAll('.filter-pill.active').forEach(pill => pill.classList.remove('active'));
+            }
+        });
+
+        /* =========================================================
+           6. THE WORKSPACE ENGINE
+        ========================================================= */
+        problemsPanel.addEventListener("click", async (e) => {
+            const strip = e.target.closest(".problem-strip");
+            if (!strip) return;
+            const id = strip.dataset.id;
+            const token = localStorage.getItem("token");
+
+            // A. Checkbox Logic
+            if (e.target.classList.contains("checkbox-icon")) {
+                e.stopPropagation();
+                if (solvedIds.includes(id)) solvedIds = solvedIds.filter(i => i !== id);
+                else solvedIds.push(id);
+
+                applyFilters(); // 🌟 THE FIX: This redraws the list while respecting your dropdowns/search!
+                updateStatsLocally();
+                try {
+                    await fetch(`/api/progress/toggle-solved/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } });
+                    const resAnalytics = await fetch("/api/progress/analytics", { headers: { "Authorization": "Bearer " + token } });
+                    if (resAnalytics.ok) renderAnalytics(await resAnalytics.json());
+                } catch (err) { console.error("Sync Error:", err); }
+                return;
+            }
+
+            // B. Star Logic (Middle Panel Click)
+            if (e.target.classList.contains("star-icon")) {
+                e.stopPropagation();
+                if (starredIds.includes(id)) starredIds = starredIds.filter(i => i !== id); else starredIds.push(id);
+                const isSt = starredIds.includes(id);
+                strip.querySelector(".star-icon").className = isSt ? 'ri-star-fill star-icon active' : 'ri-star-line star-icon';
+
+                // 🌟 FIX 1: TWO-WAY SYNC (Update the right panel if it's currently open!)
+                const rightPanelStar = document.querySelector(`#panel-star-btn[data-id="${id}"] i`);
+                if (rightPanelStar) {
+                    rightPanelStar.className = isSt ? 'ri-star-fill' : 'ri-star-line';
+                    if (isSt) {
+                        rightPanelStar.style.transform = 'scale(1.2)';
+                        setTimeout(() => rightPanelStar.style.transform = 'scale(1)', 150);
+                    }
+                }
+
+                await fetch(`/api/progress/toggle-star/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } });
+                return;
+            }
+
+            // C. Close Panel Logic
+            if (strip.classList.contains("active-problem")) {
+                strip.classList.remove("active-problem");
+                rightPanel.classList.add("collapsed");
+                document.querySelector(".middle-panel").classList.add("expanded");
+
+                // 🌟 ENFORCE OG RULE: Hide the fold button entirely
+                document.getElementById('panel-fold-btn').style.display = 'none';
+
+                // 🌟 ENFORCE OG RULE: Force Analytics to snap back open if it was closed
+                const sPanel = document.getElementById('stats-panel');
+                const vDiv = document.getElementById('vertical-divider');
+                if (sPanel && sPanel.classList.contains('hidden')) {
+                    sPanel.classList.remove('hidden', 'collapsed');
+                    sPanel.classList.add('snap-back');
+                    sPanel.style.width = localStorage.getItem("finalist_analytics_width") || '320px';
+                    sPanel.style.opacity = '1';
+                    if (vDiv) vDiv.classList.remove('collapsed');
+                    localStorage.setItem("finalist_analytics_state", "visible");
+                }
+
+                localStorage.removeItem("finalist_active_problem");
+                return;
+            }
+
+            // D. Open Panel Logic
+            document.querySelectorAll(".problem-strip").forEach(s => s.classList.remove("active-problem"));
+            strip.classList.add("active-problem");
+            localStorage.setItem("finalist_active_problem", id);
+
+            rightPanel.classList.remove("collapsed");
+            document.querySelector(".middle-panel").classList.remove("expanded");
+
+            // 🌟 SHOW BUTTON: Workspace is active
+            document.getElementById('panel-fold-btn').style.display = 'flex';
+
+            const p = problemsData.find(pr => pr._id === id);
+            const isSt = starredIds.includes(id); // 🌟 THE MISSING VARIABLE THAT CRASHED THE PANEL!
+
+            let savedLang = localStorage.getItem(`finalist_lang_${p._id}`) || "javascript";
+            const langDisplayNames = { "javascript": "JavaScript", "python": "Python", "text/x-csrc": "C", "text/x-c++src": "C++", "text/x-java": "Java" };
+            let displayLang = langDisplayNames[savedLang];
+
+            // 1. Inject UI Shell (🌟 RESTORED: Complexity Analysis Box)
+            // 🌟 EXPAND THE WORKSPACE (HTML INJECTION)
+            rightPanel.innerHTML = `
+                <div class="workspace-content">
+                
+                    <div class="panel-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 24px; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;">
+                        <div class="panel-title" style="font-size: 24px; line-height: 1.3; font-weight: 800; color: #fff;">${p.title}</div>
+                        <div class="panel-actions" style="margin-top: 4px; flex-shrink: 0;">
+                            <div class="panel-difficulty ${p.difficulty.toLowerCase()}">${p.difficulty}</div>
+                            <div class="panel-star" id="panel-star-btn" data-id="${p._id}">
+                                <i class="${isSt ? 'ri-star-fill' : 'ri-star-line'}"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-nav">
+                        <button class="tab-btn active" data-target="tab-desc"><i class="ri-book-read-line"></i> Description</button>
+                        <button class="tab-btn" data-target="tab-notes"><i class="ri-code-box-line"></i> Code</button>
+                        <button class="tab-btn" data-target="tab-ai"><i class="ri-sparkling-fill"></i> AI Assistant</button>
+                    </div>
+                    
+
+                    <div class="tab-pane active" id="tab-desc">
+                        <div class="details-block">
+                            <p class="details-text">${p.description}</p>
+                        </div>
+                        
+                        <div class="details-block">
+                            <span class="section-label">Examples</span>
+                            ${(p.examples || []).map((ex, index) => `
+                                <div class="example-block">
+                                    <div class="example-title">Example ${index + 1}:</div>
+                                    <div class="example-box">
+                                        <div class="ex-row">
+                                            <span class="ex-label">Input:</span>
+                                            <span class="ex-value">${ex.input ? ex.input.trim() : ''}</span>
+                                        </div>
+                                        <div class="ex-row">
+                                            <span class="ex-label">Output:</span>
+                                            <span class="ex-value">${ex.output ? ex.output.trim() : ''}</span>
+                                        </div>
+                                        ${ex.explanation ? `
+                                        <div class="ex-row">
+                                            <span class="ex-label">Explanation:</span>
+                                            <span class="ex-value">${ex.explanation.trim()}</span>
+                                        </div>` : ''}
+                                    </div>
+                                </div>
+                            `).join("")}
+                        </div>
+                        
+                        <div class="details-block" style="margin-top: 25px; margin-bottom: 20px;">
+                            <span class="section-label">Complexity Analysis</span>
+                            <div class="complexity-grid">
+                                <div class="complexity-card">
+                                    <div class="comp-label">Time</div>
+                                    <div class="comp-value">${p.timeComplexity || 'O(n)'}</div>
+                                </div>
+                                <div class="complexity-card">
+                                    <div class="comp-label">Space</div>
+                                    <div class="comp-value">${p.spaceComplexity || 'O(1)'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-notes">
+                        <div class="ide-header">
+                            <div class="lang-pill" id="lang-dropdown-${p._id}">
+                                <div class="lang-pill-header">
+                                    <i class="ri-code-s-slash-line"></i>
+                                    <span class="lang-text" data-value="${savedLang}">${displayLang}</span> <i class="ri-arrow-down-s-line chevron-icon"></i>
+                                </div>
+                                <div class="lang-menu">
+                                    <div class="lang-item" data-value="javascript">JavaScript</div>
+                                    <div class="lang-item" data-value="python">Python</div>
+                                    <div class="lang-item" data-value="text/x-csrc">C</div>
+                                    <div class="lang-item" data-value="text/x-c++src">C++</div>
+                                    <div class="lang-item" data-value="text/x-java">Java</div>
+                                </div>
+                            </div>
+                        </div>
+                        <textarea id="cm-editor-${p._id}"></textarea>
+                    </div>
+
+                    <div class="tab-pane" id="tab-ai" style="position: relative;"> 
+                        <div class="ai-chat-box">
+                            <div class="ai-chat-header" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Tutor Chat</span>
+                                <i class="ri-delete-bin-7-line" id="clear-chat-btn" style="cursor: pointer; color: #f87171; font-size: 16px; transition: 0.2s;" title="Clear Memory"></i>
+                            </div>
+
+                            <div id="custom-confirm-popup" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(12, 14, 20, 0.85); backdrop-filter: blur(4px); z-index: 100; flex-direction: column; align-items: center; justify-content: center; border-radius: 0 0 12px 12px;">
+                                <div style="background: rgba(0,0,0,0.6); border: 1px solid rgba(248, 113, 113, 0.3); padding: 20px; border-radius: 12px; text-align: center; max-width: 80%; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                                    <i class="ri-error-warning-line" style="font-size: 32px; color: #f87171; margin-bottom: 10px;"></i>
+                                    <h3 style="color: #fff; margin-bottom: 8px; font-size: 16px;">Wipe AI Memory?</h3>
+                                    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">This conversation will be permanently deleted.</p>
+                                    <div style="display: flex; gap: 10px; justify-content: center;">
+                                        <button id="cancel-clear-btn" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: 0.2s;">Cancel</button>
+                                        <button id="confirm-clear-btn" style="background: #f87171; border: none; color: #121212; font-weight: bold; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: 0.2s;">Wipe It</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="ai-history">
+                                <i class="ri-robot-2-line" style="font-size: 36px; color: var(--accent); margin-bottom: 12px;"></i>
+                                <span style="font-size: 13px;">AI Context initialized for <strong>${p.title}</strong>.</span>
+                            </div>
+                            <div class="ai-input-wrapper">
+                                <input type="text" class="ai-input" placeholder="Ask for a hint or complexity check...">
+                                <button class="ai-send-btn"><i class="ri-send-plane-fill"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div> `;
+
+            // 2. Tab Switching Logic (🌟 THE SMART PERSISTENCE FIX)
+            if (e.isTrusted) {
+                localStorage.setItem("finalist_active_tab", "tab-desc");
+            }
+
+            const savedTab = localStorage.getItem("finalist_active_tab") || "tab-desc";
+
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+            const activeBtn = document.querySelector(`.tab-btn[data-target="${savedTab}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            const activePane = document.getElementById(savedTab);
+            if (activePane) activePane.classList.add('active');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(pa => pa.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.target).classList.add('active');
+                    localStorage.setItem("finalist_active_tab", btn.dataset.target);
+                    if (btn.dataset.target === 'tab-notes' && window.cmInstance) setTimeout(() => window.cmInstance.refresh(), 50);
+                });
+            });
+
+            // 3. Cloud Memory Fetch
+            let savedCode = null, chatMemory = [];
+            try {
+                const workspaceRes = await fetch(`/api/workspace/${p._id}`, { headers: { "Authorization": "Bearer " + token } });
+                if (workspaceRes.ok) {
+                    const data = await workspaceRes.json();
+                    savedCode = data.code || localStorage.getItem(`finalist_code_${p._id}`);
+                    chatMemory = (data.chat && data.chat.length > 0) ? data.chat : JSON.parse(localStorage.getItem(`finalist_ai_${p._id}`) || '[]');
+                }
+            } catch (err) {
+                savedCode = localStorage.getItem(`finalist_code_${p._id}`);
+                chatMemory = JSON.parse(localStorage.getItem(`finalist_ai_${p._id}`) || '[]');
+            }
+
+            // 4. Initialize CodeMirror IDE
+            const cmTextArea = document.getElementById(`cm-editor-${p._id}`);
+            const langDropdown = document.getElementById(`lang-dropdown-${p._id}`);
+            const langHeader = langDropdown.querySelector('.lang-pill-header');
+            const langText = langDropdown.querySelector('.lang-text');
+
+            const boilerplates = {
+                "javascript": `// Write logic for ${p.title}\nfunction solve() {\n    \n}`,
+                "python": `# Write logic for ${p.title}\ndef solve():\n    pass\n`,
+                "text/x-csrc": `// Write logic for ${p.title}\n#include <stdio.h>\nvoid solve() {\n    \n}\nint main() { solve(); return 0; }`,
+                "text/x-c++src": `// Write logic for ${p.title}\n#include <iostream>\nusing namespace std;\nvoid solve() {\n    \n}\nint main() { solve(); return 0; }`,
+                "text/x-java": `// Write logic for ${p.title}\nclass Solution {\n    public void solve() {\n        \n    }\n}`
+            };
+
+            let codeCache = {};
+            try { codeCache = JSON.parse(savedCode || '{}'); if (typeof codeCache !== 'object' || !codeCache) codeCache = { "javascript": savedCode }; }
+            catch (e) { codeCache = { "javascript": savedCode }; }
+
+            if (window.cmInstance) window.cmInstance.toTextArea();
+
+            window.cmInstance = CodeMirror.fromTextArea(cmTextArea, {
+                mode: savedLang,
+                theme: "dracula", lineNumbers: true, autoCloseBrackets: true, indentUnit: 4
+            });
+            window.cmInstance.setValue(codeCache[savedLang] || boilerplates[savedLang] || boilerplates["javascript"]);
+            window.cmInstance.clearHistory();
+
+            let saveTimeout;
+            window.cmInstance.on("change", () => {
+                const currentLang = langText.dataset.value;
+                codeCache[currentLang] = window.cmInstance.getValue();
+                const jsonCache = JSON.stringify(codeCache);
+                localStorage.setItem(`finalist_code_${p._id}`, jsonCache);
+
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(async () => {
+                    try { await fetch(`/api/workspace/code/${p._id}`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token }, body: JSON.stringify({ code: jsonCache }) }); } catch (e) { }
+                }, 1500);
+            });
+
+            // Language Menu Events
+            langHeader.onclick = (e) => { e.stopPropagation(); langDropdown.classList.toggle('active'); };
+            langDropdown.querySelectorAll('.lang-item').forEach(item => {
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    const newLang = item.dataset.value;
+                    langText.textContent = item.textContent;
+                    langText.dataset.value = newLang;
+                    langDropdown.classList.remove('active');
+                    localStorage.setItem(`finalist_lang_${p._id}`, newLang);
+                    window.cmInstance.setOption("mode", newLang);
+                    window.cmInstance.setValue(codeCache[newLang] || boilerplates[newLang]);
+                    window.cmInstance.clearHistory();
+                };
+            });
+            document.onclick = (e) => { if (!langDropdown.contains(e.target)) langDropdown.classList.remove('active'); };
+
+            // 5. Initialize AI Assistant
+            const aiHistoryBox = rightPanel.querySelector('.ai-history');
+            const aiInput = rightPanel.querySelector('.ai-input');
+            const aiSendBtn = rightPanel.querySelector('.ai-send-btn');
+            const customPopup = rightPanel.querySelector('#custom-confirm-popup');
+
+            function renderChat() {
+                if (chatMemory.length === 0) {
+                    aiHistoryBox.classList.remove('has-chat');
+                    aiHistoryBox.innerHTML = `<div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.6;"><i class="ri-robot-2-line" style="font-size: 36px; color: var(--accent); margin-bottom: 12px;"></i><span style="font-size: 13px;">AI Context initialized for <strong>${p.title}</strong>.</span></div>`;
+                    return;
+                }
+                aiHistoryBox.classList.add('has-chat');
+                aiHistoryBox.innerHTML = chatMemory.map(msg => `<div class="chat-msg ${msg.role}"><div class="chat-bubble">${msg.role === 'bot' ? marked.parse(msg.content) : msg.content}</div></div>`).join('');
+
+                // 🌟 THE FIX: Manually command highlight.js to paint every code block!
+                aiHistoryBox.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+
+                aiHistoryBox.scrollTop = aiHistoryBox.scrollHeight;
+            }
+            renderChat();
+
+            async function handleAiSend() {
+                const text = aiInput.value.trim(); if (!text) return;
+                aiInput.disabled = true; aiSendBtn.disabled = true; aiSendBtn.style.opacity = "0.5"; aiSendBtn.style.cursor = "wait";
+
+                chatMemory.push({ role: 'user', content: text }); aiInput.value = ''; renderChat();
+                const thinkingId = Date.now();
+                chatMemory.push({ role: 'bot', content: '<i class="ri-loader-4-line ri-spin"></i> Finalist AI is thinking...', id: thinkingId }); renderChat();
+
+                try {
+                    const aiRes = await fetch('/api/ai/ask', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({ message: text, code: window.cmInstance.getValue(), problemTitle: p.title, chatHistory: chatMemory.filter(msg => msg.id !== thinkingId && msg.role !== 'bot' || (msg.role === 'bot' && !msg.content.includes('ri-spin'))).slice(0, -1) })
+                    });
+                    const aiData = await aiRes.json();
+
+                    // Remove the spinning loader
+                    chatMemory = chatMemory.filter(msg => msg.id !== thinkingId);
+
+                    const fullReply = aiData.reply || aiData.error || "I encountered an error analyzing that.";
+                    const newBotMsgId = Date.now();
+                    chatMemory.push({ role: 'bot', content: "", id: newBotMsgId });
+
+                    // Render once to create the empty bubble in the DOM
+                    renderChat();
+
+                    // 🌟 THE FIX: Grab ONLY the new bubble so we don't re-render the whole chat!
+                    const chatNodes = aiHistoryBox.querySelectorAll('.chat-msg.bot .chat-bubble');
+                    const currentBubble = chatNodes[chatNodes.length - 1];
+
+                    // 🌟 THE HIGH-PERFORMANCE TYPING ENGINE
+                    let charIndex = 0;
+                    const typeInterval = setInterval(() => {
+                        charIndex += 2; // Type 2 chars per frame
+                        if (charIndex >= fullReply.length) {
+                            clearInterval(typeInterval);
+                            chatMemory[chatMemory.length - 1].content = fullReply;
+                            currentBubble.innerHTML = marked.parse(fullReply); // Final render
+
+                            // 🌟 THE FIX: Paint the new AI response after it finishes typing!
+                            currentBubble.querySelectorAll('pre code').forEach((block) => {
+                                hljs.highlightElement(block);
+                            });
+
+                            aiHistoryBox.scrollTop = aiHistoryBox.scrollHeight;
+
+                            // Save and re-enable inputs
+                            localStorage.setItem(`finalist_ai_${p._id}`, JSON.stringify(chatMemory));
+                            fetch(`/api/workspace/chat/${p._id}`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token }, body: JSON.stringify({ chat: chatMemory }) }).catch(e => { });
+
+                            aiInput.disabled = false; aiSendBtn.disabled = false; aiSendBtn.style.opacity = "1"; aiSendBtn.style.cursor = "pointer"; aiInput.focus();
+                        } else {
+                            // Update ONLY this specific bubble, and add a terminal cursor
+                            const partialText = fullReply.substring(0, charIndex);
+                            currentBubble.innerHTML = marked.parse(partialText) + "<span style='opacity: 0.7;'>▌</span>";
+                            aiHistoryBox.scrollTop = aiHistoryBox.scrollHeight; // Auto-scroll as it types
+                        }
+                    }, 20); // 20ms per frame is silky smooth
+
+                } catch (e) {
+                    chatMemory = chatMemory.filter(msg => msg.id !== thinkingId);
+                    chatMemory.push({ role: 'bot', content: "Connection to AI core lost." });
+                    renderChat();
+                    aiInput.disabled = false; aiSendBtn.disabled = false; aiSendBtn.style.opacity = "1"; aiSendBtn.style.cursor = "pointer"; aiInput.focus();
+                }
+                // NO finally block here, and NO saving outside the interval!
+            }
+
+            aiSendBtn.addEventListener('click', handleAiSend);
+            aiInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleAiSend(); } });
+
+            rightPanel.querySelector('#clear-chat-btn').addEventListener('click', () => customPopup.style.display = "flex");
+            rightPanel.querySelector('#cancel-clear-btn').addEventListener('click', () => customPopup.style.display = "none");
+            rightPanel.querySelector('#confirm-clear-btn').addEventListener('click', async () => {
+                customPopup.style.display = "none"; chatMemory = []; localStorage.removeItem(`finalist_ai_${p._id}`); renderChat();
+                try { await fetch(`/api/workspace/chat/${p._id}`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token }, body: JSON.stringify({ chat: [] }) }); } catch (e) { }
+            });
+        });
+
+        // 🌟 FIX 2: Right Panel Star Toggle (Event Delegation)
+        rightPanel.addEventListener("click", async (e) => {
+            const starBtn = e.target.closest("#panel-star-btn");
+            if (!starBtn) return;
+
+            const id = starBtn.dataset.id;
+            const token = localStorage.getItem("token");
+            const icon = starBtn.querySelector("i");
+
+            // Toggle Local Array (Right Panel Click)
+            if (starredIds.includes(id)) {
+                starredIds = starredIds.filter(i => i !== id);
+                icon.className = 'ri-star-line';
+                // 🌟 FIX 2: Strip inline styles to let CSS take over
+                icon.style.color = '';
+                icon.style.textShadow = '';
+            } else {
+                starredIds.push(id);
+                icon.className = 'ri-star-fill';
+                // Just trigger the pop animation, CSS handles the blue glow!
+                icon.style.transform = 'scale(1.2)';
+                setTimeout(() => icon.style.transform = 'scale(1)', 150);
+            }
+
+            // Sync the star on the middle panel list instantly
+            const listStar = document.querySelector(`.problem-strip[data-id="${id}"] .star-icon`);
+            if (listStar) {
+                listStar.className = starredIds.includes(id) ? 'ri-star-fill star-icon active' : 'ri-star-line star-icon';
+            }
+
+            // Sync with backend
+            try {
+                await fetch(`/api/progress/toggle-star/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } });
+            } catch (err) { console.error("Star Sync Error:", err); }
+        });
+
+        // Initialize App
+        loadProblems();
+
+        /* =========================================================
+           7. ANALYTICS RENDER ENGINE
+        ========================================================= */
+        function renderAnalytics(data) {
+            if (data.streak) {
+                document.getElementById('streak-count-val').textContent = data.streak.current;
+                document.getElementById('max-streak-val').textContent = `${data.streak.max} Days`;
+
+                // 🌟 SYNC TIME SPENT: Keep the highest value so backend resets don't wipe your local time
+                const backendMs = (data.streak.timeSpentHrs || 0) * 3600000;
+                let localMs = parseInt(localStorage.getItem('finalist_cumulative_time')) || 0;
+                let trueCumulative = Math.max(backendMs, localMs);
+                localStorage.setItem('finalist_cumulative_time', trueCumulative);
+
+                document.getElementById('time-spent-val').textContent = `${Math.floor(trueCumulative / 3600000)} hrs`;
+            }
+            if (data.heatmap) {
+                const today = new Date();
+                const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() + (today.getDay() === 0 ? -6 : 1 - today.getDay()));
+
+                // 🌟 FRONTEND TIMEZONE HELPER: Matches the backend logic perfectly
+                const getLocalStr = (d) => new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+                let weekHtml = '';
+                for (let i = 0; i < 7; i++) {
+                    const currentDay = new Date(startOfWeek); currentDay.setDate(startOfWeek.getDate() + i);
+
+                    // 🌟 USE LOCAL STRING INSTEAD OF UTC
+                    const isActive = data.heatmap.some(d => d.date === getLocalStr(currentDay) && d.count > 0);
+
+                    weekHtml += `<div class="day-tracker"><div class="day-circle ${isActive ? 'active' : ''}"><i class="ri-check-line"></i></div><span class="day-name ${currentDay.toDateString() === today.toDateString() ? 'today' : ''}">${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]}</span></div>`;
+                }
+                document.getElementById('streak-week-container').innerHTML = weekHtml;
+
+                const heatContainer = document.getElementById("activity-heatmap");
+                heatContainer.innerHTML = "";
+                data.heatmap.forEach(day => {
+                    const square = document.createElement("div"); square.className = `heatmap-square heat-${day.level}`;
+
+                    // 🌟 RESTORED: "X problems solved on Date"
+                    const dateObj = new Date(day.date);
+                    const dateString = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    // 🌟 USE A DATA ATTRIBUTE INSTEAD OF THE RAW TITLE
+                    square.setAttribute('data-tooltip', day.count === 0 ? `No activity on ${dateString}` : `${day.count} problems solved on ${dateString}`);
+
+                    heatContainer.appendChild(square);
+                });
+            }
+            if (data.topics && document.getElementById("topic-bubbles")) {
+                const bc = document.getElementById("topic-bubbles");
+
+                // 🌟 ONLY SHOW TOPICS WITH AT LEAST 1 SOLVED PROBLEM
+                const activeTopics = data.topics.filter(t => t.solved > 0);
+
+                if (activeTopics.length === 0) {
+                    bc.innerHTML = "<div class='empty-placeholder' style='color: var(--text-muted); font-size: 13px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; line-height: 1.6;'>Solve problems to unlock<br>your Topic Cluster!</div>";
+                } else {
+                    const placeholder = bc.querySelector('.empty-placeholder'); if (placeholder) placeholder.remove();
+
+                    const maxTotal = Math.max(...activeTopics.map(t => t.total));
+                    let bubblesData = activeTopics.map(topic => {
+                        const scaleFactor = topic.total / maxTotal;
+                        const size = 40 + (scaleFactor * 50);
+                        return { ...topic, size: size, r: size / 2, x: 0, y: 0 };
+                    });
+
+                    bubblesData.sort((a, b) => b.r - a.r);
+
+                    const placed = [];
+                    const padding = 1;
+
+                    bubblesData.forEach(b => {
+                        let angle = 0, radius = 0, isPlaced = false;
+                        while (!isPlaced) {
+                            b.x = Math.cos(angle) * radius; b.y = Math.sin(angle) * radius;
+                            let collision = false;
+                            for (let p of placed) {
+                                const dx = b.x - p.x, dy = b.y - p.y, dist = Math.sqrt(dx * dx + dy * dy);
+                                if (dist < b.r + p.r + padding) { collision = true; break; }
+                            }
+                            if (!collision) { isPlaced = true; placed.push(b); }
+                            else { angle += 0.2; radius += 0.1; }
+                        }
+                    });
+
+                    let minX = 0, maxX = 0, minY = 0, maxY = 0;
+                    placed.forEach(p => {
+                        minX = Math.min(minX, p.x - p.r); maxX = Math.max(maxX, p.x + p.r);
+                        minY = Math.min(minY, p.y - p.r); maxY = Math.max(maxY, p.y + p.r);
+                    });
+
+                    const clusterW = maxX - minX, clusterH = maxY - minY;
+                    const boxW = bc.clientWidth || 280, boxH = bc.clientHeight || 250;
+                    const scale = Math.min(1, (boxW - 20) / clusterW, (boxH - 20) / clusterH);
+
+                    const existingBubbles = Array.from(bc.querySelectorAll('.topic-bubble'));
+                    const seenTopics = new Set();
+
+                    placed.forEach(p => {
+                        seenTopics.add(p.name);
+                        const finalX = (p.x - minX) * scale + (boxW - clusterW * scale) / 2;
+                        const finalY = (p.y - minY) * scale + (boxH - clusterH * scale) / 2;
+                        const finalSize = p.size * scale;
+
+                        const pct = p.total === 0 ? 0 : Math.round((p.solved / p.total) * 100);
+                        const tooltipText = `${p.name}: ${p.solved} / ${p.total} Solved`;
+
+                        let bubble = bc.querySelector(`.topic-bubble[data-topic="${p.name}"]`);
+
+                        if (!bubble) {
+                            bubble = document.createElement("div");
+                            bubble.className = "topic-bubble";
+                            bubble.dataset.topic = p.name;
+                            bubble.innerHTML = `
+                                <div class="bubble-mask">
+                                    <div class="wave" style="--fill-pct: 0%; opacity: 0;"></div>
+                                </div>
+                                <div class="bubble-content">
+                                    <span class="bubble-name"></span>
+                                </div>
+                            `;
+                            // Start small to animate in
+                            bubble.style.left = `${finalX}px`; bubble.style.top = `${finalY}px`;
+                            bubble.style.width = `0px`; bubble.style.height = `0px`;
+                            bc.appendChild(bubble);
+                            bubble.offsetHeight;
+                            bubble.style.transition = 'left 0.8s cubic-bezier(0.16, 1, 0.3, 1), top 0.8s cubic-bezier(0.16, 1, 0.3, 1), width 0.5s cubic-bezier(0.16, 1, 0.3, 1), height 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s';
+
+                            // 🌟 NEW: CLICK TO FILTER
+                            bubble.onclick = (e) => {
+                                e.stopPropagation();
+                                if (!selectedTags.includes(p.name)) {
+                                    selectedTags.push(p.name);
+                                    localStorage.setItem("finalist_tags", JSON.stringify(selectedTags));
+
+                                    // Trigger the UI updates
+                                    document.getElementById("topic-search").value = "";
+                                    if (typeof renderTopicMenu === 'function') renderTopicMenu();
+                                    if (typeof applyFilters === 'function') applyFilters();
+                                }
+                            };
+                        }
+
+                        bubble.setAttribute('data-tooltip', tooltipText);
+                        bubble.style.left = `${finalX}px`; bubble.style.top = `${finalY}px`;
+                        bubble.style.width = `${finalSize}px`; bubble.style.height = `${finalSize}px`;
+
+                        const nameSpan = bubble.querySelector('.bubble-name');
+                        nameSpan.textContent = p.name;
+                        nameSpan.style.fontSize = finalSize > 70 ? '11px' : (finalSize > 45 ? '9px' : '7.5px');
+                        nameSpan.style.opacity = finalSize < 25 ? '0' : '1';
+
+                        const wave = bubble.querySelector('.wave');
+                        if (wave) {
+                            wave.style.setProperty('--fill-pct', `${pct}%`);
+                            wave.style.opacity = pct === 0 ? "0" : "1";
+                        }
+                    });
+
+                    // 🌟 UNMOUNT ANIMATION: If a category drops to 0, shrink and remove it
+                    existingBubbles.forEach(b => {
+                        if (!seenTopics.has(b.dataset.topic)) {
+                            b.style.width = "0px";
+                            b.style.height = "0px";
+                            b.style.opacity = "0";
+                            setTimeout(() => b.remove(), 400); // Wait for transition to finish
+                        }
+                    });
+                }
+            }
+        }
+
+        /* =========================================================
+           8. DRAGGABLE & FOLDABLE ANALYTICS PANEL
+        ========================================================= */
+        const divider = document.getElementById('vertical-divider');
+        const statsPanel = document.getElementById('stats-panel');
+        const foldBtn = document.getElementById('panel-fold-btn');
+        let isDragging = false, startX, startWidth;
+
+        // Drag Logic
+        divider.addEventListener('mousedown', (e) => {
+            if (e.target === foldBtn || foldBtn.contains(e.target)) return; // Ignore button clicks
+            isDragging = true; startX = e.clientX; startWidth = statsPanel.getBoundingClientRect().width;
+            divider.classList.add('dragging'); statsPanel.classList.remove('snap-back');
+            document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            let rawWidth = Math.min(500, startWidth - (e.clientX - startX));
+            if (document.getElementById('right-panel').classList.contains('collapsed')) {
+                statsPanel.style.width = `${Math.max(320, rawWidth)}px`; statsPanel.style.opacity = '1';
+            } else {
+                if (rawWidth >= 320) { statsPanel.style.width = `${rawWidth}px`; statsPanel.style.opacity = '1'; }
+                else if (rawWidth > 270) { statsPanel.style.width = `${320 - ((320 - rawWidth) * 0.4)}px`; statsPanel.style.opacity = (rawWidth - 270) / 50; }
+                else collapseAnalytics();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false; divider.classList.remove('dragging');
+                document.body.style.cursor = 'default'; document.body.style.userSelect = 'auto';
+                localStorage.setItem("finalist_analytics_width", statsPanel.style.width);
+                if (!statsPanel.classList.contains('hidden') && parseFloat(statsPanel.style.width) < 320) {
+                    statsPanel.classList.add('snap-back'); statsPanel.style.width = '320px'; statsPanel.style.opacity = '1';
+                }
+            }
+        });
+
+        function collapseAnalytics() {
+            isDragging = false;
+            statsPanel.classList.add('hidden');
+            divider.classList.add('collapsed');
+            divider.classList.remove('dragging');
+            document.body.style.cursor = 'default'; document.body.style.userSelect = 'auto';
+            foldBtn.setAttribute('data-tooltip', 'Unfold'); // 🌟 UPDATE TOOLTIP
+            localStorage.setItem("finalist_analytics_state", "hidden");
+        }
+
+        // Fold/Unfold Button Logic
+        foldBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (statsPanel.classList.contains('hidden')) {
+                statsPanel.classList.remove('hidden');
+                statsPanel.classList.add('snap-back');
+                statsPanel.style.width = localStorage.getItem("finalist_analytics_width") || '320px';
+                statsPanel.style.opacity = '1';
+                divider.classList.remove('collapsed');
+                foldBtn.setAttribute('data-tooltip', 'Fold'); // 🌟 UPDATE TOOLTIP
+                localStorage.setItem("finalist_analytics_state", "visible");
+            } else {
+                collapseAnalytics();
+            }
+        });
+        /* =========================================================
+           99. GLOBAL SMART TOOLTIP ENGINE (Boundary Physics)
+        ========================================================= */
+        const globalTooltip = document.createElement('div');
+        globalTooltip.className = 'global-tooltip';
+        document.body.appendChild(globalTooltip);
+
+        document.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target) {
+                globalTooltip.textContent = target.getAttribute('data-tooltip');
+                globalTooltip.classList.add('active');
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!globalTooltip.classList.contains('active')) return;
+
+            let x = e.clientX;
+            let y = e.clientY - 15; // Hover 15px above the cursor
+
+            const rect = globalTooltip.getBoundingClientRect();
+
+            // 🌟 BOUNDARY PHYSICS: Prevent right-edge screen clipping (SS 2 & 3 Fix)
+            if (x + (rect.width / 2) > window.innerWidth - 15) {
+                x = window.innerWidth - (rect.width / 2) - 15;
+            }
+
+            // 🌟 BOUNDARY PHYSICS: Prevent left-edge screen clipping
+            if (x - (rect.width / 2) < 15) {
+                x = (rect.width / 2) + 15;
+            }
+
+            // 🌟 BOUNDARY PHYSICS: Prevent top-edge screen clipping
+            if (y - rect.height < 10) {
+                y = e.clientY + 25; // Flip it below the cursor if too high
+                globalTooltip.style.transform = `translate(-50%, 0)`;
+            } else {
+                globalTooltip.style.transform = `translate(-50%, -100%)`; // Normal top hover
+            }
+
+            globalTooltip.style.left = `${x}px`;
+            globalTooltip.style.top = `${y}px`;
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target) {
+                globalTooltip.classList.remove('active');
+            }
+        });
+    </script>
 </body>
 
 </html>

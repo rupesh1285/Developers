@@ -1,0 +1,2639 @@
+/* =========================================================
+   FINALIST DASHBOARD STYLESHEET (V2)
+   1. ROOT VARIABLES & RESET
+========================================================= */
+:root {
+  --bg-main: #0a0a0a;
+  --bg-surface: #1E1E1E;
+  --border-color: #2A2A2A;
+  --accent: #6ea0ea;
+  --text-primary: #FFFFFF;
+  --text-muted: #9CA3AF;
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-main);
+
+  /* 🌟 THE GRID UPGRADE: Icy Blue lines + Intense Mouse Glow */
+  background-image:
+    radial-gradient(1000px circle at var(--mouse-x) var(--mouse-y), rgba(59, 130, 246, 0.15), transparent 50%),
+    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+  background-position: 0 0, 0 0, 0 0;
+
+  color: var(--text-primary);
+  height: 100vh;
+  overflow: hidden;
+}
+
+.bg-glow {
+  display: none;
+}
+
+/* =========================================================
+   2. GLOBAL ANIMATIONS
+========================================================= */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+  }
+
+  80% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes tabFadeSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes butterFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+    filter: blur(3px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes firePulse {
+  0% {
+    transform: scale(0.95);
+    filter: drop-shadow(0 0 8px rgba(244, 63, 94, 0.3));
+  }
+
+  100% {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 25px rgba(244, 63, 94, 0.8));
+  }
+}
+
+@keyframes pulseCore {
+  0% {
+    filter: brightness(1);
+  }
+
+  100% {
+    filter: brightness(1.3);
+  }
+}
+
+/* =========================================================
+   3. NAVBAR, TIMER, & PROFILE DROPDOWN
+========================================================= */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 15px;
+}
+
+.logo-placeholder {
+  height: 50px;
+  width: 160px;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px dashed #f87171;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+/* Timer Widget */
+.nav-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 8px;
+  background: rgba(8, 10, 15, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(110, 160, 234, 0.25);
+  border-top: 1px solid rgba(110, 160, 234, 0.5);
+  border-radius: 50px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 15px rgba(110, 160, 234, 0.2);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.nav-timer:hover {
+  background: rgba(12, 14, 20, 0.95);
+  border-color: rgba(110, 160, 234, 0.6);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 25px rgba(110, 160, 234, 0.4);
+}
+
+.timer-display {
+  font-family: 'Fira Code', monospace;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #e0f2fe;
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+  min-width: 85px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.timer-btn#watch-toggle {
+  background: linear-gradient(135deg, #6ea0ea 0%, #3b82f6 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+}
+
+.timer-btn#watch-toggle:hover {
+  transform: scale(1.1);
+  filter: brightness(1.1);
+}
+
+.timer-btn.reset {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.timer-btn.reset:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.15);
+  transform: rotate(-180deg) scale(1.1);
+}
+
+/* Profile Pill */
+
+#profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+  background: linear-gradient(145deg, rgba(16, 18, 26, 0.8) 0%, rgba(10, 10, 15, 0.9) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50px;
+  cursor: pointer;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
+#profile-btn:hover,
+#profile-btn.active {
+  background: rgba(16, 18, 26, 0.95);
+  border-color: rgba(110, 160, 234, 0.5);
+  /* Icy blue border on hover */
+  box-shadow: 0 0 15px rgba(110, 160, 234, 0.2);
+  transform: translateY(-1px);
+}
+
+.profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1e3a8a 0%, #0a0a0a 100%);
+  /* Deep blue base */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #fff;
+  /* 🌟 THE ACCENT RING */
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4), inset 0 0 8px rgba(59, 130, 246, 0.5);
+  transition: all 0.3s ease;
+}
+
+#nav-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  /* Ensures the image doesn't overlap the glowing border */
+  border: 1px solid transparent;
+}
+
+#profile-btn:hover .profile-avatar,
+#profile-btn.active .profile-avatar {
+  border-color: #6ea0ea;
+  box-shadow: 0 0 15px rgba(110, 160, 234, 0.8), inset 0 0 10px rgba(110, 160, 234, 0.6);
+}
+
+.profile-name {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.chevron {
+  color: var(--text-muted);
+  transition: transform 0.3s ease;
+}
+
+#profile-btn.active .chevron {
+  transform: rotate(180deg);
+}
+
+/* Profile Menu */
+#profile-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 240px;
+  background: rgba(12, 14, 20, 0.85);
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(110, 160, 234, 0.1);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-15px) scale(0.95);
+  transition: all 0.3s ease;
+  z-index: 100;
+  transform-origin: top right;
+}
+
+#profile-menu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.profile-info {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.profile-info strong {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.profile-info span {
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.menu-item.danger {
+  margin-top: 4px;
+  /* Adds a tiny bit of breathing room from the profile info */
+  border: 1px solid transparent;
+  /* Preps the border for the hover state */
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.menu-item.danger:hover {
+  background: rgba(248, 113, 113, 0.08);
+  /* Soft red tinted glass */
+  border-color: rgba(248, 113, 113, 0.3);
+  /* Sharp red border reveals itself */
+  color: #f87171;
+  box-shadow: 0 4px 12px rgba(248, 113, 113, 0.15);
+  /* Soft red ambient glow */
+  transform: translateY(-1px);
+  /* Tactile lift */
+}
+
+.menu-item.danger i {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.menu-item.danger:hover i {
+  transform: translateX(4px);
+  /* The arrow slides satisfyingly toward the door */
+}
+
+/* =========================================================
+   4. GLOBAL LAYOUT (Dashboard Flex)
+========================================================= */
+.dashboard {
+  display: flex;
+  height: calc(100vh - 90px);
+  padding: 0 10px 10px;
+  gap: 8px;
+  position: relative;
+}
+
+/* App Drawers */
+.app-drawer {
+  position: absolute;
+  top: 10px;
+  left: 110px;
+  width: 380px;
+  height: calc(100% - 20px);
+  background: #161616;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  box-shadow: 20px 0 50px rgba(0, 0, 0, 0.6);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-130%);
+  opacity: 0;
+  transition: transform 0.5s ease, opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.app-drawer.open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.drawer-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.drawer-title {
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+}
+
+.close-drawer {
+  cursor: pointer;
+  font-size: 22px;
+  color: var(--text-muted);
+  transition: 0.2s;
+}
+
+.close-drawer:hover {
+  color: #fff;
+}
+
+.drawer-footer {
+  padding: 12px 20px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.2);
+  text-align: right;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.notepad-area {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 25px;
+  color: #e5e7eb;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.7;
+  resize: none;
+  outline: none;
+}
+
+/* =========================================================
+   5. MIDDLE PANEL (Progress, Filters, Problem List)
+========================================================= */
+.middle-panel {
+  flex: 1.2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  transition: flex 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: flex;
+}
+
+.middle-panel.expanded {
+  flex: 2.6;
+}
+
+/* Progress Section */
+.progress-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  /* Way less wasted vertical space */
+  overflow: hidden;
+}
+
+.circular-progress {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle-svg {
+  transform: rotate(-90deg);
+}
+
+.circle-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 8;
+}
+
+.circle-progress {
+  fill: none;
+  stroke: url(#neonGradient);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 314;
+  stroke-dashoffset: 314;
+  transition: stroke-dashoffset 1.2s ease;
+  filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.6));
+}
+
+.circle-text {
+  position: absolute;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+#total-solved-count {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.total-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.progress-right {
+  width: 55%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progress-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 50px;
+  align-items: center;
+  gap: 12px;
+}
+
+.bar-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 20px;
+  transition: width 0.8s ease;
+}
+
+.basic-bar {
+  background: #94a3b8;
+}
+
+.easy-bar {
+  background: #2dd4bf;
+}
+
+.medium-bar {
+  background: #fbbf24;
+}
+
+.hard-bar {
+  background: #f87171;
+}
+
+.bar-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.bar-stat {
+  font-size: 12px;
+  color: #fff;
+  font-family: monospace;
+  opacity: 0.8;
+  text-align: right;
+}
+
+.divider {
+  height: 1px;
+  margin: 16px 0;
+  background: linear-gradient(to right, transparent, rgba(110, 160, 234, 0.5), transparent);
+  box-shadow: 0 0 10px rgba(110, 160, 234, 0.2);
+}
+
+/* Filters Section */
+.filters-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 0 5px;
+  gap: 20px;
+  position: relative;
+  z-index: 50;
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 450px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  background: rgba(16, 18, 26, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0 14px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.search-wrapper:focus-within {
+  border-color: #6ea0ea;
+  background: rgba(16, 18, 26, 0.9);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(110, 160, 234, 0.15), 0 0 15px rgba(110, 160, 234, 0.2);
+}
+
+.search-icon {
+  font-size: 18px;
+  color: var(--text-muted);
+  margin-right: 12px;
+  transition: all 0.3s ease;
+}
+
+.search-wrapper:focus-within .search-icon {
+  color: #6ea0ea;
+  filter: drop-shadow(0 0 5px rgba(110, 160, 234, 0.5));
+}
+
+#search-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+}
+
+#search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.filters-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-pill {
+  position: relative;
+  height: 40px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+
+
+  /* ... keep existing flex/padding properties ... */
+  background: rgba(16, 18, 26, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  /* Match the micro-radius */
+  box-shadow: none;
+
+}
+
+.filter-pill:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.filter-pill.active {
+  background: rgba(16, 18, 26, 0.95);
+  border-color: #d946ef;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(217, 70, 239, 0.15), 0 0 15px rgba(217, 70, 239, 0.2);
+}
+
+.filter-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.filter-pill:hover .filter-text,
+.filter-pill.active .filter-text {
+  color: #fff;
+}
+
+.chevron-icon {
+  font-size: 16px;
+  color: var(--text-muted);
+  transition: transform 0.3s;
+}
+
+.filter-pill.active .chevron-icon {
+  transform: rotate(180deg);
+  color: #d946ef;
+}
+
+/* Tag Filter (Dropdowns) */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  min-width: 160px;
+  background: rgba(12, 14, 20, 0.85);
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 8px;
+  z-index: 100;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(110, 160, 234, 0.1);
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-15px) scale(0.95);
+  transition: all 0.3s ease;
+  transform-origin: top left;
+  flex-direction: column;
+}
+
+.filter-pill.active .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.dropdown-item {
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  transform: translateX(4px);
+}
+
+/* Topic Filter Menus */
+.filter-pill-wrapper {
+  position: relative;
+}
+
+.icon-btn.filter-trigger {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 18, 26, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.icon-btn.filter-trigger:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.icon-btn.active-filter {
+  background: rgba(16, 18, 26, 0.95);
+  color: #d946ef;
+  border-color: #d946ef;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(217, 70, 239, 0.15), 0 0 15px rgba(217, 70, 239, 0.2);
+}
+
+.filter-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: linear-gradient(135deg, #d946ef 0%, #8b5cf6 100%);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  box-shadow: 0 0 10px rgba(217, 70, 239, 0.6);
+  border: 2px solid var(--bg-main);
+  animation: popIn 0.3s ease;
+}
+
+.topic-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 280px;
+  background: rgba(12, 14, 20, 0.85);
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(110, 160, 234, 0.1);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-15px) scale(0.95);
+  transition: all 0.3s ease;
+  transform-origin: top right;
+}
+
+.topic-menu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.topic-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topic-search-box {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+  gap: 8px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.topic-search-box input {
+  border: none;
+  background: transparent;
+  color: #fff;
+  outline: none;
+  width: 100%;
+  font-size: 13px;
+}
+
+.clear-all-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 4px 8px;
+}
+
+.clear-all-btn:hover {
+  color: #f87171;
+}
+
+.topics-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.topics-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.topics-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.topic-pill-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.topic-pill-item:hover {
+  border-color: rgba(110, 160, 234, 0.5);
+  background: rgba(110, 160, 234, 0.1);
+  color: #fff;
+}
+
+.topic-pill-item.selected {
+  background: rgba(217, 70, 239, 0.15);
+  border-color: #d946ef;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(217, 70, 239, 0.2);
+}
+
+.topic-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  width: 100%;
+}
+
+/* Problem List */
+.problems-panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 8px 0;
+}
+
+.problem-strip {
+  height: 42px;
+  margin: 2px 10px;
+  padding: 0 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 10px;
+  /* Razor-sharp 4px corners */
+  background: transparent;
+  /* Let the strip blend until hovered */
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.problem-strip:nth-child(odd) {
+  background: rgba(110, 160, 234, 0.06);
+  border-top: 1px solid rgba(110, 160, 234, 0.04);
+  border-bottom: 1px solid rgba(110, 160, 234, 0.04);
+}
+
+.problem-strip:nth-child(even) {
+  background: transparent;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+}
+
+.problem-strip:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.problem-strip.active-problem {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: translateX(4px);
+}
+
+.problem-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.problem-number {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.problem-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.problem-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.checkbox-icon {
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.star-icon {
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
+  color: var(--text-muted);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ri-star-fill,
+.star-icon.active,
+.panel-star i.ri-star-fill {
+  color: var(--accent) !important;
+  text-shadow: 0 0 15px rgba(110, 160, 234, 0.6) !important;
+}
+
+/* Difficulty Tags */
+.difficulty {
+  min-width: 80px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 6px;
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+  padding: 0 8px;
+  text-align: center;
+}
+
+.easy {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.medium {
+  background: rgba(250, 204, 21, 0.1);
+  color: #facc15;
+  border: 1px solid rgba(250, 204, 21, 0.25);
+}
+
+.hard {
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.25);
+}
+
+.basic {
+  background: rgba(96, 165, 250, 0.1);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.25);
+}
+
+/* =========================================================
+   6. RIGHT PANEL (Base Workspace)
+========================================================= */
+.right-panel {
+  flex: 1;
+  height: 100%;
+  padding: 15px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  /* 🌟 THE FIX: Ultra-smooth, decoupled transitions pushed to the GPU */
+  transition: flex 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.5s ease 0.1s,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateX(0);
+  opacity: 1;
+  will-change: flex, transform, opacity, padding;
+}
+
+.right-panel.collapsed {
+  flex: 0;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateX(40px);
+  /* Gives it a subtle sweeping exit */
+  /* 🌟 THE FIX: Fades out rapidly before it gets visually squished */
+  transition: flex 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.workspace-content {
+  animation: butterFadeIn 0.5s cubic-bezier(0.25, 1, 0.5, 1) 0.25s forwards;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-difficulty {
+  min-width: 60px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 6px;
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+  padding: 0 8px;
+}
+
+.panel-star {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.panel-star:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.panel-star.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--accent);
+  box-shadow: 0 0 10px rgba(110, 160, 234, 0.4);
+}
+
+.panel-star i {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.panel-star i.ri-star-fill {
+  color: #3b82f6 !important;
+  text-shadow: 0 0 12px rgba(59, 130, 246, 0.6) !important;
+}
+
+/* Description Formatting */
+.section-label {
+  display: inline-block;
+  font-size: 13px;
+  /* Dialed back slightly for elegance */
+  text-transform: uppercase;
+  font-weight: 800;
+  /* Removed the chunky 900 weight */
+  letter-spacing: 1.5px;
+  margin-bottom: 15px;
+
+  /* 🌟 THE CLEAN FIX: Hairline blue outline, white fill, soft glow */
+  color: #ffffff;
+  -webkit-text-stroke: 0.5px #3b82f6;
+  /* 0.5px makes it look sleek, not bolted! */
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+  /* Softened the glow */
+}
+
+.details-block {
+  margin-bottom: 35px;
+}
+
+.details-text {
+  color: #d1d5db;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.example-block {
+  margin-bottom: 18px;
+}
+
+.example-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.example-box {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+
+  padding: 12px 16px;
+}
+
+.ex-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.ex-label {
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.ex-value {
+  color: #e5e7eb;
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.complexity-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.complexity-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.comp-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+.comp-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  font-family: monospace;
+}
+
+/* =========================================================
+   7. WORKSPACE TABS (Clean Spaced UI)
+========================================================= */
+.tab-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 0;
+  padding: 0;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+}
+
+.tab-btn {
+  flex: 1;
+  justify-content: center;
+  padding: 12px 10px;
+
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+
+  margin-bottom: -1px;
+
+
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  /* Tight top corners */
+  transition: all 0.2s ease;
+
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+}
+
+.tab-btn.active {
+  background: #14161f;
+  color: #6ea0ea;
+  z-index: 15;
+  border-top: 2px solid #6ea0ea;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 13px;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+
+  padding: 20px;
+  position: relative;
+  z-index: 5;
+
+  animation: tabFadeSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  background: rgba(16, 18, 26, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  /* Tight bottom corners */
+  box-shadow: none;
+}
+
+#tab-notes.tab-pane,
+#tab-ai.tab-pane {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* =========================================================
+   8. IDE & CODE EDITOR
+========================================================= */
+.ide-header {
+  position: relative;
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 15px;
+  background: rgba(13, 17, 23, 0.8);
+  /* Deep rich premium background */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.lang-pill {
+  position: relative;
+}
+
+.lang-pill-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(110, 160, 234, 0.1);
+  border: 1px solid rgba(110, 160, 234, 0.25);
+  color: #e0f2fe;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.lang-pill-header:hover,
+.lang-pill.active .lang-pill-header {
+  color: #fff;
+  border-color: #6ea0ea;
+  background: rgba(110, 160, 234, 0.2);
+  box-shadow: 0 0 12px rgba(110, 160, 234, 0.3);
+}
+
+.lang-pill .chevron-icon {
+  transition: transform 0.3s ease;
+}
+
+.lang-pill.active .chevron-icon {
+  transform: rotate(180deg);
+  color: #6ea0ea;
+}
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 140px;
+  background: rgba(12, 14, 20, 0.95);
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(110, 160, 234, 0.2);
+  border-radius: 14px;
+  padding: 6px;
+  z-index: 100;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(110, 160, 234, 0.15);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px) scale(0.95);
+  transition: all 0.3s ease;
+  transform-origin: top right;
+}
+
+.lang-pill.active .lang-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.lang-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.lang-item:hover {
+  background: rgba(110, 160, 234, 0.15);
+  color: #fff;
+  transform: translateX(4px);
+}
+
+/* 🌟 THE FIX: Specifically targeting the Dracula theme to override its native background */
+.cm-s-dracula.CodeMirror,
+.cm-s-dracula .CodeMirror-gutters {
+  background-color: #0d1117 !important;
+  /* GitHub/VSCode Deep Dark */
+  border: none !important;
+}
+
+.CodeMirror {
+  flex: 1;
+  height: 100% !important;
+  border-radius: 0 0 12px 12px !important;
+  font-family: 'Fira Code', monospace !important;
+  font-size: 14.5px;
+  padding: 15px 0;
+  /* Adds that deep inset IDE feel */
+  box-shadow: inset 0 6px 18px rgba(0, 0, 0, 0.4) !important;
+}
+
+.CodeMirror-gutters {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.CodeMirror-focused {
+  box-shadow: none !important;
+}
+
+.CodeMirror-vscrollbar,
+.CodeMirror-hscrollbar {
+  outline: none;
+}
+
+.CodeMirror-scrollbar-filler,
+.CodeMirror-gutter-filler {
+  background: transparent !important;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar,
+.CodeMirror-hscrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb,
+.CodeMirror-hscrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* =========================================================
+   9. AI CHAT INTERFACE
+========================================================= */
+.ai-chat-box {
+  flex: 1;
+  min-height: 0;
+  /* 🌟 THE FIX: Stops infinite stretching */
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: transparent;
+  border-radius: 0 0 12px 12px;
+}
+
+.ai-history {
+  flex: 1;
+  min-height: 0;
+  /* 🌟 THE FIX: Forces the scrollbar to trigger */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding-right: 10px;
+  scrollbar-width: none;
+  opacity: 0.6;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-history.has-chat {
+  align-items: flex-start;
+  justify-content: flex-start;
+  opacity: 1;
+}
+
+.chat-msg {
+  display: flex;
+  max-width: 85%;
+  animation: bubblePop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.chat-msg.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.chat-msg.bot {
+  align-self: flex-start;
+}
+
+.chat-bubble {
+  padding: 12px 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  font-family: 'Inter', sans-serif;
+}
+
+.chat-msg.user .chat-bubble {
+  background: rgba(110, 160, 234, 0.15);
+  border: 1px solid rgba(110, 160, 234, 0.3);
+  color: #e0f2fe;
+  border-radius: 16px 16px 4px 16px;
+  box-shadow: 0 4px 15px rgba(110, 160, 234, 0.1);
+}
+
+.chat-msg.bot .chat-bubble {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #d1d5db;
+  border-radius: 16px 16px 16px 4px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes bubblePop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* AI Chat Markdown Formatting */
+
+/* =========================================================
+   AI CHAT MARKDOWN & SYNTAX HIGHLIGHTING
+========================================================= */
+.chat-bubble pre {
+  background: #282a36 !important;
+  /* Forces the deep Dracula background */
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  overflow-x: auto;
+  margin: 12px 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.chat-bubble pre code {
+  background: transparent !important;
+  color: #f8f8f2 !important;
+  /* Dracula default text color */
+  font-family: 'Fira Code', monospace !important;
+  font-size: 13.5px;
+}
+
+/* 🌟 Inline code styling (e.g. `const x = 5`) */
+.chat-bubble :not(pre)>code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-family: 'Fira Code', monospace;
+  font-size: 12.5px;
+  color: #ff79c6;
+  /* Dracula Pink for inline popping */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.chat-bubble p {
+  margin-bottom: 10px;
+}
+
+.chat-bubble p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-bubble ul,
+.chat-bubble ol {
+  margin-left: 20px;
+  margin-bottom: 12px;
+}
+
+.chat-bubble li {
+  margin-bottom: 4px;
+}
+
+/* AI Input Area */
+.ai-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  padding: 4px 8px;
+
+  transition: all 0.3s ease;
+
+  background: rgba(0, 0, 0, 0.2);
+  /* Deep inset feel without heavy borders */
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  /* Unified micro-radius */
+  box-shadow: none;
+}
+
+.ai-input-wrapper:focus-within {
+  border-color: rgba(110, 160, 234, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(110, 160, 234, 0.15);
+}
+
+.ai-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  padding: 12px 10px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+}
+
+.ai-send-btn {
+  background: rgba(110, 160, 234, 0.15);
+  color: #6ea0ea;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+.ai-send-btn:hover {
+  background: #6ea0ea;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* =========================================================
+   10. ANALYTICS DRAGGER & PANEL
+========================================================= */
+.vertical-divider {
+  width: 6px;
+  height: 100%;
+  margin: 0;
+  background: rgba(10, 10, 15, 0.8);
+  /* Deep dark gutter */
+  border-left: 1px solid rgba(255, 255, 255, 0.04);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: col-resize;
+  z-index: 50;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+/* The Mechanical Grip Capsule */
+.vertical-divider::after {
+  content: '';
+  width: 2px;
+  height: 35px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vertical-divider:hover,
+.vertical-divider.dragging {
+  background: rgba(16, 18, 26, 0.95);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+.vertical-divider:hover::after,
+.vertical-divider.dragging::after {
+  background: #3b82f6;
+  /* Vivid Tech Blue */
+  height: 55px;
+  /* Handle stretches out smoothly */
+  width: 3px;
+  box-shadow: 0 0 10px #3b82f6, 0 0 20px rgba(59, 130, 246, 0.6);
+}
+
+.stats-panel {
+  width: 320px;
+  flex-shrink: 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* 🌟 THE FIX: Removed 'width' transition from the base state so JS dragging is instant and stutter-free! */
+  transition: opacity 0.3s ease, padding 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: width, opacity, padding;
+  overflow: visible;
+}
+
+.stats-panel.hidden {
+  width: 0 !important;
+  opacity: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  overflow: hidden;
+  /* Animates width only when hiding via button click */
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease, padding 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stats-panel.snap-back {
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease 0.1s;
+}
+
+.stat-card {
+  width: 100%;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+
+  background: rgba(255, 255, 255, 0.02);
+  /* Extremely subtle ghost background */
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  /* Hairline ghost border */
+  border-radius: 6px;
+  /* Professional Micro-Radius */
+  padding: 16px;
+  box-shadow: none;
+  /* Remove the chunky shadows inside the IDE */
+  transition: border-color 0.2s ease;
+}
+
+.stat-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.stat-small {
+  flex: 0.6;
+}
+
+.stat-medium {
+  flex: 1.0;
+}
+
+.stat-large {
+  flex: 1.8;
+}
+
+/* =========================================================
+   11. 7-DAY STREAK WIDGET
+========================================================= */
+.streak-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.streak-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.streak-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.streak-count {
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+}
+
+.streak-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.streak-icon {
+  font-size: 38px;
+  background: linear-gradient(135deg, #f43f5e 0%, #d946ef 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: firePulse 1.8s infinite alternate ease-in-out;
+}
+
+.streak-week {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  gap: 6px;
+  padding-right: 8px;
+}
+
+.day-tracker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.day-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: transparent;
+  transition: all 0.3s ease;
+}
+
+.day-circle.active {
+  background: linear-gradient(135deg, #f43f5e 0%, #d946ef 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
+}
+
+.day-name {
+  font-size: 10px;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.day-name.today {
+  color: #ffffff;
+  font-weight: 800;
+  transform: scale(1.1);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+}
+
+.streak-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  text-align: right;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 15px;
+  flex-shrink: 0;
+  min-width: 75px;
+}
+
+.stat-mini {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-mini-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+
+.stat-mini-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  font-family: 'Fira Code', monospace;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   12. ACTIVITY HEATMAP
+========================================================= */
+.heatmap-container {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  grid-auto-flow: column;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  overflow: visible !important;
+  /* 🌟 THE FIX: Prevents tooltips from getting clipped */
+  scrollbar-width: none;
+  align-content: center;
+}
+
+#activity-heatmap {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 4px;
+  width: 100%;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.heatmap-square {
+
+  position: relative;
+  /* 🌟 REQUIRED FOR TOOLTIP */
+  width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s ease;
+  cursor: crosshair;
+}
+
+
+
+.heat-0 {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.heat-1 {
+  background: rgba(168, 85, 247, 0.3);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.heat-2 {
+  background: rgba(168, 85, 247, 0.8);
+  border-color: #a855f7;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
+
+.heat-3 {
+  background: rgba(217, 70, 239, 1);
+  border-color: #f0abfc;
+  box-shadow: 0 0 12px rgba(217, 70, 239, 0.8);
+}
+
+.heat-4 {
+  background: #f43f5e;
+  border-color: #fff;
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.9), 0 0 5px rgba(255, 255, 255, 0.8);
+  animation: pulseCore 2s infinite alternate ease-in-out;
+}
+
+/* =========================================================
+   13. THE LEETCODE-CLONE TOPIC CLUSTER
+========================================================= */
+.stat-large:hover .bubbles-container {
+  transform: scale(1.06);
+}
+
+.bubbles-container {
+  width: 100%;
+  flex: 1;
+  min-height: 250px;
+  position: relative;
+  overflow: visible;
+  margin-top: 10px;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.topic-bubble {
+  border-radius: 50%;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /* 🌟 THE FLAT FIX: No borders, no shadows, just clean flat glass */
+  background: rgba(255, 255, 255, 0.03);
+  border: none;
+  box-shadow: none;
+
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.topic-bubble:hover {
+  z-index: 50 !important;
+  transform: translate(-50%, -50%) scale(1.15);
+  background: rgba(255, 255, 255, 0.08);
+  /* Slight highlight on hover */
+}
+
+.bubble-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  z-index: 1;
+}
+
+/* 🌟 SOFTENED WAVES: Clean, flat liquid colors */
+.wave {
+  position: absolute;
+  left: -50%;
+  top: calc(100% - var(--fill-pct, 0%));
+  width: 200%;
+  height: 200%;
+  background: rgba(59, 130, 246, 0.4);
+  /* Soft base liquid */
+  border-radius: 40%;
+  animation: waveSpin 10s linear infinite;
+  transition: top 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wave::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(59, 130, 246, 0.85);
+  /* Solid flat top liquid */
+  border-radius: 43%;
+  animation: waveSpin 14s linear infinite reverse;
+}
+
+@keyframes waveSpin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.bubble-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 90%;
+  pointer-events: none;
+}
+
+.bubble-name {
+  font-weight: 600;
+  /* Clean font weight */
+  color: #f3f4f6;
+  /* Crisp off-white */
+  text-align: center;
+  text-shadow: none;
+  /* 🌟 REMOVED DIRTY SHADOWS */
+
+  /* 🌟 TEXT WRAP FIX: Allows 2 lines instead of cutting off */
+  white-space: normal;
+  line-height: 1.1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: all 0.5s ease;
+}
+
+
+
+/* =========================================================
+   14. THE 20000% PREMIUM POLISH (STRIKE 1)
+========================================================= */
+
+/* --- The Global Preloader --- */
+#global-preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-main);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+}
+
+#global-preloader.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.loader-logo {
+  width: 60px;
+  height: 60px;
+  filter: drop-shadow(0 0 15px rgba(110, 160, 234, 0.6));
+  animation: pulseCore 1.5s infinite alternate;
+}
+
+.loading-bar-container {
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 50%;
+  background: var(--accent);
+  border-radius: 4px;
+  animation: loadingSweep 1.5s infinite ease-in-out;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.loading-text {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+}
+
+@keyframes loadingSweep {
+  0% {
+    left: -50%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+/* --- The Custom Brand Logo --- */
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 10px;
+  cursor: default;
+}
+
+.brand-icon {
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(0 0 8px rgba(110, 160, 234, 0.5));
+  transition: filter 0.3s;
+}
+
+.brand-logo:hover .brand-icon {
+  filter: drop-shadow(0 0 15px rgba(110, 160, 234, 0.8));
+}
+
+.brand-text {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Eradicating the Rainbow: Professional Monochromatic Blue --- */
+
+/* 1. Streak Flame & Days */
+.streak-icon {
+  background: linear-gradient(135deg, #3b82f6 0%, #93c5fd 100%);
+  /* Icy Blue instead of Pink */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: firePulseBlue 1.8s infinite alternate ease-in-out;
+}
+
+.day-circle.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #6ea0ea 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+@keyframes firePulseBlue {
+  0% {
+    transform: scale(0.95);
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+  }
+
+  100% {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.8));
+  }
+}
+
+/* 2. The Circular Progress Bar Gradient */
+#neonGradient stop:nth-child(1) {
+  stop-color: #3b82f6;
+}
+
+#neonGradient stop:nth-child(2) {
+  stop-color: #93c5fd;
+}
+
+.circle-progress {
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.6));
+}
+
+/* 3. The Heatmap (GitHub Style, but Icy Blue) */
+.heat-0 {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.heat-1 {
+  background: rgba(110, 160, 234, 0.2);
+  border-color: rgba(110, 160, 234, 0.3);
+}
+
+.heat-2 {
+  background: rgba(110, 160, 234, 0.5);
+  border-color: rgba(110, 160, 234, 0.6);
+  box-shadow: 0 0 8px rgba(110, 160, 234, 0.2);
+}
+
+.heat-3 {
+  background: rgba(110, 160, 234, 0.8);
+  border-color: #6ea0ea;
+  box-shadow: 0 0 12px rgba(110, 160, 234, 0.4);
+}
+
+.heat-4 {
+  background: #3b82f6;
+  border-color: #fff;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.6), 0 0 5px rgba(255, 255, 255, 0.8);
+}
+
+/* --- Unifying the Panels (Glassmorphism & Shadows) --- */
+.middle-panel,
+.right-panel,
+.stats-panel {
+  border-radius: 20px;
+  /* Perfect consistency */
+}
+
+.problems-panel {
+  border-radius: 20px;
+  box-shadow: inset 0 5px 20px rgba(0, 0, 0, 0.4);
+}
+
+
+/* --- GLobal Layout (Glow & Glass) --- */
+.progress-section,
+.problems-panel,
+.right-panel,
+.stat-card {
+  background: rgba(10, 12, 18, 0.65);
+  /* Slightly darker glass to contrast the glow */
+  backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Crisper border */
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+
+  /* 🌟 THE AMBIENT BACKLIGHT: Deep shadow for depth + Blue glow for aesthetics */
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.5),
+    0 0 25px rgba(59, 130, 246, 0.12),
+    inset 0 0 0 1px rgba(59, 130, 246, 0.05);
+
+  transition: box-shadow 0.3s ease;
+}
+
+/* Make panels glow slightly more when hovered */
+.right-panel:hover,
+.stat-card:hover {
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.5),
+    0 0 35px rgba(59, 130, 246, 0.2),
+    inset 0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+/* =========================================================
+   15. WORKSPACE FRAGMENTS POLISH
+========================================================= */
+
+/* --- 1. Premium IDE Tabs --- */
+.tab-btn {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+  background: rgba(16, 18, 26, 0.6);
+  /* Matches the pane below it */
+  color: #fff;
+  border-top: 2px solid #3b82f6;
+  /* Icy blue active indicator */
+  box-shadow: 0 -4px 10px rgba(59, 130, 246, 0.05);
+}
+
+.tab-pane.active {
+  background: rgba(16, 18, 26, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: none;
+  /* Seamless connection to tabs */
+  border-radius: 0 0 12px 12px;
+  box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* --- 2. Data Blocks (Examples & Complexity) --- */
+.example-box,
+.complexity-card {
+
+
+  background: rgba(0, 0, 0, 0.2);
+  /* Deep inset feel without heavy borders */
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  /* Unified micro-radius */
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+.example-box {
+  border-left: 3px solid #3b82f6;
+  /* Swapped from old accent to Icy Blue */
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.complexity-card:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.05);
+  transform: translateY(-2px);
+}
+
+/* --- 3. The AI Chat Fragments --- */
+.ai-input-wrapper {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.ai-input-wrapper:focus-within {
+  border-color: #3b82f6;
+  background: rgba(0, 0, 0, 0.7);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(59, 130, 246, 0.15);
+}
+
+.ai-send-btn {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.ai-send-btn:hover {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.chat-msg.user .chat-bubble {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+}
+
+/* =========================================================
+   PANEL TOGGLE & BUTTER-SMOOTH COLLAPSE
+========================================================= */
+.icon-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  font-size: 1.3rem;
+  padding: 8px;
+  margin-right: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.icon-btn.active {
+  color: #3b82f6;
+  /* Glows blue when panel is open */
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* 🌟 The Buttery Easing Curve */
+/* 🌟 Fixed the Buttery Easing Curve without destroying the JS Drag Logic */
+.vertical-divider {
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+  overflow: visible; /* Let the tooltips escape! */
+  will-change: width, opacity;
+}
+
+/* The Collapsed State */
+.stats-panel.collapsed {
+  min-width: 0 !important;
+  width: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  border-left-width: 0 !important;
+  opacity: 0;
+}
+
+.vertical-divider.collapsed {
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  /* Prevents invisible dragging */
+}
+
+/* =========================================================
+   LEETCODE-STYLE FOLD BUTTON (CENTERED ON DIVIDER)
+========================================================= */
+.panel-fold-btn {
+  position: absolute;
+  top: 50%;
+  /* Vertically centered on the divider */
+  left: 50%;
+  /* Horizontally centered on the divider */
+  transform: translate(-50%, -50%);
+  /* Locks it perfectly to the middle */
+  width: 28px;
+  height: 28px;
+  background: rgba(16, 18, 26, 0.95);
+  /* Dark circle by default */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.panel-fold-btn:hover {
+  background: #3b82f6;
+  /* Glows blue on hover */
+  color: #fff;
+  border-color: #6ea0ea;
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.panel-fold-btn i {
+  font-size: 16px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* When Divider/Panel is Collapsed */
+.vertical-divider.collapsed {
+  width: 0;
+  border: none;
+  background: transparent;
+  pointer-events: none;
+  opacity: 1 !important;
+  overflow: visible !important;
+}
+
+.vertical-divider.collapsed::after {
+  display: none;
+}
+
+/* 🌟 COLLAPSED BUTTON STATE */
+.vertical-divider.collapsed .panel-fold-btn {
+  pointer-events: auto;
+  left: -14px;
+  /* Pulls it safely onto the screen */
+  background: #3b82f6;
+  /* Permanent solid blue when closed */
+  color: #fff;
+  border-color: #6ea0ea;
+  box-shadow: -4px 0 15px rgba(59, 130, 246, 0.4);
+}
+
+.vertical-divider.collapsed .panel-fold-btn:hover {
+  background: #6ea0ea;
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.vertical-divider.collapsed .panel-fold-btn i {
+  transform: rotate(180deg);
+  /* Arrow flips around */
+}
+
+/* =========================================================
+   16. GLOBAL SMART TOOLTIP ENGINE
+========================================================= */
+.global-tooltip {
+  position: fixed;
+  /* 🌟 THE FIX: Detaches it completely from the panels */
+  top: 0;
+  left: 0;
+  background: #2A2A2A;
+  color: #e5e7eb;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  /* Allows mouse to click through it */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  z-index: 9999999;
+  /* Higher than the divider and the panels */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+.global-tooltip.active {
+  opacity: 1;
+  visibility: visible;
+}

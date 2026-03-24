@@ -2,54 +2,279 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <title>FINALIST</title>
-  <link rel="stylesheet" href="style_land.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FINALIST | Track Your Interview Journey</title>
+
+  <link rel="stylesheet" href="landing.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+  <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
 </head>
 
 <body>
 
-  <header class="navbar">
+  <div class="runes-container" id="runes-container"></div>
+  <div class="spotlight-overlay"></div>
 
+  <header class="navbar">
     <div class="logo-container">
-      <img src="assets/logo.png" alt="FINALIST Logo" class="logo">
+      <span style="font-weight: 800; font-size: 1.2rem; letter-spacing: 1px; color: #fff;">FINALIST</span>
     </div>
 
-    <a href="login.html" class="btn nav-button">
+    <a href="login.html" class="btn btn-secondary nav-button">
       Sign In
-      <img src="assets/enter.png" class="btn-icon">
+      <i class="ri-login-box-line"></i>
     </a>
-
   </header>
 
-  <main class="hero">
+  <main class="hero" id="hero-container">
 
-    <h1 class="hero-title">
-      Track Your <span class="accent-text">Interview</span> Journey
-    </h1>
+    <div class="hero-badge">
+      <span class="pulse-dot"></span> FINALIST v1.0 is live
+    </div>
 
-    <p class="hero-subtitle">
-      Stay consistent. Solve smarter.
-      <span class="accent-text">Become the FINALIST.</span>
+    <h1 class="hero-title" id="dynamic-headline"></h1>
+
+    <p class="hero-subtitle" id="staggered-sub">
+      <span class="flip-word down" id="sub-1">Stay consistent.</span>
+      <span class="flip-word up" id="sub-2">Solve smarter.</span>
+      <span class="fade-word" id="sub-3">
+        Become the <span id="typewriter-text"></span><span id="type-cursor"></span>
+      </span>
     </p>
 
-    <div class="hero-divider"></div>
+    <div class="feature-pills">
+      <div class="pill"><i class="ri-code-box-line"></i> 1000+ Curated Problems</div>
+      <div class="pill"><i class="ri-pie-chart-line"></i> Instant Analytics</div>
+      <div class="pill"><i class="ri-timer-line"></i> Built-in Solve Timer</div>
+    </div>
 
-    <a href="signup.html" class="btn hero-button">
-      Get Started
+    <p class="hero-description" id="hero-desc">
+      The definitive preparation workspace for software engineers. Master algorithms in a <strong>high-performance IDE</strong>, track your proficiency through <strong>real-time analytics</strong>, and accelerate problem-solving with <strong>context-aware AI integration</strong>.
+    </p>
+
+    <a href="signup.html" class="btn btn-primary hero-button">
+      <span style="position: relative; z-index: 2;">Get Started <i class="ri-arrow-right-line"></i></span>
     </a>
+
+    <div class="app-mockup" id="dashboard-mockup">
+      <div class="mockup-header">
+        <div class="mockup-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="mockup-title">dashboard.finalist.app</div>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-sidebar"></div>
+        <div class="mockup-content">
+
+          <div class="mockup-ring-wrapper">
+            <div class="mockup-ring"></div>
+          </div>
+
+          <div class="mockup-bars">
+            <div class="m-bar"></div>
+            <div class="m-bar"></div>
+            <div class="m-bar"></div>
+          </div>
+
+        </div>
+      </div>
+      <div class="mockup-fade"></div>
+    </div>
 
   </main>
 
-  <div class="bg-glow"></div>
-
   <script>
+    // Redirect if already logged in
     if (localStorage.getItem("token")) {
       window.location.href = "problems.html";
     }
+
+    /* =========================================
+       1. GLOBAL SPOTLIGHT & MOUSE TRACKING
+       ========================================= */
+    document.addEventListener('mousemove', (e) => {
+      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
+      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+    });
+
+    /* =========================================
+       2. HIGH-VISIBILITY FLOATING RUNES
+       ========================================= */
+    const runes = ['{}', '</>', '[]', '=>', '();', '&&', '||', '!='];
+    const runesContainer = document.getElementById('runes-container');
+
+    setInterval(() => {
+      const rune = document.createElement('div');
+      rune.className = 'rune';
+      rune.textContent = runes[Math.floor(Math.random() * runes.length)];
+      rune.style.left = Math.random() * 100 + 'vw';
+      rune.style.animationDuration = (Math.random() * 6 + 6) + 's';
+      rune.style.fontSize = (Math.random() * 10 + 14) + 'px';
+      runesContainer.appendChild(rune);
+
+      setTimeout(() => rune.remove(), 12000);
+    }, 400);
+
+    /* =========================================
+       3. DASHBOARD MOCKUP (Hover-Only 3D Tilt)
+       ========================================= */
+    const mockup = document.getElementById('dashboard-mockup');
+
+    if (mockup) {
+      mockup.addEventListener('mousemove', (e) => {
+        const rect = mockup.getBoundingClientRect();
+        // Calculate mouse position relative to the dashboard itself
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Tilt from the side according to mouse position
+        const xRotation = ((y - rect.height / 2) / rect.height) * -12;
+        const yRotation = ((x - rect.width / 2) / rect.width) * 12;
+
+        mockup.style.transform = `perspective(1500px) rotateX(${xRotation}deg) rotateY(${yRotation}deg)`;
+
+        // Move the glass glare effect
+        const glarePos = (x / rect.width) * 200 - 100;
+        mockup.style.setProperty('--glare-x', `${glarePos}%`);
+      });
+
+      mockup.addEventListener('mouseleave', () => {
+        // Reset tilt smoothly when mouse leaves the dashboard
+        mockup.style.transform = `perspective(1500px) rotateX(0deg) rotateY(0deg)`;
+        mockup.style.setProperty('--glare-x', `-100%`);
+      });
+    }
+
+    /* =========================================
+       DYNAMIC CASCADING HEADLINE
+       ========================================= */
+    const headlineElement = document.getElementById("dynamic-headline");
+
+    // The 3 headings. Use *word* to apply the blue neon gradient!
+    const headings = [
+      "Your Dedicated *Prep* Workspace",
+      "Track Your *Coding* Performance",
+      "Unblock Your *Logic* with AI"
+    ];
+
+    let currentHeadingIndex = 0;
+
+    function buildHeading(sentence) {
+      headlineElement.innerHTML = ""; // Clear current text
+      const words = sentence.split(" ");
+
+      words.forEach((wordText, index) => {
+        // Create the masking wrapper
+        const wrapper = document.createElement("span");
+        wrapper.className = "word-wrapper";
+
+        // Create the actual moving word
+        const wordSpan = document.createElement("span");
+        wordSpan.className = "dyn-word";
+
+        // Check if the word is marked with * for the accent color
+        if (wordText.startsWith("*") && wordText.endsWith("*")) {
+          wordSpan.textContent = wordText.slice(1, -1); // Remove the *
+          wordSpan.classList.add("accent-text"); // Add your existing blue glow class
+        } else {
+          wordSpan.textContent = wordText;
+        }
+
+        wrapper.appendChild(wordSpan);
+        headlineElement.appendChild(wrapper);
+
+        // THE FIX: Added a 50ms baseline delay so the first word (index 0) 
+        // doesn't snap instantly. The browser needs a split-second to paint it first!
+        setTimeout(() => {
+          wordSpan.classList.add("in");
+        }, 50 + (index * 80));
+      });
+    }
+
+function swapHeading() {
+      const currentWords = headlineElement.querySelectorAll(".dyn-word");
+      
+      // 1. Animate current words OUT from left to right (🌟 BLITZ SPEED)
+      currentWords.forEach((word, index) => {
+        setTimeout(() => {
+          word.classList.remove("in");
+          word.classList.add("out");
+        }, index * 25); // Slashed from 40ms to 25ms for a hyper-fast exit
+      });
+
+      // 2. Wait for the out-animation to finish, then build the next heading
+      // 🌟 THE FIX: The buffer is now a microscopic 50ms instead of 200ms
+      const totalOutTime = (currentWords.length * 25) + 50; 
+      
+      setTimeout(() => {
+        currentHeadingIndex = (currentHeadingIndex + 1) % headings.length;
+        buildHeading(headings[currentHeadingIndex]);
+      }, totalOutTime);
+    }
+
+    // Initialize the very first heading smoothly AFTER the DOM settles
+    setTimeout(() => {
+      buildHeading(headings[0]);
+    }, 300);
+
+    // 🌟 THE FIX: Swap the heading every 3.5 seconds instead of 4.5 seconds
+    setInterval(swapHeading, 3500);
+
+    /* =========================================
+       SUBHEADING CHOREOGRAPHY TIMELINE
+       ========================================= */
+    const sub1 = document.getElementById("sub-1");
+    const sub2 = document.getElementById("sub-2");
+    const sub3 = document.getElementById("sub-3");
+    const typeText = document.getElementById("typewriter-text");
+    const cursor = document.getElementById("type-cursor");
+
+    const finalWord = "FINALIST";
+
+    // 1. Flip down "Stay consistent." 
+    setTimeout(() => { sub1.classList.add("animate"); }, 200);
+
+    // 2. Pause, then flip up "Solve smarter." 
+    setTimeout(() => { sub2.classList.add("animate"); }, 1200);
+
+    // 3. Fade in "Become the " and show blinking cursor 
+    setTimeout(() => {
+      sub3.classList.add("animate");
+      cursor.classList.add("blink");
+    }, 2200);
+
+    // 4. Start typing 
+    setTimeout(() => {
+      let charIndex = 0;
+      cursor.classList.remove("blink"); // Solid while typing
+      cursor.style.opacity = "1";
+
+      const typeInterval = setInterval(() => {
+        typeText.textContent += finalWord[charIndex];
+        charIndex++;
+
+        // 5. Finished typing
+        if (charIndex === finalWord.length) {
+          clearInterval(typeInterval);
+          cursor.classList.add("blink"); // Resume blinking
+
+          // 6. Blink a few times, then execute the Morph & Power-Up
+          setTimeout(() => {
+            cursor.classList.remove("blink"); // Stop blinking
+
+            // Trigger the CSS transitions
+            cursor.classList.add("morph-to-dot");
+            typeText.classList.add("power-on");
+
+          }, 3200); // Wait 3.2 seconds for dramatic suspense before dropping
+        }
+      }, 180); // CHANGED: Slower, punchier typing (180ms per letter)
+    }, 3600);
   </script>
 
 </body>

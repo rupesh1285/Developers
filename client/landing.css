@@ -1,0 +1,960 @@
+/* ---------- CUSTOM PREMIUM SCROLLBAR ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #333333 var(--bg-main);
+}
+
+/* ---------- ROOT VARIABLES ---------- */
+:root {
+  --bg-main: #0a0a0a;
+  --bg-surface: #1E1E1E;
+  --border-color: #2A2A2A;
+  --accent: #6ea0ea;
+  --text-primary: #FFFFFF;
+  --text-muted: #9CA3AF;
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+}
+
+/* ---------- GLOBAL ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  background-color: var(--bg-main);
+
+  /* Increased Flashlight Glow */
+  background-image:
+    radial-gradient(1200px circle at var(--mouse-x) var(--mouse-y), rgba(110, 160, 234, 0.18), transparent 50%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+  background-position: 0 0, 0 0, 0 0;
+}
+
+/* HIGH-VISIBILITY FLOATING RUNES */
+.runes-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.rune {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.25);
+  /* High visibility */
+  text-shadow: 0 0 10px rgba(110, 160, 234, 0.4);
+  /* Neon pop */
+  font-family: monospace;
+  font-weight: bold;
+  bottom: -50px;
+  animation: floatUp linear forwards;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-120vh) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+/* Interactive Background Spotlight */
+.spotlight-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(110, 160, 234, 0.07), transparent 40%);
+  z-index: 0;
+}
+
+/* ---------- NAVBAR ---------- */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 60px;
+  position: relative;
+  z-index: 10;
+}
+
+.logo {
+  height: 56px;
+  object-fit: contain;
+}
+
+/* ---------- BUTTON BASE STYLES ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  font-weight: 500;
+}
+
+.btn-secondary {
+/* 🌟 THE FIX: Matches the sleek, glowing pill aesthetic */
+  background: rgba(110, 160, 234, 0.08);
+  border: 1px solid rgba(110, 160, 234, 0.25);
+  border-radius: 30px;
+  color: #e5e7eb;
+  padding: 10px 24px;
+  font-weight: 600;
+  box-shadow: 0 0 15px rgba(110, 160, 234, 0.15);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-secondary i {
+  color: var(--accent);
+  transition: transform 0.3s ease;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  border-color: rgba(110, 160, 234, 0.8);
+  color: #fff;
+  background: rgba(110, 160, 234, 0.15);
+  box-shadow: 0 0 25px rgba(110, 160, 234, 0.4);
+}
+
+/* Little micro-interaction for the login icon */
+.btn-secondary:hover i {
+  transform: translateX(3px); 
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #121212;
+  border-radius: 40px;
+  padding: 16px 40px;
+  font-size: 16px;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+  animation: shadowPulse 2.5s infinite;
+  z-index: 10;
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+}
+
+@keyframes shadowPulse {
+  0% {
+    box-shadow: 0 0 20px rgba(110, 160, 234, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 45px rgba(110, 160, 234, 0.7), 0 0 80px rgba(110, 160, 234, 0.2);
+  }
+
+  100% {
+    box-shadow: 0 0 20px rgba(110, 160, 234, 0.3);
+  }
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-25deg);
+  animation: buttonSheen 3s infinite;
+  z-index: 1;
+}
+
+@keyframes buttonSheen {
+  0% {
+    left: -100%;
+  }
+
+  20% {
+    left: 200%;
+  }
+
+  100% {
+    left: 200%;
+  }
+}
+
+/* ---------- HERO SECTION ---------- */
+.hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  text-align: center;
+  padding: 0 20px 0;
+  /* 🌟 THE FIX: 0 top padding pulls the badge right under the navbar */
+  min-height: calc(100vh - 100px);
+  position: relative;
+  z-index: 2;
+  perspective: 1200px;
+}
+
+/* NEW: The Ultimate Melt Effect */
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 250px;
+  /* Massive fog layer */
+  /* Gradients perfectly into your dark background */
+  background: linear-gradient(to bottom, transparent 0%, var(--bg-main) 70%, var(--bg-main) 100%);
+  z-index: 20;
+  /* Forces the fog to sit ON TOP of the tilted dashboard */
+  pointer-events: none;
+  /* Allows the mouse to still hover the dashboard through the fog */
+}
+
+/* BADGE MERGED & ANIMATED */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(110, 160, 234, 0.1);
+  border: 1px solid rgba(110, 160, 234, 0.2);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--accent);
+  margin-bottom: 24px;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+  animation: badgeBreathe 3s infinite alternate;
+}
+
+@keyframes badgeBreathe {
+  0% {
+    box-shadow: 0 0 0 rgba(110, 160, 234, 0);
+    border-color: rgba(110, 160, 234, 0.2);
+  }
+
+  100% {
+    box-shadow: 0 0 15px rgba(110, 160, 234, 0.3);
+    border-color: rgba(110, 160, 234, 0.6);
+  }
+}
+
+.hero-badge::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-20deg);
+  animation: badgeShine 4s infinite;
+}
+
+/* Ensure the headline container doesn't collapse when words are animating */
+#dynamic-headline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  /* Space between words */
+  min-height: 100px;
+  /* Prevents the layout from jumping */
+}
+
+/* The invisible box that masks the words as they slide in/out */
+.word-wrapper {
+  overflow: hidden;
+  display: inline-flex;
+  padding-bottom: 5px;
+  /* Prevents cutting off letters like 'y' or 'g' */
+}
+
+/* The actual word that moves */
+.dyn-word {
+  display: inline-block;
+  transform: translateY(120%) rotate(5deg);
+  /* ADDED: Slight premium tilt */
+  transform-origin: bottom left;
+  opacity: 0;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.7s ease;
+  /* Slightly slower and smoother */
+  will-change: transform, opacity;
+}
+
+/* State 1: Snapped into the middle (Visible) */
+.dyn-word.in {
+  transform: translateY(0) rotate(0deg);
+  opacity: 1;
+}
+
+/* State 2: Slid up and out (Hidden) */
+.dyn-word.out {
+  transform: translateY(-120%) rotate(-5deg);
+  /* Tilted exit */
+  opacity: 0;
+}
+
+@keyframes badgeShine {
+  0% {
+    left: -100%;
+  }
+
+  20% {
+    left: 200%;
+  }
+
+  100% {
+    left: 200%;
+  }
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(110, 160, 234, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(110, 160, 234, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(110, 160, 234, 0);
+  }
+}
+
+.hero-title {
+  font-size: 76px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  /* Reduced from 24px */
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* =========================================================
+   THE "FINALIST" LANDING PAGE BUTTON
+========================================================= */
+
+.primary-btn {
+  width: 100%;
+  height: 52px;
+  /* Standardized height for the form */
+  background: var(--accent);
+  color: #121212;
+  /* Dark text to pop against the blue */
+  border: none;
+  border-radius: 40px;
+  /* The pill shape from your landing page */
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  animation: shadowPulse 2.5s infinite;
+  /* Your custom glowing heartbeat */
+  z-index: 10;
+  margin-top: 20px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.primary-btn:hover {
+  transform: scale(1.05);
+  /* The exact scale from your landing page */
+}
+
+/* Ensure any icons (like the arrow) match the dark text */
+.primary-btn svg path,
+.primary-btn img {
+  fill: #121212;
+  filter: brightness(0);
+  /* Quick trick to turn images black if they aren't inline SVGs */
+}
+
+/* 1. The Custom Glowing Pulse from your Landing Page */
+@keyframes shadowPulse {
+  0% {
+    box-shadow: 0 0 20px rgba(110, 160, 234, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 45px rgba(110, 160, 234, 0.7), 0 0 80px rgba(110, 160, 234, 0.2);
+  }
+
+  100% {
+    box-shadow: 0 0 20px rgba(110, 160, 234, 0.3);
+  }
+}
+
+/* 2. The Diagonal Light Sweep (Sheen) */
+.primary-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-25deg);
+  animation: buttonSheen 3s infinite;
+  z-index: 1;
+}
+
+@keyframes buttonSheen {
+  0% {
+    left: -100%;
+  }
+
+  20% {
+    left: 200%;
+  }
+
+  100% {
+    left: 200%;
+  }
+}
+
+.accent-text {
+  color: var(--accent);
+  /* Added a 3-part gradient for a continuous flowing loop */
+  background: linear-gradient(to right, #6ea0ea, #ffffff, #6ea0ea);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* The continuous liquid shine animation */
+  animation: textShine 4s linear infinite;
+}
+
+@keyframes textShine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* =========================================
+   SUBHEADING SEQUENCE
+   ========================================= */
+.hero-subtitle {
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  /* Reduced from 30px */
+  max-width: 650px;
+  line-height: 1.6;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Base style for the flipping words */
+.flip-word {
+  display: inline-block;
+  opacity: 0;
+}
+
+/* Downward Flip */
+.flip-word.down.animate {
+  transform-origin: top;
+  animation: flipDownIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Upward Flip */
+.flip-word.up.animate {
+  transform-origin: bottom;
+  animation: flipUpIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes flipDownIn {
+  0% {
+    opacity: 0;
+    transform: perspective(400px) rotateX(-90deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: perspective(400px) rotateX(0deg);
+  }
+}
+
+@keyframes flipUpIn {
+  0% {
+    opacity: 0;
+    transform: perspective(400px) rotateX(90deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: perspective(400px) rotateX(0deg);
+  }
+}
+
+/* Fade in for the final phrase */
+.fade-word {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.fade-word.animate {
+  opacity: 1;
+}
+
+/* =========================================
+   TYPED TEXT (ULTRA HEAVY & NEON POWER-UP)
+   ========================================= */
+#typewriter-text {
+  font-weight: 900;
+  /* Maximum thickness */
+  letter-spacing: 1px;
+  color: var(--accent);
+  /* CHANGED: Now types out in your accent blue! */
+  transition: color 0.8s ease, text-shadow 0.8s ease;
+}
+
+/* The climax animation when the cursor drops */
+#typewriter-text.power-on {
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(110, 160, 234, 0.8), 0 0 40px rgba(110, 160, 234, 0.4);
+}
+
+/* =========================================
+   THE SHAPE-SHIFTING CURSOR
+   ========================================= */
+#type-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 24px;
+  /* Slightly taller for better scale */
+  background-color: var(--accent);
+  margin-left: 3px;
+  vertical-align: baseline;
+  transform: translateY(4px);
+  /* Visually align cursor with text */
+  opacity: 0;
+  transform-origin: bottom;
+  /* Forces it to shrink downwards */
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+  /* CHANGED: Slower, smoother 1-second shape-shift */
+}
+
+#type-cursor.blink {
+  animation: cursorBlink 0.7s infinite;
+}
+
+@keyframes cursorBlink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+/* The state where it becomes a full stop */
+#type-cursor.morph-to-dot {
+  height: 6px;
+  width: 6px;
+  border-radius: 50%;
+  /* CHANGED: Fixed the math so it perfectly hits the baseline */
+  transform: translateY(0px) translateX(-2px);
+  background-color: #ffffff;
+  /* Matches the powered-on text */
+  box-shadow: 0 0 10px rgba(110, 160, 234, 0.8);
+  /* Gives the dot a tiny glow */
+}
+
+/* Floating Feature Pills */
+.feature-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 25px;
+  /* Reduced from 50px */
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUpText 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+
+/* 🌟 THE EXPLICIT DESCRIPTION */
+.hero-description {
+  font-size: 16px;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto 25px auto;
+  /* Reduced bottom margin from 35px */
+  line-height: 1.6;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUpText 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
+}
+
+.hero-description strong {
+  color: #E5E7EB;
+  /* Crisp white to make the features pop */
+  font-weight: 600;
+}
+
+/* The actual keyframe for the cinematic entry */
+@keyframes fadeUpText {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px; /* Slightly wider padding for a premium feel */
+  
+  /* 🌟 THE FIX: Persistent accent-tinted background and border */
+  background: rgba(110, 160, 234, 0.08);
+  border: 1px solid rgba(110, 160, 234, 0.25);
+  border-radius: 30px;
+  
+  font-size: 13px;
+  font-weight: 600; /* Bolder text to fight the description below it */
+  color: #e5e7eb; /* Crisp white text */
+  
+  /* 🌟 THE FIX: A subtle persistent blue glow */
+  box-shadow: 0 0 15px rgba(110, 160, 234, 0.15);
+  
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: floatPill 4s ease-in-out infinite;
+  cursor: default;
+}
+
+.pill:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.pill:nth-child(2) {
+  animation-delay: 0.6s;
+}
+
+.pill:nth-child(3) {
+  animation-delay: 1.2s;
+}
+
+@keyframes floatPill {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.pill:hover {
+  transform: translateY(-4px) scale(1.05);
+  border-color: rgba(110, 160, 234, 0.8); /* Sharp solid border on hover */
+  color: #fff;
+  background: rgba(110, 160, 234, 0.15); /* Richer fill on hover */
+  box-shadow: 0 0 25px rgba(110, 160, 234, 0.4); /* Stronger hover glow */
+  animation-play-state: paused;
+}
+
+.pill i {
+  color: var(--accent);
+  font-size: 16px; /* Slightly larger icon to anchor the pill */
+}
+
+
+/* ---------- APP MOCKUP 80VW & ANIMATIONS ---------- */
+.app-mockup {
+  margin-top: 35px;
+  /* 🌟 THE FIX: Pulled up significantly from 60px */
+  width: 80vw !important;
+  max-width: 1200px !important;
+  height: 380px;
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(110, 160, 234, 0.1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform-style: preserve-3d;
+  transition: box-shadow 0.4s ease, transform 0.1s ease-out;
+  will-change: transform;
+}
+
+/* Full Background Glow on Hover */
+.app-mockup:hover {
+  box-shadow: 0 0 100px rgba(110, 160, 234, 0.25), 0 -20px 80px rgba(0, 0, 0, 0.8) !important;
+}
+
+.app-mockup::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.05) 25%, transparent 30%);
+  z-index: 10;
+  pointer-events: none;
+  transform: translateX(var(--glare-x, -100%));
+  transition: transform 0.1s ease-out;
+}
+
+.mockup-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+
+.mockup-dots {
+  position: absolute;
+  left: 20px;
+  display: flex;
+  gap: 6px;
+}
+
+.mockup-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #4A4A4A;
+}
+
+.mockup-dots span:nth-child(1) {
+  background: #FF5F56;
+}
+
+.mockup-dots span:nth-child(2) {
+  background: #FFBD2E;
+}
+
+.mockup-dots span:nth-child(3) {
+  background: #27C93F;
+}
+
+.mockup-title {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: monospace;
+  /* 🌟 THE FIX: Removes the text selection 'I-beam' cursor */
+  user-select: none;
+  cursor: default;
+}
+
+.mockup-body {
+  display: flex;
+  padding: 20px;
+  gap: 20px;
+  height: 100%;
+}
+
+.mockup-sidebar {
+  width: 60px;
+  height: 100%;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mockup-content {
+  flex: 1;
+  display: flex;
+  /* CHANGED: Anchors the rings and bars to the top instead of the center */
+  align-items: flex-start;
+  padding: 50px 30px 30px 30px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 40px;
+}
+
+/* Semicircle Math: Start 25% -> 100% */
+.mockup-ring-wrapper {
+  width: 100px;
+  height: 50px;
+  overflow: hidden;
+  position: relative;
+}
+
+.mockup-ring {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 8px solid rgba(255, 255, 255, 0.05);
+  border-top-color: var(--accent);
+  border-right-color: var(--accent);
+  transform: rotate(-180deg);
+  /* 25% */
+  transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-mockup:hover .mockup-ring {
+  transform: rotate(-45deg);
+  /* 100% */
+}
+
+/* Linear Bars: Start 25% -> Full on Hover */
+.mockup-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  /* NEW: Pushes the bars slightly down so they align perfectly with the semicircle */
+  margin-top: 10px;
+}
+
+.m-bar {
+  height: 8px;
+  border-radius: 10px;
+  background: var(--accent);
+  width: 25%;
+  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-mockup:hover .m-bar:nth-child(1) {
+  width: 95%;
+}
+
+.app-mockup:hover .m-bar:nth-child(2) {
+  width: 80%;
+}
+
+.app-mockup:hover .m-bar:nth-child(3) {
+  width: 100%;
+}
+
+.mockup-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  /* CHANGED: Increased fade height and made the bottom 100% solid background color */
+  height: 250px;
+  background: linear-gradient(to bottom, transparent 0%, var(--bg-main) 75%, var(--bg-main) 100%);
+  display: none;
+  /* Hide the broken internal fade completely */
+}
+
+/* ============================= */
+/* ======== RESPONSIVE ======== */
+/* ============================= */
+@media (max-width: 1199px) {
+  .navbar {
+    padding: 20px 40px;
+  }
+
+  .hero-title {
+    font-size: 60px;
+  }
+
+  .app-mockup {
+    width: 90vw !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 16px 20px;
+  }
+
+  .hero {
+    padding: 40px 16px 0;
+  }
+
+  .hero-title {
+    font-size: 42px;
+    letter-spacing: -1px;
+  }
+
+  .hero-subtitle {
+    font-size: 18px;
+  }
+
+  .feature-pills {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .app-mockup {
+    display: none;
+  }
+}
