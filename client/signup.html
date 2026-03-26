@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FINALIST - Sign Up</title>
@@ -16,153 +15,225 @@
 
     <div class="split-container">
 
-        <div class="left-panel">
-            <div class="panel-top">
-                <img src="assets/logo.png" class="logo" alt="FINALIST Logo">
-                <div class="login-badge">
-                    <span class="muted-text">Already a FINALIST?</span>
-                    <a href="login.html" class="nav-signin-btn">Sign In <i class="ri-arrow-right-line"></i></a>
+        <div class="desktop-layout">
+            <div class="left-panel" id="desktop-left">
+                <div class="panel-top">
+                    <a href="landing.html" class="text-logo">FINALIST</a>
+
+                    <div class="login-badge">
+                        <span class="muted-text">Already a FINALIST?</span>
+                        <a href="login.html" class="nav-signin-btn">Sign In <i class="ri-arrow-right-line"></i></a>
+                    </div>
+                </div>
+
+                <div class="form-wrapper" id="form-wrapper">
+                    <h1 class="form-title">Create Account</h1>
+                    <p class="form-subtitle">Start tracking your interview journey today.</p>
+
+                    <form id="signupForm">
+                        <div class="name-row">
+                            <div class="input-group">
+                                <label>First Name</label>
+                                <input type="text" id="firstName" placeholder="First name" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Last Name</label>
+                                <input type="text" id="lastName" placeholder="Last name" required>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Email</label>
+                            <input type="email" id="email" placeholder="name@example.com" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Create Password</label>
+                            <div class="password-field">
+                                <input type="password" id="password" placeholder="Create a strong password" required>
+                                <span class="toggle-password" data-target="password">
+                                    <img src="assets/eye-closed.png" alt="Toggle View">
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="input-group" style="margin-bottom: 8px;">
+                            <label>Confirm Password</label>
+                            <div class="password-field">
+                                <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                                <span class="toggle-password" data-target="confirmPassword">
+                                    <img src="assets/eye-closed.png" alt="Toggle View">
+                                </span>
+                            </div>
+                        </div>
+
+                        <p class="error-message" id="passwordError" style="display:none;"></p>
+
+                        <button type="submit" class="primary-btn">
+                            Create Account <i class="ri-user-add-line"></i>
+                        </button>
+                    </form>
+
+                    <div class="divider-container">
+                        <span class="divider-text">OR CONTINUE WITH</span>
+                    </div>
+
+                    <div class="oauth-row">
+                        <button type="button" class="oauth-btn" onclick="window.location.href='/api/auth/google'">
+                            <svg width="18" height="18" viewBox="0 0 48 48">
+                                <path fill="#EA4335"
+                                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.7 17.74 9.5 24 9.5z" />
+                                <path fill="#4285F4"
+                                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                                <path fill="#FBBC05"
+                                    d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                                <path fill="#34A853"
+                                    d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                            </svg>
+                            Google
+                        </button>
+                        <button type="button" class="oauth-btn" onclick="window.location.href='/api/auth/github'">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff">
+                                <path
+                                    d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.113.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+                            </svg>
+                            GitHub
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-wrapper">
-                <h1 class="form-title">Create Account</h1>
-                <p class="form-subtitle">Start tracking your interview journey today.</p>
+            <div class="right-panel">
+                <div class="runes-container" id="runes-container"></div>
+                <div class="spotlight-overlay" id="spotlight"></div>
 
-                <form id="signupForm">
-                    <div class="name-row">
-                        <div class="input-group">
-                            <label>First Name</label>
-                            <input type="text" id="firstName" placeholder="First name" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Last Name</label>
-                            <input type="text" id="lastName" placeholder="Last name" required>
+                <div class="top-right-pills">
+                    <div class="float-card mini-card card-1">
+                        <div class="icon-box green"><i class="ri-checkbox-circle-fill"></i></div>
+                        <div class="card-text">
+                            <h4>1000+ Problems</h4>
+                            <span>Curated analytics</span>
                         </div>
                     </div>
 
-                    <div class="input-group">
-                        <label>Email</label>
-                        <input type="email" id="email" placeholder="name@example.com" required>
-                    </div>
-
-                    <div class="input-group">
-                        <label>Create Password</label>
-                        <div class="password-field">
-                            <input type="password" id="password" placeholder="Create a strong password" required>
-                            <span class="toggle-password" data-target="password">
-                                <img src="assets/eye-closed.png" alt="Toggle View">
-                            </span>
+                    <div class="float-card mini-card card-2">
+                        <div class="icon-box orange"><i class="ri-bar-chart-grouped-fill"></i></div>
+                        <div class="card-text">
+                            <h4>Smart Analytics</h4>
+                            <span>Monitor your growth</span>
                         </div>
                     </div>
 
-                    <div class="input-group" style="margin-bottom: 8px;">
-                        <label>Confirm Password</label>
-                        <div class="password-field">
-                            <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-                            <span class="toggle-password" data-target="confirmPassword">
-                                <img src="assets/eye-closed.png" alt="Toggle View">
-                            </span>
+                    <div class="float-card mini-card card-3">
+                        <div class="icon-box blue"><i class="ri-code-box-line"></i></div>
+                        <div class="card-text">
+                            <h4>100% Free Access</h4>
+                            <span>No paywalls</span>
                         </div>
                     </div>
-
-                    <p class="error-message" id="passwordError" style="display:none;"></p>
-
-                    <button type="submit" class="primary-btn">
-                        Create Account <i class="ri-user-add-line"></i>
-                    </button>
-                </form>
-
-                <div class="divider-container">
-                    <span class="divider-text">OR CONTINUE WITH</span>
                 </div>
 
-                <div class="oauth-row">
-                    <button type="button" class="oauth-btn" onclick="window.location.href='/api/auth/google'">
-                        <svg width="18" height="18" viewBox="0 0 48 48">
-                            <path fill="#EA4335"
-                                d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.7 17.74 9.5 24 9.5z" />
-                            <path fill="#4285F4"
-                                d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                            <path fill="#FBBC05"
-                                d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                            <path fill="#34A853"
-                                d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                        </svg>
-                        Google
-                    </button>
-                    <button type="button" class="oauth-btn" onclick="window.location.href='/api/auth/github'">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff">
-                            <path
-                                d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.113.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
-                        </svg>
-                        GitHub
-                    </button>
+                <div class="right-content" id="desktop-right">
+                    <div class="algo-visualizer" id="algo-visualizer">
+                    </div>
+
+                    <h2 class="hero-text" id="desktop-hero-text">
+                        Start your journey.<br>
+                        Stay consistent.<br>
+                        <span class="accent-text">Reach the FINALIST stage.</span>
+                    </h2>
                 </div>
             </div>
         </div>
 
-        <div class="right-panel" id="right-panel">
-            <div class="runes-container" id="runes-container"></div>
-            <div class="spotlight-overlay" id="spotlight"></div>
+        <div class="mobile-layout">
+            <div class="mobile-top-stage" id="mobile-top">
 
-            <div class="top-right-pills">
-                <div class="float-card mini-card card-1">
-                    <div class="icon-box green"><i class="ri-checkbox-circle-fill"></i></div>
-                    <div class="card-text">
-                        <h4>1000+ Problems</h4>
-                        <span>Curated tracking & analytics</span>
+                <div class="mobile-nav">
+                    <a href="landing.html" class="text-logo">FINALIST</a>
+                    <div class="mobile-badge">
+                        <span class="muted-text">Already a FINALIST?</span>
+                        <a href="login.html" class="nav-signin-btn">Sign In <i class="ri-arrow-right-line"></i></a>
                     </div>
                 </div>
 
-                <div class="float-card mini-card card-2">
-                    <div class="icon-box orange"><i class="ri-bar-chart-grouped-fill"></i></div>
-                    <div class="card-text">
-                        <h4>Smart Analytics</h4>
-                        <span>Monitor your growth</span>
-                    </div>
-                </div>
-
-                <div class="float-card mini-card card-3">
-                    <div class="icon-box blue"><i class="ri-code-box-line"></i></div>
-                    <div class="card-text">
-                        <h4>100% Free Access</h4>
-                        <span>No paywalls. Just pure logic.</span>
-                    </div>
-                </div>
+                <div class="mobile-wave" id="mobile-wave"></div>
             </div>
 
-            <div class="right-content">
-                <div class="algo-visualizer" id="algo-visualizer">
-                </div>
-
-                <h2 class="hero-text">
-                    Start your journey.<br>
-                    Stay consistent.<br>
-                    <span class="accent-text">Reach the FINALIST stage.</span>
-                </h2>
+            <div class="mobile-bottom-form" id="mobile-bottom">
             </div>
         </div>
 
     </div>
 
-<script>
+    <script>
+        // =========================================
+        // 0. DOM TELEPORTER (Desktop <-> Mobile)
+        // =========================================
+        document.addEventListener("DOMContentLoaded", () => {
+            const mobileQuery = window.matchMedia('(max-width: 864px)');
+
+            // Elements to teleport
+            const visualizer = document.getElementById('algo-visualizer');
+            const formBlock = document.getElementById('form-wrapper');
+            const runesBlock = document.getElementById('runes-container'); // 🌟 THE FIX: Grab the Runes
+
+            // Desktop Destinations
+            const desktopLeft = document.getElementById('desktop-left');
+            const desktopRight = document.getElementById('desktop-right');
+            const desktopHeroText = document.getElementById('desktop-hero-text');
+            const desktopRightPanel = document.querySelector('.desktop-layout .right-panel');
+            const spotlight = document.getElementById('spotlight');
+
+            // Mobile Destinations
+            const mobileTop = document.getElementById('mobile-top');
+            const mobileBottom = document.getElementById('mobile-bottom');
+            const mobileWave = document.getElementById('mobile-wave');
+
+            function handleLayoutShift(e) {
+                if (e.matches) {
+                    // 🌟 Teleport to Mobile Container
+                    if (runesBlock) mobileTop.insertBefore(runesBlock, mobileWave); // Drops runes behind wave
+                    if (visualizer) mobileTop.insertBefore(visualizer, mobileWave); // Drops engine over runes
+                    if (formBlock) mobileBottom.appendChild(formBlock);
+                } else {
+                    // 🌟 Return to Desktop Container
+                    if (runesBlock && desktopRightPanel) desktopRightPanel.insertBefore(runesBlock, spotlight);
+                    if (visualizer) desktopRight.insertBefore(visualizer, desktopHeroText);
+                    if (formBlock) desktopLeft.appendChild(formBlock);
+                }
+            }
+
+            mobileQuery.addEventListener('change', handleLayoutShift);
+            handleLayoutShift(mobileQuery); // Execute instantly on load
+        });
+
         // =========================================
         // 1. FORM LOGIC & TOKEN CHECK
         // =========================================
         const currentToken = localStorage.getItem("token");
-        if (currentToken && currentToken !== "null" && currentToken.length > 20) { 
-            window.location.href = "problems.html"; 
+        if (currentToken && currentToken !== "null" && currentToken.length > 20) {
+            window.location.href = "problems.html";
         }
 
         document.querySelectorAll(".toggle-password").forEach(toggle => {
-            toggle.addEventListener("click", function () {
-                const input = document.getElementById(this.dataset.target);
-                const icon = this.querySelector("img");
+
+            const toggleVisibility = function (e) {
+                // 🌟 Prevents the browser from removing focus (keeps keyboard open)
+                e.preventDefault();
+
+                // Execute the eye toggle logic instantly
+                const input = document.getElementById(toggle.dataset.target);
+                const icon = toggle.querySelector("img");
                 const isPassword = input.type === "password";
                 input.type = isPassword ? "text" : "password";
                 icon.src = isPassword ? "assets/eye-open.png" : "assets/eye-closed.png";
-            });
+            };
+
+            // 🌟 Bind the logic directly to the initial touch/click instead of waiting for a full 'click' event
+            toggle.addEventListener("mousedown", toggleVisibility);
+            toggle.addEventListener("touchstart", toggleVisibility, { passive: false });
+
         });
 
         const form = document.getElementById("signupForm");
@@ -229,19 +300,22 @@
         window.addEventListener("pageshow", function () { if (form) form.reset(); });
 
         // =========================================
-        // 2. RUNES & SPOTLIGHT LOGIC
+        // 2. RUNES & SPOTLIGHT LOGIC (FIXED)
         // =========================================
-        const rightPanel = document.getElementById('right-panel');
+        const rightPanel = document.querySelector('.right-panel'); // 🌟 FIX: Query by class, not ID
         const runesContainer = document.getElementById('runes-container');
 
-        if (rightPanel && runesContainer) {
-            rightPanel.addEventListener('mousemove', (e) => {
-                const rect = rightPanel.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                rightPanel.style.setProperty('--mouse-x', `${x}px`);
-                rightPanel.style.setProperty('--mouse-y', `${y}px`);
-            });
+        // 🌟 FIX: Separated the runes generation from the mousemove so they always spawn
+        if (runesContainer) {
+            if (rightPanel) {
+                rightPanel.addEventListener('mousemove', (e) => {
+                    const rect = rightPanel.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    rightPanel.style.setProperty('--mouse-x', `${x}px`);
+                    rightPanel.style.setProperty('--mouse-y', `${y}px`);
+                });
+            }
 
             const runes = ['{}', '</>', '[]', '=>', '();', '&&', '||', '!='];
             setInterval(() => {
@@ -279,7 +353,6 @@
             const subtitleElement = document.querySelector('.form-subtitle');
             if (subtitleElement) {
                 subtitleElement.innerText = "Start tracking your interview journey today.";
-                // Wait 600ms for the main title to land, then trigger the light sweep!
                 setTimeout(() => {
                     subtitleElement.classList.add('illuminate');
                 }, 600);
@@ -287,23 +360,29 @@
         });
 
         // =========================================
-        // 4. THE ALGORITHM VISUALIZER ENGINE
+        // 4. THE ALGORITHM VISUALIZER ENGINE (SCALE-AWARE FIX)
         // =========================================
         const visContainer = document.getElementById('algo-visualizer');
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
         if (visContainer) {
+
+            // 🌟 FIX 1: Scale-Aware SVG Lines
             function drawConnectingLine(parent, child, isReverse = false) {
                 const svg = document.getElementById('algo-canvas');
                 if (!svg) return;
+
                 const containerRect = visContainer.getBoundingClientRect();
+                const scale = containerRect.width / visContainer.offsetWidth || 1; // 🌟 Detects CSS Scale!
+
                 const pRect = parent.getBoundingClientRect();
                 const cRect = child.getBoundingClientRect();
 
-                const startX = pRect.left + (pRect.width / 2) - containerRect.left;
-                const startY = pRect.bottom - containerRect.top;
-                const endX = cRect.left + (cRect.width / 2) - containerRect.left;
-                const endY = cRect.top - containerRect.top;
+                // Divide by scale to fix mobile SVG positioning
+                const startX = (pRect.left + (pRect.width / 2) - containerRect.left) / scale;
+                const startY = (pRect.bottom - containerRect.top) / scale;
+                const endX = (cRect.left + (cRect.width / 2) - containerRect.left) / scale;
+                const endY = (cRect.top - containerRect.top) / scale;
 
                 const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
                 line.setAttribute("x1", isReverse ? endX : startX);
@@ -327,15 +406,22 @@
                 return group;
             }
 
+            // 🌟 FIX 2: Scale-Aware Physical Box Swapping
             async function physicalSwap(box1, box2) {
                 if (!box1 || !box2) return;
+
+                const containerRect = visContainer.getBoundingClientRect();
+                const scale = containerRect.width / visContainer.offsetWidth || 1; // 🌟 Detects CSS Scale!
+
                 box1.classList.add('highlight-alt');
                 box2.classList.add('highlight-alt');
                 await sleep(400);
 
                 const rect1 = box1.getBoundingClientRect();
                 const rect2 = box2.getBoundingClientRect();
-                const distance = rect2.left - rect1.left;
+
+                // Divide distance by scale so the animation travels the exact right amount
+                const distance = (rect2.left - rect1.left) / scale;
 
                 box1.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
                 box2.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
@@ -364,7 +450,6 @@
                 await sleep(200);
             }
 
-            // ANIMATION 1: The Masterpiece Merge Sort (Hybrid Alignment)
             async function playMergeSort() {
                 visContainer.classList.add('top-aligned');
                 visContainer.innerHTML = `
@@ -391,7 +476,7 @@
                 const g2a = createAlgoGroup(branch2A, [8, 5, 3]);
                 const g2b = createAlgoGroup(branch2B, [9, 4, 1]);
 
-                await sleep(30); 
+                await sleep(30);
                 drawConnectingLine(g1, g2a); drawConnectingLine(g1, g2b);
                 await sleep(1500);
 
@@ -411,7 +496,7 @@
                 const g3c = createAlgoGroup(branch3C, [9]);
                 const g3d = createAlgoGroup(branch3D, [4, 1]);
 
-                await sleep(30); 
+                await sleep(30);
                 drawConnectingLine(g2a, g3a); drawConnectingLine(g2a, g3b);
                 drawConnectingLine(g2b, g3c); drawConnectingLine(g2b, g3d);
                 await sleep(1500);
@@ -440,19 +525,19 @@
                 await sleep(800);
 
                 const b5 = g4_5.querySelector('.algo-box'); const b3 = g4_3.querySelector('.algo-box');
-                await physicalSwap(b5, b3); 
+                await physicalSwap(b5, b3);
 
                 const b4 = g4_4.querySelector('.algo-box'); const b1 = g4_1.querySelector('.algo-box');
-                await physicalSwap(b4, b1); 
+                await physicalSwap(b4, b1);
 
-                svgCanvas.innerHTML = ''; 
+                svgCanvas.innerHTML = '';
                 await sleep(30);
                 drawConnectingLine(g3b, g4_5, true); drawConnectingLine(g3b, g4_3, true);
                 drawConnectingLine(g3d, g4_4, true); drawConnectingLine(g3d, g4_1, true);
-                await sleep(1500); 
+                await sleep(1500);
 
-                svgCanvas.innerHTML = ''; 
-                [g4_5, g4_3, g4_4, g4_1].forEach(g => g.classList.remove('visible')); 
+                svgCanvas.innerHTML = '';
+                [g4_5, g4_3, g4_4, g4_1].forEach(g => g.classList.remove('visible'));
 
                 g3b.innerHTML = ''; g3d.innerHTML = '';
                 [3, 5].forEach(n => g3b.innerHTML += `<div class="algo-box">${n}</div>`);
@@ -465,10 +550,10 @@
                 await sleep(30);
                 drawConnectingLine(g2a, g3a, true); drawConnectingLine(g2a, g3b, true);
                 drawConnectingLine(g2b, g3c, true); drawConnectingLine(g2b, g3d, true);
-                await sleep(1500); 
+                await sleep(1500);
 
                 svgCanvas.innerHTML = '';
-                [g3a, g3b, g3c, g3d].forEach(g => g.classList.remove('visible')); 
+                [g3a, g3b, g3c, g3d].forEach(g => g.classList.remove('visible'));
 
                 g2a.innerHTML = ''; g2b.innerHTML = '';
                 [8, 3, 5].forEach(n => g2a.innerHTML += `<div class="algo-box">${n}</div>`);
@@ -478,20 +563,20 @@
                 await sleep(800);
 
                 const leftBoxes = g2a.querySelectorAll('.algo-box');
-                await physicalSwap(leftBoxes[0], leftBoxes[1]); 
-                await physicalSwap(leftBoxes[1], leftBoxes[2]); 
+                await physicalSwap(leftBoxes[0], leftBoxes[1]);
+                await physicalSwap(leftBoxes[1], leftBoxes[2]);
 
                 const rightBoxes = g2b.querySelectorAll('.algo-box');
-                await physicalSwap(rightBoxes[0], rightBoxes[1]); 
-                await physicalSwap(rightBoxes[1], rightBoxes[2]); 
+                await physicalSwap(rightBoxes[0], rightBoxes[1]);
+                await physicalSwap(rightBoxes[1], rightBoxes[2]);
 
                 svgCanvas.innerHTML = '';
                 await sleep(30);
                 drawConnectingLine(g1, g2a, true); drawConnectingLine(g1, g2b, true);
-                await sleep(1500); 
+                await sleep(1500);
 
                 svgCanvas.innerHTML = '';
-                g2a.classList.remove('visible'); g2b.classList.remove('visible'); 
+                g2a.classList.remove('visible'); g2b.classList.remove('visible');
 
                 g1.innerHTML = '';
                 [3, 5, 8, 1, 4, 9].forEach(n => g1.innerHTML += `<div class="algo-box">${n}</div>`);
@@ -508,11 +593,10 @@
                 topBoxes.forEach(b => b.classList.add('success'));
 
                 await sleep(3500);
-                visContainer.classList.remove('top-aligned'); // Remove special alignment class
+                visContainer.classList.remove('top-aligned');
                 playRandomAlgo();
             }
 
-            // ANIMATION 2: Mathematically Perfect Binary Tree Traversal
             async function playBinaryTree() {
                 visContainer.innerHTML = `
                     <svg id="algo-canvas" class="algo-svg-canvas"></svg>
@@ -526,20 +610,20 @@
 
                 function addNode(row, val) {
                     const branch = document.createElement('div');
-                    branch.className = 'algo-branch'; 
+                    branch.className = 'algo-branch';
                     branch.style.flex = "1";
-                    
+
                     const node = document.createElement('div');
                     node.className = 'algo-node';
                     node.innerText = val;
-                    
+
                     branch.appendChild(node);
                     row.appendChild(branch);
                     return node;
                 }
 
                 const root = addNode(r1, '15');
-                await sleep(30); 
+                await sleep(30);
                 root.classList.add('visible');
                 await sleep(800);
 
@@ -572,7 +656,6 @@
                 playRandomAlgo();
             }
 
-            // ANIMATION 3: Heavy Physics Stack
             async function playStack() {
                 visContainer.innerHTML = '';
 
@@ -583,7 +666,7 @@
                 const pointer = document.createElement('div');
                 pointer.className = 'top-pointer';
                 pointer.innerHTML = 'TOP <span style="font-size: 18px;">&rarr;</span>';
-                pointer.style.top = '165px'; 
+                pointer.style.top = '165px';
                 stackContainer.appendChild(pointer);
 
                 await sleep(400);
@@ -600,31 +683,31 @@
                     stackContainer.appendChild(block);
                     blocks.push(block);
 
-                    await sleep(30); 
-                    pointer.style.top = `${block.offsetTop + 14}px`; 
-                    await sleep(700); 
+                    await sleep(30);
+                    pointer.style.top = `${block.offsetTop + 14}px`;
+                    await sleep(700);
 
                     block.classList.add('neon-flash');
-                    await sleep(250); 
+                    await sleep(250);
                     block.classList.remove('neon-flash');
-                    await sleep(400); 
+                    await sleep(400);
                 }
 
                 await sleep(800);
 
                 for (let i = 0; i < items.length; i++) {
                     const block = blocks.pop();
-                    
+
                     block.classList.add('neon-flash');
-                    await sleep(350); 
+                    await sleep(350);
                     block.classList.remove('neon-flash');
                     block.classList.add('pop-out');
-                    
+
                     if (blocks.length > 0) {
                         const nextBlock = blocks[blocks.length - 1];
                         pointer.style.top = `${nextBlock.offsetTop + 14}px`;
                     } else {
-                        pointer.style.top = '165px'; 
+                        pointer.style.top = '165px';
                     }
 
                     await sleep(600);
@@ -637,7 +720,6 @@
                 playRandomAlgo();
             }
 
-            // ANIMATION 4: Linked List Structural Builder (SMOOTH FADES)
             async function playLinkedList() {
                 visContainer.innerHTML = `
                     <svg id="algo-canvas" class="algo-svg-canvas">
@@ -655,7 +737,7 @@
                 const createLLNode = async (dataVal) => {
                     const node = document.createElement('div');
                     node.className = 'll-node';
-                    
+
                     const dataDiv = document.createElement('div');
                     dataDiv.className = 'll-data';
                     dataDiv.innerText = dataVal;
@@ -671,15 +753,15 @@
                     node.appendChild(dataDiv);
                     node.appendChild(addrDiv);
                     llRow.appendChild(node);
-                    
+
                     await sleep(50);
-                    node.classList.add('visible'); 
-                    await sleep(400); 
-                    
-                    dataDiv.style.opacity = '1'; 
-                    addrDiv.style.opacity = '1'; 
+                    node.classList.add('visible');
                     await sleep(400);
-                    
+
+                    dataDiv.style.opacity = '1';
+                    addrDiv.style.opacity = '1';
+                    await sleep(400);
+
                     return { node, addrDiv };
                 };
 
@@ -692,15 +774,18 @@
                     await sleep(300);
                 };
 
+                // 🌟 FIX 3: Scale-Aware Linked List Arrows
                 const drawLLArrow = async (sourceAddrDiv, targetNode) => {
                     const containerRect = visContainer.getBoundingClientRect();
+                    const scale = containerRect.width / visContainer.offsetWidth || 1;
+
                     const sRect = sourceAddrDiv.getBoundingClientRect();
                     const tRect = targetNode.getBoundingClientRect();
 
-                    const startX = sRect.left + (sRect.width / 2) - containerRect.left;
-                    const startY = sRect.top + (sRect.height / 2) - containerRect.top;
-                    const endX = tRect.left - containerRect.left - 4; 
-                    const endY = tRect.top + (tRect.height / 2) - containerRect.top;
+                    const startX = (sRect.left + (sRect.width / 2) - containerRect.left) / scale;
+                    const startY = (sRect.top + (sRect.height / 2) - containerRect.top) / scale;
+                    const endX = (tRect.left - containerRect.left) / scale - 4;
+                    const endY = (tRect.top + (tRect.height / 2) - containerRect.top) / scale;
 
                     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
                     line.setAttribute("x1", startX);
@@ -708,7 +793,7 @@
                     line.setAttribute("x2", endX);
                     line.setAttribute("y2", endY);
                     line.classList.add("ll-arrow-line");
-                    
+
                     line.style.animation = 'none';
                     const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
                     line.style.strokeDasharray = length;
@@ -717,10 +802,10 @@
                     line.style.transition = 'opacity 0.2s ease, stroke-dashoffset 0.8s ease-in-out';
 
                     svgCanvas.appendChild(line);
-                    void line.getBoundingClientRect(); 
+                    void line.getBoundingClientRect();
 
-                    line.style.opacity = '1'; 
-                    line.style.strokeDashoffset = '0'; 
+                    line.style.opacity = '1';
+                    line.style.strokeDashoffset = '0';
                     await sleep(800);
                 };
 
@@ -745,14 +830,11 @@
                 await sleep(1000);
 
                 [n1.node, n2.node, n3.node].forEach(n => n.classList.add('success'));
-                
+
                 await sleep(3500);
                 playRandomAlgo();
             }
 
-            // =========================================
-            // ENGINE LOOP & TRANSITION MANAGER
-            // =========================================
             const algos = [playMergeSort, playBinaryTree, playStack, playLinkedList];
             let algoBag = [];
             let isFirstRun = true;
@@ -761,14 +843,14 @@
                 if (!isFirstRun) {
                     visContainer.style.transition = 'opacity 0.6s ease';
                     visContainer.style.opacity = '0';
-                    await sleep(600); 
+                    await sleep(600);
                 } else {
                     visContainer.style.opacity = '0';
                     isFirstRun = false;
                 }
 
                 visContainer.innerHTML = '';
-                visContainer.className = 'algo-visualizer'; 
+                visContainer.className = 'algo-visualizer';
 
                 if (algoBag.length === 0) {
                     algoBag = [0, 1, 2, 3];
@@ -781,7 +863,7 @@
 
                 visContainer.style.transition = 'opacity 0.6s ease';
                 visContainer.style.opacity = '1';
-                await sleep(200); 
+                await sleep(200);
 
                 algos[nextAlgoIndex]();
             }

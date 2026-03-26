@@ -43,11 +43,22 @@ body {
     background: var(--accent);
 }
 
-/* Main Layout Wrapper */
+/* Base Layout Architecture */
 .split-container {
     display: flex;
     height: 100vh;
     width: 100vw;
+}
+
+.desktop-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.mobile-layout {
+    display: none;
+    /* Hidden on Desktop */
 }
 
 /* =========================================================
@@ -118,36 +129,29 @@ body {
 
 .form-wrapper {
     width: 100%;
-    max-width: 360px;
-    margin-top: 30px;
+    max-width: clamp(320px, 80%, 380px);
+    margin-top: 10px;
 }
 
-/* =========================================================
-   THE FLYING "WELCOME BACK" + FLUID GRADIENT
-========================================================= */
+/* THE FLYING "WELCOME BACK" */
 .form-title {
-    font-size: 32px;
+    font-size: clamp(28px, 3.5vw, 36px);
     font-weight: 800;
     margin-bottom: 8px;
     letter-spacing: -0.5px;
-    opacity: 1 !important;
     display: flex;
 }
 
 .form-title .letter {
     display: inline-block;
     opacity: 0;
-    /* Clean white base with a sharp accent sweep hidden on the right */
     background: linear-gradient(110deg, #ffffff 35%, var(--accent) 50%, #ffffff 65%);
     background-size: 300% auto;
     background-position: 150% center;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     transform: translateY(-30px) rotate(-20deg) scale(1.3);
-    animation:
-        snapIntoPlace 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
-        premiumSweep 5s ease-in-out infinite 2s;
-    /* Sweeps every 5s, starts after 2s */
+    animation: snapIntoPlace 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, premiumSweep 5s ease-in-out infinite 2s;
 }
 
 .form-title .space {
@@ -162,39 +166,36 @@ body {
     }
 }
 
-/* The new sharp, premium laser sweep */
 @keyframes premiumSweep {
-    0% { background-position: 150% center; }
-    20% { background-position: -50% center; } /* Sweeps across fast */
-    100% { background-position: -50% center; } /* Pauses before next sweep */
+    0% {
+        background-position: 150% center;
+    }
+
+    20% {
+        background-position: -50% center;
+    }
+
+    100% {
+        background-position: -50% center;
+    }
 }
 
+/* SUBTITLE & INPUTS */
 .form-subtitle {
-font-size: 14px;
-    font-family: 'Inter', sans-serif; /* Ditching the hacker monospace font */
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
     margin-bottom: 32px;
     letter-spacing: 0.3px;
-    
-    /* The Gradient: Bright White -> Neon Blue Edge -> Dim Gray */
-    background: linear-gradient(
-        to right, 
-        #ffffff 0%, 
-        #ffffff 40%, 
-        var(--accent) 50%, 
-        rgba(255, 255, 255, 0.2) 60%, 
-        rgba(255, 255, 255, 0.2) 100%
-    );
+    background: linear-gradient(to right, #ffffff 0%, #ffffff 40%, var(--accent) 50%, rgba(255, 255, 255, 0.2) 60%, rgba(255, 255, 255, 0.2) 100%);
     background-size: 300% auto;
-    background-position: 100% center; /* Starts on the dim side */
+    background-position: 100% center;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    
     opacity: 0;
     transform: translateY(5px);
     transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-/* The class JS will add to trigger the entrance & sweep */
 .form-subtitle.illuminate {
     opacity: 1;
     transform: translateY(0);
@@ -203,7 +204,7 @@ font-size: 14px;
 
 @keyframes lightSweep {
     to {
-        background-position: 0% center; /* Locks in the bright side permanently */
+        background-position: 0% center;
     }
 }
 
@@ -234,10 +235,6 @@ font-size: 14px;
 .input-group {
     margin-bottom: 16px;
 }
-
-/* =========================================================
-   THE SLEEK & SLIM AESTHETIC (MINIMALIST PREMIUM)
-========================================================= */
 
 label {
     font-size: 13px;
@@ -309,17 +306,12 @@ input:focus {
     filter: invert(100%);
 }
 
-/* =========================================================
-   THE EXACT FINALIST LANDING PAGE BUTTON (1:1 COPY)
-========================================================= */
-
+/* BUTTONS & OAUTH */
 .primary-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     background: var(--accent);
     color: #121212;
     border-radius: 40px;
@@ -334,6 +326,7 @@ input:focus {
     border: none;
     cursor: pointer;
     margin-top: 16px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .primary-btn:hover {
@@ -429,6 +422,9 @@ input:focus {
     gap: 8px;
     cursor: pointer;
     transition: 0.2s;
+    opacity: 0;
+    transform: translateY(-40px);
+    animation: dropFromDivider 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .oauth-btn:hover {
@@ -446,6 +442,21 @@ input:focus {
     transform: scale(1.1);
 }
 
+.oauth-btn:nth-child(1) {
+    animation-delay: 0.2s;
+}
+
+.oauth-btn:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+@keyframes dropFromDivider {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .error-message {
     font-size: 12px;
     color: #ff4d4d;
@@ -458,7 +469,7 @@ input:focus {
 }
 
 /* =========================================================
-   3. RIGHT PANEL
+   3. RIGHT PANEL & VISUAL COMPONENTS
 ========================================================= */
 .right-panel {
     width: 55%;
@@ -468,10 +479,7 @@ input:focus {
     justify-content: center;
     align-items: center;
     background-color: var(--bg-main);
-    background-image:
-        radial-gradient(circle at 50% 50%, rgba(110, 160, 234, 0.1) 0%, transparent 70%),
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-image: radial-gradient(circle at 50% 50%, rgba(110, 160, 234, 0.1) 0%, transparent 70%), linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 100% 100%, 40px 40px, 40px 40px;
     overflow: hidden;
     --mouse-x: 50%;
@@ -480,10 +488,7 @@ input:focus {
 
 .spotlight-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     pointer-events: none;
     background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(110, 160, 234, 0.09), transparent 40%);
     z-index: 1;
@@ -506,110 +511,13 @@ input:focus {
     animation: floatUp linear forwards;
 }
 
-/* =========================================================
-   WELCOME BACK STREAK HEATMAP
-========================================================= */
-.top-streak-module {
-    position: absolute;
-    top: 40px;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    width: 100%;
-    max-width: 560px; /* Matches the IDE width perfectly */
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(20, 20, 20, 0.4);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 18px 24px;
-    z-index: 20;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    /* Floats in reverse to the IDE window for a cool parallax effect */
-    animation: floatIDE 8s ease-in-out infinite reverse; 
-}
-
-.streak-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.streak-val {
-    font-size: 24px;
-    font-weight: 800;
-    color: #fff;
-    line-height: 1;
-    letter-spacing: -0.5px;
-    margin-bottom: 4px;
-}
-
-.streak-days {
-    font-size: 14px; 
-    color: var(--text-muted); 
-    font-weight: 500;
-}
-
-.streak-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-}
-
-.heatmap-matrix {
-    display: grid;
-    /* 12 columns by 3 rows */
-    grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 4px;
-}
-
-.heat-cell {
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-    transition: all 0.3s ease;
-}
-
-/* GitHub-style Heatmap Colors (using your Accent Blue) */
-.heat-cell.lvl-0 { background: rgba(255, 255, 255, 0.03); }
-.heat-cell.lvl-1 { background: rgba(110, 160, 234, 0.2); }
-.heat-cell.lvl-2 { background: rgba(110, 160, 234, 0.5); }
-.heat-cell.lvl-3 { 
-    background: rgba(110, 160, 234, 0.9); 
-    box-shadow: 0 0 8px rgba(110, 160, 234, 0.4); 
-}
-
-/* The "Today" cell pulses to show it's waiting for activity */
-.heat-cell.lvl-pulse {
-    background: #fff;
-    box-shadow: 0 0 12px #fff, 0 0 20px var(--accent);
-    animation: pulseCell 2s infinite;
-}
-
-@keyframes pulseCell {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.85); }
-}
-
 @keyframes floatUp {
     0% {
         transform: translateY(0) rotate(0deg);
         opacity: 0;
     }
 
-    10% {
-        opacity: 1;
-    }
-
+    10%,
     90% {
         opacity: 1;
     }
@@ -633,9 +541,217 @@ input:focus {
     width: 100%;
 }
 
-/* =========================================================
-   SIMPLE & BALANCED DUAL ROLLER
-========================================================= */
+/* STREAK HEATMAP */
+.top-streak-module {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(20, 20, 20, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 18px 24px;
+    z-index: 20;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: floatIDE 8s ease-in-out infinite reverse;
+}
+
+.streak-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.streak-val {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+}
+
+.streak-days {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.streak-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.heatmap-matrix {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.heat-cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.heat-cell.lvl-0 {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.heat-cell.lvl-1 {
+    background: rgba(110, 160, 234, 0.2);
+}
+
+.heat-cell.lvl-2 {
+    background: rgba(110, 160, 234, 0.5);
+}
+
+.heat-cell.lvl-3 {
+    background: rgba(110, 160, 234, 0.9);
+    box-shadow: 0 0 8px rgba(110, 160, 234, 0.4);
+}
+
+.heat-cell.lvl-pulse {
+    background: #fff;
+    box-shadow: 0 0 12px #fff, 0 0 20px var(--accent);
+    animation: pulseCell 2s infinite;
+}
+
+@keyframes pulseCell {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(0.85);
+    }
+}
+
+/* FLOATING GLASS IDE */
+.ide-floating-window {
+    width: 100%;
+    max-width: 560px;
+    margin-bottom: 40px;
+    background: rgba(10, 10, 10, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(110, 160, 234, 0.05);
+    overflow: hidden;
+    animation: floatIDE 8s ease-in-out infinite;
+}
+
+@keyframes floatIDE {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.ide-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mac-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.mac-dots .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.dot.red {
+    background: #FF5F56;
+}
+
+.dot.yellow {
+    background: #FFBD2E;
+}
+
+.dot.green {
+    background: #27C93F;
+}
+
+.ide-filename {
+    font-size: 11px;
+    font-family: monospace;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+}
+
+.ide-body {
+    padding: 20px;
+    text-align: left;
+    height: 260px;
+    min-height: 260px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.ide-body::-webkit-scrollbar {
+    display: none;
+}
+
+/* Chrome/Safari */
+
+#typed-code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #e5e7eb;
+    white-space: pre-wrap;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.typing-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 15px;
+    background-color: var(--accent);
+    vertical-align: middle;
+    margin-left: 2px;
+    box-shadow: 0 0 8px var(--accent);
+    animation: blinkCursor 1s step-end infinite;
+}
+
+/* DUAL ROLLER (Desktop Only) */
 .dual-roller-wrapper {
     display: flex;
     width: 100%;
@@ -734,127 +850,356 @@ input:focus {
 }
 
 /* =========================================================
-   THE FLOATING GLASS IDE WINDOW
-========================================================= */
-.ide-floating-window {
-    width: 100%;
-    max-width: 560px;
-    margin-bottom: 40px;
-    background: rgba(10, 10, 10, 0.55);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(110, 160, 234, 0.05);
-    overflow: hidden;
-    animation: floatIDE 8s ease-in-out infinite;
-}
-
-@keyframes floatIDE {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-8px);
-    }
-}
-
-.ide-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background: rgba(255, 255, 255, 0.02);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.mac-dots {
-    display: flex;
-    gap: 6px;
-}
-
-.mac-dots .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-.dot.red {
-    background: #FF5F56;
-}
-
-.dot.yellow {
-    background: #FFBD2E;
-}
-
-.dot.green {
-    background: #27C93F;
-}
-
-.ide-filename {
-    font-size: 11px;
-    font-family: monospace;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
-}
-
-.ide-body {
-    padding: 20px;
-    text-align: left;
-    min-height: 220px;
-}
-
-#typed-code {
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 13px;
-    line-height: 1.6;
-    color: #e5e7eb;
-    white-space: pre-wrap;
-    text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
-}
-
-.typing-cursor {
-    display: inline-block;
-    width: 8px;
-    height: 15px;
-    background-color: var(--accent);
-    vertical-align: middle;
-    margin-left: 2px;
-    box-shadow: 0 0 8px var(--accent);
-    animation: blinkCursor 1s step-end infinite;
-}
-
-/* =========================================================
-   THE "DRAWN FROM DIVIDER" SOCIAL BUTTONS
+   4. RESPONSIVE BREAKPOINTS (DESCENDING ORDER)
 ========================================================= */
 
-.oauth-row {
-    opacity: 1 !important;
-    animation: none !important;
-    transform: none !important;
+/* --- 1100px: SMALL LAPTOPS & iPAD LANDSCAPE --- */
+@media (max-width: 1100px) {
+
+    /* 🌟 THE FIX 1: The Navbar Release 
+       Reduces the massive 50px side margins to 25px, giving the Logo and Badge way more room so they NEVER wrap lines. */
+    .panel-top {
+        left: 25px;
+        right: 25px;
+        top: 25px;
+    }
+
+    .logo {
+        height: 32px;
+    }
+
+    .login-badge {
+        gap: 8px;
+        padding: 4px 4px 4px 12px;
+    }
+
+    .login-badge .muted-text {
+        font-size: 10px;
+    }
+
+    .nav-signin-btn {
+        font-size: 11px;
+        padding: 5px 12px;
+    }
+
+    /* 🌟 THE FIX 2: Slimmer Form */
+    .form-wrapper {
+        max-width: 320px;
+    }
+
+    .form-title {
+        font-size: clamp(24px, 3vw, 28px);
+    }
+
+    .form-subtitle {
+        margin-bottom: 24px;
+    }
+
+    .input-group {
+        margin-bottom: 12px;
+    }
+
+    input {
+        height: 38px;
+        font-size: 13px;
+    }
+
+    .toggle-password {
+        height: 32px;
+        width: 32px;
+        right: 4px;
+    }
+
+    .primary-btn {
+        padding: 12px 24px;
+        font-size: 14px;
+        height: 42px;
+        margin-top: 8px;
+    }
+
+    .oauth-btn {
+        height: 38px;
+        font-size: 12px;
+    }
+
+    .oauth-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* 🌟 THE FIX 3: Right Panel Proportion Polish 
+       Reduces the max-width of the glass panels from 560px to 480px so they don't look bulky on small laptops! */
+    .top-streak-module {
+        max-width: 480px;
+        padding: 14px 20px;
+        /* Tighter padding to match the slimmer box */
+        transform: scale(0.85);
+        transform-origin: top center;
+    }
+
+    .ide-floating-window {
+        max-width: 480px;
+    }
+
+    .right-content {
+        transform: translate(-50%, -50%) scale(0.85);
+    }
 }
 
-.oauth-btn {
-    opacity: 0;
-    transform: translateY(-40px);
-    animation: dropFromDivider 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+
+/* --- 1024px: THE MOBILE DOM TELEPORT --- */
+@media (max-width: 900px) {
+    body {
+        overflow: hidden !important;
+        height: 100vh !important;
+        touch-action: none;
+    }
+
+    .desktop-layout {
+        display: none !important;
+    }
+
+    .mobile-layout {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+        position: relative;
+    }
+
+    /* The 52% Top Stage */
+    .mobile-top-stage {
+        width: 100%;
+        height: 52dvh;
+
+        /* 🌟 THE FIX: Bumped the top padding up massively to give the Navbar "oxygen".
+           Changed from clamp(60px...) to clamp(85px...) */
+        padding: clamp(85px, 12dvh, 110px) 0 0 0;
+
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        overflow: hidden;
+
+        background-color: var(--bg-main);
+        background-image: radial-gradient(circle at 50% 50%, rgba(110, 160, 234, 0.15) 0%, transparent 60%), linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px) !important;
+        background-size: 100% 100%, clamp(20px, 5vw, 40px) clamp(20px, 5vw, 40px), clamp(20px, 5vw, 40px) clamp(20px, 5vw, 40px);
+        z-index: 10;
+    }
+
+    /* S-Curve Wave */
+    .mobile-wave {
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: clamp(45px, 8dvh, 70px);
+        background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path fill="%230d0d0d" d="M0,160 C480,380 800,-80 1440,160 L1440,350 L0,350 Z"></path><path fill="none" stroke="%23ffffff" stroke-opacity="0.08" stroke-width="4" d="M0,160 C480,380 800,-80 1440,160"></path></svg>') no-repeat center bottom;
+        background-size: 100% 100%;
+        pointer-events: none;
+        z-index: 25;
+        filter: drop-shadow(0 -4px 16px rgba(110, 160, 234, 0.15));
+    }
+
+    /* Top Stage Component Ordering & Scaling */
+    .dual-roller-wrapper {
+        display: none !important;
+    }
+
+    .right-content {
+        order: 1;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        transform: translate(0, 0) scale(0.55) !important;
+        transform-origin: top center;
+
+        /* 🌟 THE FINAL FIX: Splitting the difference for that pixel-perfect alignment */
+        margin: 0 0 -170px 0 !important;
+
+        z-index: 20;
+    }
+
+    .top-streak-module {
+        order: 2;
+        display: flex !important;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        transform: scale(0.50) !important;
+        transform-origin: top center;
+        margin: 0 !important;
+        z-index: 20;
+        animation: none !important;
+    }
+
+    /* Cinematic IDE Lock for Mobile */
+    .ide-body {
+        pointer-events: none !important;
+    }
+
+    /* The 48% Bottom Stage (The Form) */
+    .mobile-bottom-form {
+        width: 100%;
+        height: 48dvh;
+        padding: clamp(2px, 0.5dvh, 6px) clamp(15px, 5vw, 24px) clamp(12px, 2.5dvh, 20px);
+        background: #4f4e4e07;
+        background-color: #0d0d0d;
+        border: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: none;
+    }
+
+    .mobile-bottom-form::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Mobile Nav */
+    .mobile-nav {
+        position: absolute;
+        top: clamp(10px, 2vh, 20px);
+        left: clamp(15px, 4vw, 24px);
+        right: clamp(15px, 4vw, 24px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 100;
+    }
+
+    .mobile-nav .logo {
+        height: clamp(24px, 5vw, 32px);
+    }
+
+    .mobile-badge {
+        display: flex;
+        align-items: center;
+        gap: clamp(4px, 1vw, 8px);
+        background: rgba(255, 255, 255, 0.03);
+        padding: clamp(3px, 0.5vh, 4px) clamp(4px, 1vw, 6px) clamp(3px, 0.5vh, 4px) clamp(10px, 2.5vw, 14px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 30px;
+    }
+
+    .mobile-badge .muted-text {
+        font-size: clamp(9px, 2.2vw, 11px);
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    .mobile-badge .nav-signin-btn {
+        background: rgba(110, 160, 234, 0.15);
+        border: 1px solid rgba(110, 160, 234, 0.3);
+        color: #fff;
+        font-size: clamp(10px, 2.5vw, 12px);
+        padding: clamp(5px, 1vh, 8px) clamp(10px, 3vw, 14px);
+        border-radius: 20px;
+        text-decoration: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Mobile Form Margin Crush */
+    .form-wrapper {
+        width: 100%;
+        max-width: clamp(280px, 85vw, 380px);
+        margin-top: 0;
+    }
+
+    .form-title {
+        justify-content: center;
+        font-size: clamp(20px, 5vw, 22px);
+        margin-bottom: 2px;
+        text-align: center;
+    }
+
+    .form-subtitle {
+        display: block !important;
+        font-size: clamp(10.5px, 2.5vw, 12px);
+        margin-bottom: clamp(2px, 0.5dvh, 6px);
+        text-align: center;
+    }
+
+    .input-group {
+        margin-bottom: clamp(4px, 1dvh, 8px);
+    }
+
+    label {
+        font-size: clamp(10px, 2.5vw, 11px);
+        margin-bottom: 2px;
+        opacity: 0.8;
+    }
+
+    input {
+        height: clamp(32px, 4.8dvh, 40px);
+        padding: 0 clamp(10px, 3vw, 14px);
+        font-size: clamp(12px, 3vw, 13px);
+        border-radius: 8px;
+    }
+
+    .toggle-password {
+        height: clamp(32px, 4.8dvh, 40px);
+        width: 32px;
+        right: 5px;
+    }
+
+    .primary-btn {
+        height: clamp(34px, 5dvh, 42px);
+        margin-top: 0;
+        padding: 0;
+        font-size: clamp(13px, 3.5vw, 14px);
+        border-radius: 8px;
+    }
+
+    .divider-container {
+        margin: clamp(6px, 1dvh, 10px) 0;
+    }
+
+    .oauth-btn {
+        height: clamp(32px, 4.8dvh, 40px);
+        border-radius: 8px;
+        font-size: clamp(11px, 2.8vw, 12px);
+    }
 }
 
-.oauth-btn:nth-child(1) {
-    animation-delay: 0.2s;
-}
+/* --- 600px - 864px: TABLET PORTRAIT OVERRIDES --- */
+@media (min-width: 600px) and (max-width: 900px) {
 
-.oauth-btn:nth-child(2) {
-    animation-delay: 0.3s;
-}
+    /* 🌟 THE FIX 1: Perfect Vertical Centering. 
+       Pushes the whole assembly down slightly to eat up that empty black void above the wave. */
+    .mobile-top-stage {
+        padding-top: clamp(55px, 7dvh, 75px) !important;
+    }
 
-@keyframes dropFromDivider {
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    /* 🌟 THE FIX 2: Sleeker Proportions. 
+       Reduced from 320px to 300px to make the IDE a sleek, cinematic rectangle instead of a box. */
+    .ide-body {
+        height: 300px !important;
+        min-height: 300px !important;
+    }
+
+    /* 🌟 THE FIX 3: The "Wow" Gap. */
+    .right-content {
+        transform: translate(0, 0) scale(0.68) !important;
+
+        /* Backed off the vacuum from -150px to -90px. 
+           This leaves a perfect, deliberate ~20px premium glass gap between the widgets! */
+        margin: 0 0 -90px 0 !important;
+    }
+
+    .top-streak-module {
+        transform: scale(0.65) !important;
+    }
+
+    .form-wrapper {
+        max-width: 440px !important;
     }
 }

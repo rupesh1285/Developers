@@ -43,16 +43,30 @@ body {
 }
 
 .split-container {
-  display: flex;
-  height: 100vh;
   width: 100vw;
+  height: 100vh;
 }
 
 /* =========================================================
-   2. LEFT PANEL (THE FORM)
+   BASE LAYOUT ARCHITECTURE (DOM FORK)
+========================================================= */
+.mobile-layout {
+  display: none;
+  /* Hidden by default on desktop */
+}
+
+.desktop-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* =========================================================
+   2. LEFT PANEL (THE DESKTOP FORM)
 ========================================================= */
 .left-panel {
-  width: 45%;
+  flex: 0 1 45%;
+  min-width: 400px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -60,54 +74,62 @@ body {
   align-items: center;
   background: #4f4e4e07;
   border-right: 1px solid var(--border-color);
-  padding: 40px;
+  padding: clamp(20px, 4vw, 40px);
   z-index: 10;
 }
 
 .panel-top {
   position: absolute;
-  top: 30px;
-  left: 50px;
-  right: 50px;
+  top: clamp(15px, 3vh, 30px);
+  left: clamp(20px, 4vw, 50px);
+  right: clamp(20px, 4vw, 50px);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.logo {
-  height: 40px;
-  object-fit: contain;
-  
+/* =========================================================
+   ELASTIC TOP NAVIGATION (DESKTOP)
+========================================================= */
+.text-logo {
+  font-size: clamp(16px, 2vw, 22px);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 1px;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .login-badge {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(6px, 1vw, 12px);
   background: rgba(255, 255, 255, 0.03);
-  padding: 6px 6px 6px 16px;
+  padding: clamp(4px, 0.5vh, 6px) clamp(4px, 0.5vh, 6px) clamp(4px, 0.5vh, 6px) clamp(10px, 1.5vw, 16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 30px;
 }
 
 .muted-text {
-  font-size: 12px;
+  font-size: clamp(10px, 1vw, 12px);
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .nav-signin-btn {
   background: var(--bg-surface);
   color: #fff;
   text-decoration: none;
-  font-size: 12px;
+  font-size: clamp(10px, 1vw, 12px);
   font-weight: 600;
-  padding: 6px 14px;
+  padding: clamp(4px, 0.5vh, 6px) clamp(10px, 1.5vw, 14px);
   border-radius: 20px;
   display: flex;
   align-items: center;
   gap: 6px;
   border: 1px solid var(--border-color);
   transition: 0.2s;
+  white-space: nowrap;
 }
 
 .nav-signin-btn:hover {
@@ -175,18 +197,11 @@ body {
   font-family: 'Inter', sans-serif;
   margin-bottom: 32px;
   letter-spacing: 0.3px;
-
-  background: linear-gradient(to right,
-      #ffffff 0%,
-      #ffffff 40%,
-      var(--accent) 50%,
-      rgba(255, 255, 255, 0.2) 60%,
-      rgba(255, 255, 255, 0.2) 100%);
+  background: linear-gradient(to right, #ffffff 0%, #ffffff 40%, var(--accent) 50%, rgba(255, 255, 255, 0.2) 60%, rgba(255, 255, 255, 0.2) 100%);
   background-size: 300% auto;
   background-position: 100% center;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-
   opacity: 0;
   transform: translateY(5px);
   transition: opacity 0.5s ease, transform 0.5s ease;
@@ -308,6 +323,12 @@ input:focus {
   width: 14px;
   height: 14px;
   filter: invert(100%);
+}
+
+.toggle-password:hover,
+.toggle-password:active {
+  opacity: 1;
+  background: transparent;
 }
 
 .primary-btn {
@@ -478,10 +499,11 @@ input:focus {
 }
 
 /* =========================================================
-   3. RIGHT PANEL BACKGROUND & SPOTLIGHT
+   3. RIGHT PANEL BACKGROUND & SPOTLIGHT (DESKTOP)
 ========================================================= */
 .right-panel {
-  width: 55%;
+  flex: 1 1 auto;
+  min-width: 500px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -547,30 +569,31 @@ input:focus {
 }
 
 /* =========================================================
-   TOP HORIZONTAL PILLS (NAVBAR STYLE)
+   TOP HORIZONTAL PILLS (ELASTIC NAVBAR STYLE)
 ========================================================= */
 .top-right-pills {
   position: absolute;
-  top: 40px;
+  top: clamp(20px, 4vh, 40px);
   left: 0;
   right: 0;
   width: 100%;
-  padding: 0 60px;
+  padding: 0 clamp(15px, 4vw, 60px);
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.5vw, 20px);
   z-index: 20;
 }
 
 .mini-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  width: 31%;
+  gap: clamp(8px, 1vw, 12px);
+  padding: clamp(6px, 1vh, 8px) clamp(10px, 1vw, 16px);
+  flex: 1 1 0;
+  min-width: 0;
   max-width: 240px;
-  height: 60px;
+  height: clamp(48px, 6vh, 60px);
   background: rgba(30, 30, 30, 0.6);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -605,13 +628,13 @@ input:focus {
 }
 
 .icon-box {
-  width: 36px;
-  height: 36px;
+  width: clamp(28px, 2.5vw, 36px);
+  height: clamp(28px, 2.5vw, 36px);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: clamp(14px, 1.5vw, 18px);
   flex-shrink: 0;
 }
 
@@ -637,20 +660,26 @@ input:focus {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  overflow: hidden;
 }
 
 .card-text h4 {
-  font-size: 13px;
+  font-size: clamp(11px, 1vw, 13px);
   font-weight: 600;
   color: #fff;
   margin-bottom: 2px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-text span {
-  font-size: 11px;
+  font-size: clamp(9px, 0.8vw, 11px);
   color: var(--text-muted);
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* =========================================================
@@ -666,13 +695,11 @@ input:focus {
 }
 
 .hero-text {
-  font-size: 36px;
-  /* 🌟 THE FIX: Increased line-height from 1.2 to 1.5 for premium spacing */
+  font-size: clamp(24px, 3vw, 36px);
   line-height: 1.5;
   font-weight: 800;
   letter-spacing: -1px;
   text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  /* 🌟 THE FIX: Added the floating animation with a slight delay so it doesn't move identically to the pills */
   animation: float 7s ease-in-out infinite 1s;
 }
 
@@ -697,9 +724,10 @@ input:focus {
   justify-content: center;
   align-items: center;
   gap: 25px;
+
 }
 
-/* SVG CONNECTING LINES (1.5s LATENCY) */
+/* SVG CONNECTING LINES */
 .algo-svg-canvas {
   position: absolute;
   top: 0;
@@ -760,7 +788,7 @@ input:focus {
   opacity: 0.2;
 }
 
-/* ALL VISUAL ELEMENTS (BOXES, NODES, STACKS) */
+/* ALL VISUAL ELEMENTS */
 .algo-box {
   width: 40px;
   height: 40px;
@@ -777,7 +805,6 @@ input:focus {
 }
 
 .algo-node {
-  /* Removed absolute positioning so it locks into the perfect grid */
   width: 48px;
   height: 48px;
   background: #1e1e1e;
@@ -792,7 +819,6 @@ input:focus {
   transition: all 0.6s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   opacity: 0;
-  /* Starts invisible */
 }
 
 .algo-node.visible {
@@ -837,13 +863,11 @@ input:focus {
   background: rgba(0, 0, 0, 0.3);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
   position: relative;
-  /* Allows the pointer to track perfectly outside it */
 }
 
 .top-pointer {
   position: absolute;
   right: 135px;
-  /* Pushes it perfectly to the left outside the glass box */
   color: var(--accent);
   font-weight: 800;
   font-size: 14px;
@@ -929,14 +953,12 @@ input:focus {
   }
 }
 
-/* The tactile neon flash */
 .neon-flash {
   background: rgba(110, 160, 234, 0.3) !important;
   border-color: #fff !important;
   box-shadow: 0 0 30px rgba(110, 160, 234, 0.9), inset 0 0 15px rgba(110, 160, 234, 0.5) !important;
   color: #fff !important;
   transform: scale(1.05);
-  /* Slight pop when glowing */
   transition: all 0.2s ease-out !important;
 }
 
@@ -956,13 +978,11 @@ input:focus {
     opacity: 1;
   }
 
-  /* The heavy squash */
   85% {
     transform: translateY(0) scale(0.95, 1.05);
     opacity: 1;
   }
 
-  /* The rebound bounce */
   100% {
     transform: translateY(0) scale(1, 1);
     opacity: 1;
@@ -991,16 +1011,14 @@ input:focus {
   transition: all 0.5s ease;
 }
 
-/* Special mode for Merge Sort to prevent line shifting */
 /* =========================================================
-   LINKED LIST (STRUCTURE BUILDER) SPECIFIC PHYSICS
+   LINKED LIST SPECIFIC PHYSICS
 ========================================================= */
 .ll-row {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 50px;
-  /* Space for the arrows */
   width: 100%;
   position: relative;
   z-index: 2;
@@ -1065,11 +1083,337 @@ input:focus {
   animation: drawLLArrow 0.8s ease-in-out forwards;
   filter: drop-shadow(0 0 4px rgba(110, 160, 234, 0.6));
   marker-end: url(#arrowhead);
-  /* Uses the SVG def */
 }
 
 @keyframes drawLLArrow {
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+/* =========================================================
+   INTERMEDIATE RESPONSIVE (1100px)
+========================================================= */
+@media (max-width: 1100px) {
+  .form-subtitle {
+    margin-bottom: 24px;
+  }
+
+  .input-group {
+    margin-bottom: 10px;
+  }
+
+  .name-row {
+    gap: 10px;
+  }
+
+  label {
+    font-size: 11px;
+  }
+
+  input {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+
+  .toggle-password {
+    height: 30px;
+    width: 30px;
+  }
+
+  .primary-btn {
+    height: 36px;
+    font-size: 13px;
+    padding: 0 20px;
+    margin-top: 4px;
+  }
+
+  .oauth-btn {
+    height: 34px;
+    font-size: 11.5px;
+  }
+
+  .oauth-btn svg,
+  .oauth-btn img {
+    width: 14px;
+    height: 14px;
+  }
+
+  .top-right-pills {
+    padding: 0 15px;
+    gap: 8px;
+  }
+
+  .mini-card {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .icon-box {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 14px !important;
+  }
+
+  .card-text h4 {
+    font-size: 10.5px !important;
+    letter-spacing: -0.3px;
+  }
+
+  .card-text span {
+    font-size: 8.5px !important;
+    letter-spacing: -0.2px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE RESPONSIVE (864px - FLUID DOM FORK ARCHITECTURE)
+========================================================= */
+@media (max-width: 864px) {
+  body {
+    overflow: hidden !important;
+    height: 100vh !important;
+    touch-action: none;
+  }
+
+  .desktop-layout {
+    display: none !important;
+  }
+
+  .mobile-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+  }
+
+  /* =========================================
+     TOP HALF: ENGINE STAGE (40% of screen)
+     ========================================= */
+  .mobile-top-stage {
+    width: 100%;
+    height: 40dvh;
+    /* 🌟 THE FIX: Increased to 40% to push the wave downward */
+    padding: clamp(25px, 4dvh, 40px) 0 0 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    background-color: var(--bg-main);
+    background-image:
+      radial-gradient(circle at 50% 50%, rgba(110, 160, 234, 0.15) 0%, transparent 60%),
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px) !important;
+    background-size: 100% 100%, clamp(20px, 5vw, 40px) clamp(20px, 5vw, 40px), clamp(20px, 5vw, 40px) clamp(20px, 5vw, 40px);
+    z-index: 10;
+  }
+
+  /* 🌟 THE FIX: Perfect Responsive Nav & Sign-In Link */
+  .mobile-nav {
+    position: absolute;
+    top: clamp(10px, 2vh, 20px);
+    left: clamp(15px, 4vw, 24px);
+    right: clamp(15px, 4vw, 24px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+  }
+
+  .mobile-nav .text-logo {
+    font-size: clamp(18px, 5vw, 22px);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 800;
+  }
+
+  .mobile-badge {
+    display: flex;
+    align-items: center;
+    gap: clamp(4px, 1vw, 8px);
+    background: rgba(255, 255, 255, 0.03);
+    padding: clamp(3px, 0.5vh, 4px) clamp(4px, 1vw, 6px) clamp(3px, 0.5vh, 4px) clamp(10px, 2.5vw, 14px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 30px;
+  }
+
+  .mobile-badge .muted-text {
+    font-size: clamp(9px, 2.2vw, 11px);
+    color: var(--text-muted);
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  .mobile-badge .nav-signin-btn {
+    background: rgba(110, 160, 234, 0.15);
+    border: 1px solid rgba(110, 160, 234, 0.3);
+    color: #fff;
+    font-size: clamp(10px, 2.5vw, 12px);
+    padding: clamp(5px, 1vh, 8px) clamp(10px, 3vw, 14px);
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* 🌟 THE FIX: Deep Dramatic S-Curve + Seamless Melt */
+  .mobile-wave {
+    position: absolute;
+    /* 🌟 Push it down 2px to guarantee it perfectly overlaps the bottom panel with zero sub-pixel gaps */
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    /* 🌟 Increased height to give the new, deeper curve room to sweep */
+    height: clamp(45px, 8dvh, 70px);
+
+    /* 🌟 NEW SVG MATH: 
+       - Path 1 (Fill): Deep S-Curve, overshoots the bottom to prevent gaps.
+       - Path 2 (Stroke): Only traces the top curve, completely eliminating the bottom line.
+    */
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path fill="%230d0d0d" d="M0,160 C480,380 800,-80 1440,160 L1440,350 L0,350 Z"></path><path fill="none" stroke="%23ffffff" stroke-opacity="0.08" stroke-width="4" d="M0,160 C480,380 800,-80 1440,160"></path></svg>') no-repeat center bottom;
+    background-size: 100% 100%;
+    pointer-events: none;
+    z-index: 25;
+
+    /* Keeps the premium upward blue glow */
+    filter: drop-shadow(0 -4px 16px rgba(110, 160, 234, 0.15));
+  }
+
+  /* 🌟 THE FIX: Perfectly Centered, Fluid Engine Scale */
+  .algo-visualizer {
+    transform: scale(0.50);
+    /* Bumped massively from 0.38 to 0.50 (Max safe size for phones) */
+    transform-origin: center center;
+    /* True center origin */
+    margin: 0;
+    /* Wiped out the bottom margin so it doesn't push up */
+    z-index: 20;
+  }
+
+  /* =========================================
+     BOTTOM HALF: THE FORM (60% of screen)
+     ========================================= */
+  .mobile-bottom-form {
+    width: 100%;
+    height: 60dvh;
+    /* 🌟 THE FIX: Reduced to 60% */
+
+    /* 🌟 THE FIX: Crushed the top padding (down to 2px) so the title hugs the wave tightly */
+    padding: clamp(2px, 0.5dvh, 6px) clamp(15px, 5vw, 24px) clamp(4px, 1dvh, 8px);
+
+    background: #4f4e4e07;
+    background-color: #0d0d0d;
+    border: none;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+
+  .mobile-bottom-form::-webkit-scrollbar {
+    display: none;
+  }
+
+  .form-wrapper {
+    width: 100%;
+    max-width: clamp(280px, 85vw, 380px);
+    margin-top: 0;
+  }
+
+  .form-title {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: clamp(20px, 5vw, 22px);
+    margin-bottom: 2px;
+    text-align: center;
+  }
+
+  .form-subtitle {
+    display: block !important;
+    font-size: clamp(10.5px, 2.5vw, 12px);
+    margin-bottom: clamp(6px, 1.5dvh, 12px);
+    /* Tighter margin */
+    text-align: center;
+  }
+
+  /* 🌟 THE FIX: Hyper-Squished Inputs and Margins */
+  .name-row {
+    gap: clamp(6px, 1.5vw, 10px);
+    margin-bottom: clamp(4px, 1dvh, 8px);
+    /* Recovering vertical pixels */
+  }
+
+  .input-group {
+    margin-bottom: clamp(4px, 1dvh, 8px);
+    /* Recovering vertical pixels */
+  }
+
+  label {
+    font-size: clamp(10px, 2.5vw, 11px);
+    margin-bottom: 2px;
+    opacity: 0.8;
+  }
+
+  input {
+    height: clamp(32px, 4.8dvh, 40px);
+    /* Safely shrinks down to 32px on tiny phones */
+    padding: 0 clamp(10px, 3vw, 14px);
+    font-size: clamp(12px, 3vw, 13px);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .toggle-password {
+    height: clamp(32px, 4.8dvh, 40px);
+    width: 32px;
+    right: 5px;
+  }
+
+  .primary-btn {
+    height: clamp(34px, 5dvh, 42px);
+    margin-top: 2px;
+    font-size: clamp(13px, 3.5vw, 14px);
+    border-radius: 8px;
+  }
+
+  .divider-container {
+    margin: clamp(6px, 1.2dvh, 12px) 0;
+    /* Tighter gap */
+  }
+
+  .oauth-btn {
+    height: clamp(32px, 4.8dvh, 40px);
+    border-radius: 8px;
+    font-size: clamp(11px, 2.8vw, 12px);
+  }
+}
+
+/* =========================================================
+   TABLET PORTRAIT OPTIMIZATION (600px - 864px)
+========================================================= */
+@media (min-width: 600px) and (max-width: 864px) {
+
+  /* 1. Crank up the engine size for tablet screens */
+  .algo-visualizer {
+    transform: scale(0.75) !important;
+    /* Makes the engine 50% larger than on phones */
+  }
+
+  /* 2. Slightly widen the form so it doesn't look overly skinny on an iPad */
+  .form-wrapper {
+    max-width: 440px !important;
   }
 }

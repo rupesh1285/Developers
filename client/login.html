@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FINALIST - Sign In</title>
@@ -15,195 +14,267 @@
 <body>
 
     <div class="split-container">
+        <div class="desktop-layout">
+            <div class="left-panel" id="desktop-left">
+                <div class="panel-top">
+                    <img src="assets/logo.png" class="logo" alt="FINALIST Logo">
+                    <div class="login-badge">
+                        <span class="muted-text">New to FINALIST?</span>
+                        <a href="signup.html" class="nav-signin-btn">Sign Up <i class="ri-arrow-right-line"></i></a>
+                    </div>
+                </div>
 
-        <div class="left-panel">
+                <div class="form-wrapper" id="form-wrapper">
+                    <h1 class="form-title">Welcome Back</h1>
+                    <p class="form-subtitle">Pick up exactly where you left off.</p>
 
-            <div class="panel-top">
-                <img src="assets/logo.png" class="logo" alt="FINALIST Logo">
-                <div class="login-badge">
-                    <span class="muted-text">New to FINALIST?</span>
-                    <a href="signup.html" class="nav-signin-btn">Sign Up <i class="ri-arrow-right-line"></i></a>
+                    <form id="loginForm">
+                        <div class="input-group">
+                            <label>Email</label>
+                            <input type="email" id="email" placeholder="name@example.com" required>
+                        </div>
+
+                        <div class="input-group" style="margin-bottom: 8px;">
+                            <label>Password</label>
+                            <div class="password-field">
+                                <input type="password" id="password" placeholder="Enter your password" required>
+                                <span class="toggle-password" data-target="password">
+                                    <img src="assets/eye-closed.png" alt="Toggle View">
+                                </span>
+                            </div>
+                        </div>
+
+                        <p class="error-message" id="loginError" style="display:none;"></p>
+
+                        <button type="submit" class="primary-btn">
+                            Sign In <i class="ri-login-box-line"></i>
+                        </button>
+                    </form>
+
+                    <div class="divider-container">
+                        <span class="divider-text">OR CONTINUE WITH</span>
+                    </div>
+
+                    <div class="oauth-row">
+                        <button type="button" class="oauth-btn" id="googleAuth">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
+                                <path fill="#EA4335"
+                                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.7 17.74 9.5 24 9.5z" />
+                                <path fill="#4285F4"
+                                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                                <path fill="#FBBC05"
+                                    d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                                <path fill="#34A853"
+                                    d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                            </svg>
+                            Google
+                        </button>
+                        <button type="button" class="oauth-btn" id="githubAuth">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="#ffffff">
+                                <path
+                                    d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.113.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+                            </svg>
+                            GitHub
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-wrapper">
+            <div class="right-panel" id="desktop-right-panel">
+                <div class="runes-container" id="runes-container"></div>
+                <div class="spotlight-overlay" id="spotlight"></div>
 
-                <h1 class="form-title">Welcome Back</h1>
-                <p class="form-subtitle">Pick up exactly where you left off.</p>
-
-                <form id="loginForm">
-
-                    <div class="input-group">
-                        <label>Email</label>
-                        <input type="email" id="email" placeholder="name@example.com" required>
+                <div class="top-streak-module" id="streak-module">
+                    <div class="streak-info">
+                        <div class="streak-val">100 <span class="streak-days">Day Streak</span></div>
+                        <div class="streak-label"><i class="ri-fire-fill" style="color: #f59e0b;"></i> Keep the momentum
+                            going</div>
                     </div>
 
-                    <div class="input-group" style="margin-bottom: 8px;">
-                        <label>Password</label>
-                        <div class="password-field">
-                            <input type="password" id="password" placeholder="Enter your password" required>
-                            <span class="toggle-password" data-target="password">
-                                <img src="assets/eye-closed.png" alt="Toggle View">
-                            </span>
+                    <div class="heatmap-matrix">
+                        <div class="heat-cell lvl-0"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-0"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-3"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-3"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-0"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-3"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-3"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-3"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-0"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-3"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-3"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-1"></div>
+                        <div class="heat-cell lvl-2"></div>
+                        <div class="heat-cell lvl-pulse"></div>
+                    </div>
+                </div>
+
+                <div class="right-content" id="desktop-right-content">
+                    <div class="ide-floating-window">
+                        <div class="ide-header">
+                            <div class="mac-dots">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                            </div>
+                            <span class="ide-filename" id="ide-filename">script.js</span>
+                        </div>
+                        <div class="ide-body">
+                            <code id="typed-code"></code><span class="typing-cursor"></span>
                         </div>
                     </div>
 
-                    <p class="error-message" id="loginError" style="display:none;"></p>
-
-                    <button type="submit" class="primary-btn">
-                        Sign In <i class="ri-login-box-line"></i>
-                    </button>
-
-                </form>
-
-                <div class="divider-container">
-                    <span class="divider-text">OR CONTINUE WITH</span>
-                </div>
-
-                <div class="oauth-row">
-                    <button type="button" class="oauth-btn" id="googleAuth">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
-                            <path fill="#EA4335"
-                                d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.7 17.74 9.5 24 9.5z" />
-                            <path fill="#4285F4"
-                                d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                            <path fill="#FBBC05"
-                                d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                            <path fill="#34A853"
-                                d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                        </svg>
-                        Google
-                    </button>
-                    <button type="button" class="oauth-btn" id="githubAuth">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                            fill="#ffffff">
-                            <path
-                                d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.113.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
-                        </svg>
-                        GitHub
-                    </button>
-                </div>
-
-            </div>
-        </div>
-
-        <div class="right-panel" id="right-panel">
-
-            <div class="runes-container" id="runes-container"></div>
-            <div class="spotlight-overlay" id="spotlight"></div>
-
-            <div class="top-streak-module">
-                <div class="streak-info">
-                    <div class="streak-val">100 <span class="streak-days">Day Streak</span></div>
-                    <div class="streak-label"><i class="ri-fire-fill" style="color: #f59e0b;"></i> Keep the momentum going</div>
-                </div>
-                
-                <div class="heatmap-matrix">
-                    <div class="heat-cell lvl-0"></div><div class="heat-cell lvl-1"></div><div class="heat-cell lvl-2"></div>
-                    <div class="heat-cell lvl-2"></div><div class="heat-cell lvl-0"></div><div class="heat-cell lvl-1"></div>
-                    <div class="heat-cell lvl-3"></div><div class="heat-cell lvl-2"></div><div class="heat-cell lvl-1"></div>
-                    <div class="heat-cell lvl-1"></div><div class="heat-cell lvl-3"></div><div class="heat-cell lvl-2"></div>
-                    <div class="heat-cell lvl-0"></div><div class="heat-cell lvl-2"></div><div class="heat-cell lvl-3"></div>
-                    <div class="heat-cell lvl-1"></div><div class="heat-cell lvl-1"></div><div class="heat-cell lvl-2"></div>
-                    <div class="heat-cell lvl-2"></div><div class="heat-cell lvl-3"></div><div class="heat-cell lvl-1"></div>
-                    <div class="heat-cell lvl-3"></div><div class="heat-cell lvl-1"></div><div class="heat-cell lvl-0"></div>
-                    <div class="heat-cell lvl-1"></div><div class="heat-cell lvl-2"></div><div class="heat-cell lvl-3"></div>
-                    <div class="heat-cell lvl-2"></div><div class="heat-cell lvl-1"></div><div class="heat-cell lvl-2"></div>
-                    <div class="heat-cell lvl-3"></div><div class="heat-cell lvl-2"></div><div class="heat-cell lvl-1"></div>
-                    <div class="heat-cell lvl-1"></div><div class="heat-cell lvl-2"></div><div class="heat-cell lvl-pulse"></div>
-                </div>
-            </div>
-
-            <div class="right-content">
-
-                <div class="ide-floating-window">
-                    <div class="ide-header">
-                        <div class="mac-dots">
-                            <span class="dot red"></span>
-                            <span class="dot yellow"></span>
-                            <span class="dot green"></span>
+                    <div class="dual-roller-wrapper">
+                        <div class="roller-col roll-up">
+                            <span class="r-word">Crack</span>
+                            <span class="r-word">Write</span>
+                            <span class="r-word">Master</span>
+                            <span class="r-word">Crack</span>
                         </div>
-                        <span class="ide-filename" id="ide-filename">script.js</span>
-                    </div>
-                    <div class="ide-body">
-                        <code id="typed-code"></code><span class="typing-cursor"></span>
-                    </div>
-                </div>
-
-                <div class="dual-roller-wrapper">
-                    <div class="roller-col roll-up">
-                        <span class="r-word">Crack</span>
-                        <span class="r-word">Write</span>
-                        <span class="r-word">Master</span>
-                        <span class="r-word">Crack</span>
-                    </div>
-
-                    <span class="static-mid">the</span>
-
-                    <div class="roller-col roll-down accent-text">
-                        <span class="r-word">logic.</span>
-                        <span class="r-word">algorithm.</span>
-                        <span class="r-word">code.</span>
-                        <span class="r-word">logic.</span>
+                        <span class="static-mid">the</span>
+                        <div class="roller-col roll-down accent-text">
+                            <span class="r-word">logic.</span>
+                            <span class="r-word">algorithm.</span>
+                            <span class="r-word">code.</span>
+                            <span class="r-word">logic.</span>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
+        <div class="mobile-layout">
+            <div class="mobile-top-stage" id="mobile-top">
+                <div class="mobile-nav">
+                    <img src="assets/logo.png" class="logo" alt="FINALIST Logo">
+                    <div class="mobile-badge">
+                        <span class="muted-text">New to FINALIST?</span>
+                        <a href="signup.html" class="nav-signin-btn">Sign Up <i class="ri-arrow-right-line"></i></a>
+                    </div>
+                </div>
+                <div class="mobile-wave" id="mobile-wave"></div>
+            </div>
+
+            <div class="mobile-bottom-form" id="mobile-bottom">
+            </div>
+        </div>
     </div>
 
     <script>
-        /* =========================================
-           1. RIGHT PANEL MOUSE & RUNES LOGIC
-           ========================================= */
-        const rightPanel = document.getElementById('right-panel');
-        const runesContainer = document.getElementById('runes-container');
+        // =========================================
+        // 0. DOM TELEPORTER (Desktop <-> Mobile)
+        // =========================================
+        document.addEventListener("DOMContentLoaded", () => {
+            // 🌟 THE FIX: Sync the Javascript to trigger the flip at 1024px
+            const mobileQuery = window.matchMedia('(max-width: 900px)');
 
-        // Track mouse ONLY inside the right panel
-        rightPanel.addEventListener('mousemove', (e) => {
-            const rect = rightPanel.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            rightPanel.style.setProperty('--mouse-x', `${x}px`);
-            rightPanel.style.setProperty('--mouse-y', `${y}px`);
+            // Elements to teleport
+            const rightContent = document.getElementById('desktop-right-content');
+            const streakModule = document.getElementById('streak-module'); // 🌟 THE FIX: Grab the Heatmap
+            const formBlock = document.getElementById('form-wrapper');
+            const runesBlock = document.getElementById('runes-container');
+
+            // Destinations
+            const desktopLeft = document.getElementById('desktop-left');
+            const desktopRightPanel = document.getElementById('desktop-right-panel');
+            const spotlight = document.getElementById('spotlight');
+            const mobileTop = document.getElementById('mobile-top');
+            const mobileBottom = document.getElementById('mobile-bottom');
+            const mobileWave = document.getElementById('mobile-wave');
+
+            function handleLayoutShift(e) {
+                if (e.matches) {
+                    // Teleport to Mobile
+                    if (runesBlock) mobileTop.insertBefore(runesBlock, mobileWave);
+                    if (streakModule) mobileTop.insertBefore(streakModule, mobileWave); // 🌟 Drops Heatmap first
+                    if (rightContent) mobileTop.insertBefore(rightContent, mobileWave); // 🌟 Drops IDE under Heatmap
+                    if (formBlock) mobileBottom.appendChild(formBlock);
+                } else {
+                    // Return to Desktop
+                    if (runesBlock && desktopRightPanel) desktopRightPanel.insertBefore(runesBlock, spotlight);
+                    if (streakModule && desktopRightPanel) desktopRightPanel.insertBefore(streakModule, rightContent); // 🌟 Returns Heatmap
+                    if (rightContent && desktopRightPanel) desktopRightPanel.appendChild(rightContent);
+                    if (formBlock) desktopLeft.appendChild(formBlock);
+                }
+            }
+
+            mobileQuery.addEventListener('change', handleLayoutShift);
+            handleLayoutShift(mobileQuery);
         });
 
-        // Spawn runes confined to the right panel
-        const runes = ['{}', '</>', '[]', '=>', '();', '&&', '||', '!='];
-        setInterval(() => {
-            const rune = document.createElement('div');
-            rune.className = 'rune';
-            rune.textContent = runes[Math.floor(Math.random() * runes.length)];
-            rune.style.left = Math.random() * 100 + '%'; // % keeps it inside the panel
-            rune.style.animationDuration = (Math.random() * 6 + 6) + 's';
-            rune.style.fontSize = (Math.random() * 10 + 14) + 'px';
-            runesContainer.appendChild(rune);
+        /* =========================================
+           1. RIGHT PANEL MOUSE LOGIC
+           ========================================= */
+        const rightPanel = document.getElementById('desktop-right-panel');
+        if (rightPanel) {
+            rightPanel.addEventListener('mousemove', (e) => {
+                const rect = rightPanel.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                rightPanel.style.setProperty('--mouse-x', `${x}px`);
+                rightPanel.style.setProperty('--mouse-y', `${y}px`);
+            });
+        }
 
-            setTimeout(() => rune.remove(), 12000);
-        }, 400);
-
+        const runesContainer = document.getElementById('runes-container');
+        if (runesContainer) {
+            const runes = ['{}', '</>', '[]', '=>', '();', '&&', '||', '!='];
+            setInterval(() => {
+                const rune = document.createElement('div');
+                rune.className = 'rune';
+                rune.textContent = runes[Math.floor(Math.random() * runes.length)];
+                rune.style.left = Math.random() * 100 + '%';
+                rune.style.animationDuration = (Math.random() * 6 + 6) + 's';
+                rune.style.fontSize = (Math.random() * 10 + 14) + 'px';
+                runesContainer.appendChild(rune);
+                setTimeout(() => rune.remove(), 12000);
+            }, 400);
+        }
 
         /* =========================================
-           2. ORIGINAL FORM LOGIC (UNTOUCHED)
+           2. FORM LOGIC & UI FIXES
            ========================================= */
-        // Strict Token Check
         const currentToken = localStorage.getItem("token");
         if (currentToken && currentToken !== "null" && currentToken.length > 20) {
             window.location.href = "problems.html";
         }
 
-        // Keep Password Toggle UI
+        // 🌟 Fixed Mobile Keyboard Drop for Password Toggle
         document.querySelectorAll(".toggle-password").forEach(toggle => {
-            toggle.addEventListener("click", function () {
-                const input = document.getElementById(this.dataset.target);
-                const icon = this.querySelector("img");
-
+            const toggleVisibility = function (e) {
+                e.preventDefault();
+                const input = document.getElementById(toggle.dataset.target);
+                const icon = toggle.querySelector("img");
                 const isPassword = input.type === "password";
                 input.type = isPassword ? "text" : "password";
-
                 icon.src = isPassword ? "assets/eye-open.png" : "assets/eye-closed.png";
-            });
+            };
+
+            toggle.addEventListener("mousedown", toggleVisibility);
+            toggle.addEventListener("touchstart", toggleVisibility, { passive: false });
         });
 
         const form = document.getElementById("loginForm");
@@ -211,178 +282,126 @@
         const password = document.getElementById("password");
         const errorText = document.getElementById("loginError");
 
-        // Real Backend Fetch
-        form.addEventListener("submit", async function (e) {
-            e.preventDefault();
-
-            try {
-                const response = await fetch("/api/auth/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: email.value.trim(), password: password.value })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    localStorage.setItem("token", data.token);
-                    window.location.href = "problems.html";
-                } else {
+        if (form) {
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault();
+                try {
+                    const response = await fetch("/api/auth/login", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: email.value.trim(), password: password.value })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        localStorage.setItem("token", data.token);
+                        window.location.href = "problems.html";
+                    } else {
+                        errorText.style.display = "block";
+                        errorText.textContent = data.message || "Invalid email or password.";
+                        password.classList.add("input-error");
+                        email.classList.add("input-error");
+                    }
+                } catch (error) {
+                    console.error("Login Error:", error);
                     errorText.style.display = "block";
-                    errorText.textContent = data.message || "Invalid email or password.";
-                    password.classList.add("input-error");
-                    email.classList.add("input-error");
+                    errorText.textContent = "Network error. Please try again.";
                 }
-
-            } catch (error) {
-                console.error("Login Error:", error);
-                errorText.style.display = "block";
-                errorText.textContent = "Network error. Please try again.";
-            }
-        });
-
-        // Keep Error Clearing UI
-        [email, password].forEach(input => {
-            input.addEventListener("input", function () {
-                input.classList.remove("input-error");
-                errorText.style.display = "none";
             });
-        });
-        /* =========================================
-   THE CINEMATIC CODE TYPIST
-========================================= */
-        const codeSnippets = [
-            {
-                file: "binary_search.py",
-                code: "def binary_search(arr, target):\n    low, high = 0, len(arr) - 1^\n\n    while low <= high:\n        mid = (low + high) / 2^\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:^\n            low = mid + 1\n        else:\n            high = mid - 1\n\n    return -1"
-            },
-            {
-                file: "GraphDFS.java",
-                code: "public void dfs(Node node, Set<Node> visited) {\n    if (node == null) return;^\n\n    visited.add(node);\n    System.out.println(node.val);^\n\n    for (Node neighbor : node.neighbors) {\n        if (!visited.contains(neighbor)) {^\n            dfs(neighbor, visited);\n        }\n    }\n}"
-            },
-            {
-                file: "MergeSort.cpp",
-                code: "void mergeSort(vector<int>& arr, int l, int r) {\n    if (l >= r) return;^\n    \n    int m = l + (r - l) / 2;\n    mergeSort(arr, l, m);^\n    mergeSort(arr, m + 1, r);\n    \n    merge(arr, l, m, r);^\n}"
-            },
-            {
-                file: "useAuth.ts",
-                code: "const useAuth = () => {\n    const [user, setUser] = useState(null);^\n    \n    useEffect(() => {\n        const token = localStorage.getItem('token');^\n        if (token) {\n            fetchUser(token).then(setUser);^\n        }\n    }, []);\n\n    return user;\n};"
-            },
-            {
-                file: "train_model.py",
-                code: "def train(model, optimizer, data):\n    for batch in data:^\n        optimizer.zero_grad()\n        predictions = model(batch.X)^\n        \n        loss = compute_loss(predictions, batch.y)\n        loss.backward()^\n        optimizer.step()\n        \n    return model"
-            },
-            {
-                file: "LRUCache.js",
-                code: "class LRUCache {\n    constructor(capacity) {\n        this.capacity = capacity;^\n        this.cache = new Map();\n    }\n\n    get(key) {\n        if (!this.cache.has(key)) return -1;^\n        \n        const val = this.cache.get(key);\n        this.cache.delete(key);^\n        this.cache.set(key, val);\n        return val;\n    }\n}"
-            },
-            {
-                file: "worker.go",
-                code: "func worker(id int, jobs <-chan int, results chan<- int) {\n    for j := range jobs {^\n        fmt.Printf(\"worker %d processing job %d\\n\", id, j)\n        \n        time.Sleep(time.Second)^\n        results <- j * 2^\n    }\n}"
+        }
+
+        [email, password].forEach(input => {
+            if (input) {
+                input.addEventListener("input", function () {
+                    input.classList.remove("input-error");
+                    errorText.style.display = "none";
+                });
             }
+        });
+
+        /* =========================================
+                   3. THE CINEMATIC CODE TYPIST
+                ========================================= */
+        const codeSnippets = [
+            { file: "binary_search.py", code: "def binary_search(arr, target):\n    low, high = 0, len(arr) - 1^\n\n    while low <= high:\n        mid = (low + high) / 2^\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:^\n            low = mid + 1\n        else:\n            high = mid - 1\n\n    return -1" },
+            { file: "GraphDFS.java", code: "public void dfs(Node node, Set<Node> visited) {\n    if (node == null) return;^\n\n    visited.add(node);\n    System.out.println(node.val);^\n\n    for (Node neighbor : node.neighbors) {\n        if (!visited.contains(neighbor)) {^\n            dfs(neighbor, visited);\n        }\n    }\n}" },
+            { file: "MergeSort.cpp", code: "void mergeSort(vector<int>& arr, int l, int r) {\n    if (l >= r) return;^\n    \n    int m = l + (r - l) / 2;\n    mergeSort(arr, l, m);^\n    mergeSort(arr, m + 1, r);\n    \n    merge(arr, l, m, r);^\n}" },
+            { file: "useAuth.ts", code: "const useAuth = () => {\n    const [user, setUser] = useState(null);^\n    \n    useEffect(() => {\n        const token = localStorage.getItem('token');^\n        if (token) {\n            fetchUser(token).then(setUser);^\n        }\n    }, []);\n\n    return user;\n};" }
         ];
 
-        // 1. Pick a random snippet on page load
         let selectedSnippet = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
-        document.getElementById('ide-filename').textContent = selectedSnippet.file;
+        const filenameEl = document.getElementById('ide-filename');
+        if (filenameEl) filenameEl.textContent = selectedSnippet.file;
 
         const codeElement = document.getElementById('typed-code');
+        const ideBody = document.querySelector('.ide-body'); // 🌟 The Scroll Engine
         let charIndex = 0;
 
-        // 2. The Typing Engine
         function typeCode() {
+            if (!codeElement || !selectedSnippet) return; // Safety check
+
             if (charIndex < selectedSnippet.code.length) {
                 let char = selectedSnippet.code.charAt(charIndex);
-
-                // If we hit the secret '^' symbol, pause for 1500ms
                 if (char === '^') {
                     charIndex++;
                     setTimeout(typeCode, 1500);
                     return;
                 }
-
                 codeElement.textContent += char;
                 charIndex++;
 
-                // Variable typing speed (fast bursts, slight variations)
-                let typingSpeed = Math.random() * 30 + 15;
+                // 🌟 THE FIX: Forces the hidden scrollbar to track the bottom of the text!
+                if (ideBody) {
+                    ideBody.scrollTop = ideBody.scrollHeight;
+                }
+
+
+                let typingSpeed = Math.random() * 50 + 30;
                 setTimeout(typeCode, typingSpeed);
             } else {
-                // Wait 5 seconds, clear it, pick a new one, and loop!
                 setTimeout(() => {
                     codeElement.textContent = "";
                     charIndex = 0;
-
-                    // Pick a new random snippet
                     selectedSnippet = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
-                    document.getElementById('ide-filename').textContent = selectedSnippet.file;
-
+                    if (filenameEl) filenameEl.textContent = selectedSnippet.file;
                     typeCode();
                 }, 5000);
             }
         }
-
-        // Start the animation 1 second after the page loads
         setTimeout(typeCode, 1000);
 
         /* =========================================
-           FLYING TEXT ENTRANCE ANIMATION
+           4. TEXT ANIMATIONS & OAUTH
         ========================================= */
         document.addEventListener("DOMContentLoaded", () => {
             const titleElement = document.querySelector('.form-title');
-            const text = titleElement.textContent.trim(); // Get "Welcome Back"
-            titleElement.textContent = ''; // Clear it out
+            if (titleElement) {
+                const text = titleElement.textContent.trim();
+                titleElement.textContent = '';
+                text.split('').forEach((char, index) => {
+                    const span = document.createElement('span');
+                    if (char === ' ') span.className = 'space';
+                    else {
+                        span.textContent = char;
+                        span.className = 'letter';
+                        span.style.animationDelay = `${index * 0.04}s`;
+                    }
+                    titleElement.appendChild(span);
+                });
+            }
 
-            // Split the text into an array of characters
-            text.split('').forEach((char, index) => {
-                const span = document.createElement('span');
-
-                if (char === ' ') {
-                    span.className = 'space'; // Handle the space
-                } else {
-                    span.textContent = char;
-                    span.className = 'letter';
-                    // Stagger the entrance: each letter waits 0.04 seconds longer than the last
-                    span.style.animationDelay = `${index * 0.04}s`;
-                }
-
-                titleElement.appendChild(span);
-            });
+            const subtitleElement = document.querySelector('.form-subtitle');
+            if (subtitleElement) {
+                subtitleElement.innerText = "Pick up exactly where you left off.";
+                setTimeout(() => subtitleElement.classList.add('illuminate'), 600);
+            }
         });
 
-        /* =========================================
-           SOFT LIGHT SWEEP SUBTITLE ANIMATION
-        ========================================= */
-        const subtitleElement = document.querySelector('.form-subtitle');
-        subtitleElement.innerText = "Pick up exactly where you left off.";
-
-        // Wait 600ms for the "Welcome Back" flying text to land, then sweep!
-        setTimeout(() => {
-            subtitleElement.classList.add('illuminate');
-        }, 600);
-
-        /* =========================================
-              OAUTH BUTTON CLICK HANDLERS
-           ========================================= */
         const googleBtn = document.getElementById('googleAuth');
         const githubBtn = document.getElementById('githubAuth');
-
-        if (googleBtn) {
-            googleBtn.addEventListener('click', () => {
-                // Change this URL to match your actual backend Google Auth endpoint
-                window.location.href = '/api/auth/google';
-            });
-        }
-
-        if (githubBtn) {
-            githubBtn.addEventListener('click', () => {
-                // Change this URL to match your actual backend GitHub Auth endpoint
-                window.location.href = '/api/auth/github';
-            });
-        }
+        if (googleBtn) googleBtn.addEventListener('click', () => window.location.href = '/api/auth/google');
+        if (githubBtn) githubBtn.addEventListener('click', () => window.location.href = '/api/auth/github');
 
     </script>
-
 </body>
 
 </html>
