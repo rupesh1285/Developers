@@ -171,7 +171,8 @@
         // 0. DOM TELEPORTER (Desktop <-> Mobile)
         // =========================================
         document.addEventListener("DOMContentLoaded", () => {
-            const mobileQuery = window.matchMedia('(max-width: 864px)');
+            // 🌟 STRICT MATCH TO SIGNIN.CSS
+            const mobileQuery = window.matchMedia('(max-width: 950px), (max-width: 1200px) and (orientation: portrait)');
 
             // Elements to teleport
             const visualizer = document.getElementById('algo-visualizer');
@@ -206,6 +207,15 @@
 
             mobileQuery.addEventListener('change', handleLayoutShift);
             handleLayoutShift(mobileQuery); // Execute instantly on load
+        });
+        /* =========================================
+           0.5 ORIENTATION SCROLL RESET (Tilt Trap Fix)
+        ========================================= */
+        window.addEventListener("orientationchange", () => {
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+                document.body.scrollTop = 0;
+            }, 100);
         });
 
         // =========================================
@@ -360,25 +370,70 @@
         });
 
         // =========================================
-        // 4. THE ALGORITHM VISUALIZER ENGINE (SCALE-AWARE FIX)
+        // 4. THE ALGORITHM VISUALIZER ENGINE (RESPONSIVE ARROW FIX)
         // =========================================
         const visContainer = document.getElementById('algo-visualizer');
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
         if (visContainer) {
+            // 🌟 THE FIX: Tracking Array & Resize Engine
+            let activeLines = [];
 
-            // 🌟 FIX 1: Scale-Aware SVG Lines
+            function updateLinesOnResize() {
+                const svg = document.getElementById('algo-canvas');
+                if (!svg || activeLines.length === 0) return;
+
+                const containerRect = visContainer.getBoundingClientRect();
+                const scale = containerRect.width / visContainer.offsetWidth || 1; 
+
+                activeLines.forEach(data => {
+                    if (data.type === 'normal') {
+                        const pRect = data.parent.getBoundingClientRect();
+                        const cRect = data.child.getBoundingClientRect();
+
+                        const startX = (pRect.left + (pRect.width / 2) - containerRect.left) / scale;
+                        const startY = (pRect.bottom - containerRect.top) / scale;
+                        const endX = (cRect.left + (cRect.width / 2) - containerRect.left) / scale;
+                        const endY = (cRect.top - containerRect.top) / scale;
+
+                        data.line.setAttribute("x1", data.isReverse ? endX : startX);
+                        data.line.setAttribute("y1", data.isReverse ? endY : startY);
+                        data.line.setAttribute("x2", data.isReverse ? startX : endX);
+                        data.line.setAttribute("y2", data.isReverse ? startY : endY);
+                    } else if (data.type === 'll') {
+                        const sRect = data.sourceAddrDiv.getBoundingClientRect();
+                        const tRect = data.targetNode.getBoundingClientRect();
+
+                        const startX = (sRect.left + (sRect.width / 2) - containerRect.left) / scale;
+                        const startY = (sRect.top + (sRect.height / 2) - containerRect.top) / scale;
+                        const endX = (tRect.left - containerRect.left) / scale - 4;
+                        const endY = (tRect.top + (tRect.height / 2) - containerRect.top) / scale;
+
+                        data.line.setAttribute("x1", startX);
+                        data.line.setAttribute("y1", startY);
+                        data.line.setAttribute("x2", endX);
+                        data.line.setAttribute("y2", endY);
+                        
+                        // Update arrow length mathematically so the animation completes smoothly
+                        const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+                        data.line.style.strokeDasharray = length;
+                    }
+                });
+            }
+
+            // Bind the resize engine to the window
+            window.addEventListener('resize', () => requestAnimationFrame(updateLinesOnResize));
+
             function drawConnectingLine(parent, child, isReverse = false) {
                 const svg = document.getElementById('algo-canvas');
                 if (!svg) return;
 
                 const containerRect = visContainer.getBoundingClientRect();
-                const scale = containerRect.width / visContainer.offsetWidth || 1; // 🌟 Detects CSS Scale!
+                const scale = containerRect.width / visContainer.offsetWidth || 1; 
 
                 const pRect = parent.getBoundingClientRect();
                 const cRect = child.getBoundingClientRect();
 
-                // Divide by scale to fix mobile SVG positioning
                 const startX = (pRect.left + (pRect.width / 2) - containerRect.left) / scale;
                 const startY = (pRect.bottom - containerRect.top) / scale;
                 const endX = (cRect.left + (cRect.width / 2) - containerRect.left) / scale;
@@ -391,6 +446,9 @@
                 line.setAttribute("y2", isReverse ? startY : endY);
                 line.classList.add("algo-line");
                 svg.appendChild(line);
+
+                // 🌟 Track the line for resizing
+                activeLines.push({ line, parent, child, isReverse, type: 'normal' });
             }
 
             function createAlgoGroup(row, numbers) {
@@ -406,12 +464,11 @@
                 return group;
             }
 
-            // 🌟 FIX 2: Scale-Aware Physical Box Swapping
             async function physicalSwap(box1, box2) {
                 if (!box1 || !box2) return;
 
                 const containerRect = visContainer.getBoundingClientRect();
-                const scale = containerRect.width / visContainer.offsetWidth || 1; // 🌟 Detects CSS Scale!
+                const scale = containerRect.width / visContainer.offsetWidth || 1; 
 
                 box1.classList.add('highlight-alt');
                 box2.classList.add('highlight-alt');
@@ -420,7 +477,6 @@
                 const rect1 = box1.getBoundingClientRect();
                 const rect2 = box2.getBoundingClientRect();
 
-                // Divide distance by scale so the animation travels the exact right amount
                 const distance = (rect2.left - rect1.left) / scale;
 
                 box1.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
@@ -530,12 +586,14 @@
                 const b4 = g4_4.querySelector('.algo-box'); const b1 = g4_1.querySelector('.algo-box');
                 await physicalSwap(b4, b1);
 
+                activeLines = []; // Clear lines before redraw
                 svgCanvas.innerHTML = '';
                 await sleep(30);
                 drawConnectingLine(g3b, g4_5, true); drawConnectingLine(g3b, g4_3, true);
                 drawConnectingLine(g3d, g4_4, true); drawConnectingLine(g3d, g4_1, true);
                 await sleep(1500);
 
+                activeLines = [];
                 svgCanvas.innerHTML = '';
                 [g4_5, g4_3, g4_4, g4_1].forEach(g => g.classList.remove('visible'));
 
@@ -546,12 +604,14 @@
                 g3b.classList.remove('faded'); g3d.classList.remove('faded');
                 await sleep(800);
 
+                activeLines = [];
                 svgCanvas.innerHTML = '';
                 await sleep(30);
                 drawConnectingLine(g2a, g3a, true); drawConnectingLine(g2a, g3b, true);
                 drawConnectingLine(g2b, g3c, true); drawConnectingLine(g2b, g3d, true);
                 await sleep(1500);
 
+                activeLines = [];
                 svgCanvas.innerHTML = '';
                 [g3a, g3b, g3c, g3d].forEach(g => g.classList.remove('visible'));
 
@@ -570,11 +630,13 @@
                 await physicalSwap(rightBoxes[0], rightBoxes[1]);
                 await physicalSwap(rightBoxes[1], rightBoxes[2]);
 
+                activeLines = [];
                 svgCanvas.innerHTML = '';
                 await sleep(30);
                 drawConnectingLine(g1, g2a, true); drawConnectingLine(g1, g2b, true);
                 await sleep(1500);
 
+                activeLines = [];
                 svgCanvas.innerHTML = '';
                 g2a.classList.remove('visible'); g2b.classList.remove('visible');
 
@@ -774,7 +836,6 @@
                     await sleep(300);
                 };
 
-                // 🌟 FIX 3: Scale-Aware Linked List Arrows
                 const drawLLArrow = async (sourceAddrDiv, targetNode) => {
                     const containerRect = visContainer.getBoundingClientRect();
                     const scale = containerRect.width / visContainer.offsetWidth || 1;
@@ -802,6 +863,10 @@
                     line.style.transition = 'opacity 0.2s ease, stroke-dashoffset 0.8s ease-in-out';
 
                     svgCanvas.appendChild(line);
+                    
+                    // 🌟 Track the line for resizing
+                    activeLines.push({ line, sourceAddrDiv, targetNode, type: 'll' });
+
                     void line.getBoundingClientRect();
 
                     line.style.opacity = '1';
@@ -849,6 +914,8 @@
                     isFirstRun = false;
                 }
 
+                // 🌟 Wipe the tracking array clean before every new algorithm
+                activeLines = [];
                 visContainer.innerHTML = '';
                 visContainer.className = 'algo-visualizer';
 
@@ -868,7 +935,6 @@
                 algos[nextAlgoIndex]();
             }
 
-            // START INSTANTLY
             setTimeout(playRandomAlgo, 100);
         }
     </script>

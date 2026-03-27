@@ -189,7 +189,7 @@
         // =========================================
         document.addEventListener("DOMContentLoaded", () => {
             // 🌟 THE FIX: Sync the Javascript to trigger the flip at 1024px
-            const mobileQuery = window.matchMedia('(max-width: 900px)');
+            const mobileQuery = window.matchMedia('(max-width: 950px), (max-width: 1200px) and (orientation: portrait)');
 
             // Elements to teleport
             const rightContent = document.getElementById('desktop-right-content');
@@ -209,15 +209,19 @@
                 if (e.matches) {
                     // Teleport to Mobile
                     if (runesBlock) mobileTop.insertBefore(runesBlock, mobileWave);
-                    if (streakModule) mobileTop.insertBefore(streakModule, mobileWave); // 🌟 Drops Heatmap first
-                    if (rightContent) mobileTop.insertBefore(rightContent, mobileWave); // 🌟 Drops IDE under Heatmap
+                    if (streakModule) mobileTop.insertBefore(streakModule, mobileWave); 
+                    if (rightContent) mobileTop.insertBefore(rightContent, mobileWave); 
                     if (formBlock) mobileBottom.appendChild(formBlock);
                 } else {
                     // Return to Desktop
                     if (runesBlock && desktopRightPanel) desktopRightPanel.insertBefore(runesBlock, spotlight);
-                    if (streakModule && desktopRightPanel) desktopRightPanel.insertBefore(streakModule, rightContent); // 🌟 Returns Heatmap
+                    
+                    // 🌟 THE FIX: We use appendChild sequentially. 
+                    // This naturally stacks them in the correct order without breaking the DOM!
+                    if (streakModule && desktopRightPanel) desktopRightPanel.appendChild(streakModule); 
                     if (rightContent && desktopRightPanel) desktopRightPanel.appendChild(rightContent);
-                    if (formBlock) desktopLeft.appendChild(formBlock);
+                    
+                    if (formBlock && desktopLeft) desktopLeft.appendChild(formBlock);
                 }
             }
 
