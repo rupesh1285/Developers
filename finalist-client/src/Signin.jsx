@@ -250,12 +250,22 @@ export default function Signin() {
                                 <Link to="/signup" className="nav-signin-btn">Sign Up <i className="ri-arrow-right-line"></i></Link>
                             </div>
                         </div>
-                        <FormPanel />
+                        {FormPanel()}
                     </div>
 
-                    <div className="right-panel" style={{ justifyContent: 'center' }}>
+                    <div
+                        className="right-panel"
+                        style={{ justifyContent: 'space-around' }}
+                        onMouseMove={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                            e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                        }}
+                    >
+                        {/* 🌟 FIX: The missing spotlight div has been restored! */}
+                        <div className="spotlight-overlay"></div>
+
                         <div className="runes-container" id="runes-container"></div>
-                        <div className="spotlight-overlay" id="spotlight"></div>
                         <StreakHeatmap />
                         <div className="signin-content">
                             <IdeWindow />
@@ -283,7 +293,7 @@ export default function Signin() {
                     </div>
 
                     <div className="mobile-bottom-form">
-                        <FormPanel />
+                        {FormPanel()}
                     </div>
                 </div>
             )}

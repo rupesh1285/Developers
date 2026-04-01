@@ -216,7 +216,7 @@ export default function Landing() {
 
                 <p className="hero-description" id="hero-desc">
                     Master algorithms in a <strong>high-performance IDE</strong> with <strong>real-time analytics</strong> and
-                    <strong>context-aware AI</strong>.
+                    <strong> context-aware AI</strong>.
                 </p>
 
                 <Link to="/signup" className="btn btn-primary hero-button">

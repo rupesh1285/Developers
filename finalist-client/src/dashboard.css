@@ -508,6 +508,7 @@ body {
 
 .circle-svg {
   transform: rotate(-90deg);
+  /* 🌟 CRITICAL: Keeps it at 12 o'clock */
 }
 
 .circle-bg {
@@ -2748,22 +2749,42 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 15px;
-    padding: 15px;
+    gap: 20px;
+    padding: 20px 15px;
   }
 
   .progress-left {
     width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .circular-progress {
-    width: 90px;
-    height: 90px;
+    width: 90px !important;
+    height: 90px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
   }
 
   .circular-progress svg {
-    width: 90px;
-    height: 90px;
+    position: absolute !important;
+    width: 120px !important;
+    height: 120px !important;
+    /* 🌟 FIX: We MUST include the -90deg rotation here alongside the scale! */
+    transform: rotate(-90deg) scale(0.75) !important;
+  }
+
+  .circle-text {
+    position: absolute !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 2 !important;
+    transform: translateY(2px) !important; 
   }
 
   .circle-progress,
@@ -2775,8 +2796,19 @@ body {
     stroke-dashoffset: 251.2;
   }
 
-  #total-solved-count {
-    font-size: 22px;
+  #total-solved-count { 
+    font-size: 26px !important; 
+    font-weight: 800 !important; 
+    line-height: 1 !important;
+    color: #fff !important;
+  }
+  .total-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 4px;
   }
 
   .progress-right {

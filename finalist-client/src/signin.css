@@ -45,9 +45,11 @@ body {
 
 /* Base Layout Architecture */
 .split-container {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  /* 🌟 FIX: Acts as a solid wall to block the dashboard grid from showing on the left! */
+  background-color: var(--bg-main) !important; 
 }
 
 .desktop-layout {
@@ -1498,4 +1500,22 @@ input:focus {
     .dual-roller-wrapper {
         margin-top: 10px !important;
     }
+}
+/* =========================================================
+   🌟 FIX: QUARANTINE DASHBOARD CSS BLEED & RESTORE GRID
+========================================================= */
+.split-container .right-panel {
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  
+  /* 🌟 THE GRID RESTORE: Apply the glowing grid directly to this panel */
+  background-color: var(--bg-main) !important;
+  background-image:
+    radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(59, 130, 246, 0.12), transparent 50%),
+    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 40px 40px, 40px 40px !important;
+  background-position: 0 0, 0 0, 0 0 !important;
 }

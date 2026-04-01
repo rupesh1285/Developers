@@ -275,16 +275,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     const handleMouseMove = (e) => {
-      if (!isDraggingRef.current) return;
+      // 🌟 NEW RULE: Drag only active when a problem is open
+      if (!isDraggingRef.current || !activeProblemId) return;
       let rawWidth = startWidthRef.current - (e.clientX - startXRef.current);
-      if (!activeProblemId) {
-        rawWidth = Math.max(320, Math.min(500, rawWidth));
-        setAnalyticsWidth(rawWidth);
-      } else {
-        if (rawWidth >= 320) { setAnalyticsWidth(rawWidth); }
-        else if (rawWidth > 270) { setAnalyticsWidth(320 - ((320 - rawWidth) * 0.4)); }
-        else { collapseAnalytics(); }
-      }
+      if (rawWidth >= 320) { setAnalyticsWidth(rawWidth); }
+      else if (rawWidth > 270) { setAnalyticsWidth(320 - ((320 - rawWidth) * 0.4)); }
+      else { collapseAnalytics(); }
     };
     const handleMouseUp = () => {
       if (isDraggingRef.current) {
@@ -317,17 +313,15 @@ export default function Dashboard() {
     localStorage.setItem('finalist_analytics_state', newState ? 'visible' : 'hidden');
   };
 
-  // 🌟 ORIGINAL RULE: When closing a problem, force analytics back open
+  // 🌟 RULE: Analytics fold/unfold only works when a problem is open.
+  // When closing a problem → always restore analytics to open/visible.
   const handleProblemClick = (id) => {
     if (activeProblemId === id) {
-      // Closing problem
       setActiveProblemId(null);
       localStorage.removeItem("finalist_active_problem");
-      // Force analytics to reopen
-      if (!isAnalyticsOpen) {
-        setIsAnalyticsOpen(true);
-        localStorage.setItem('finalist_analytics_state', 'visible');
-      }
+      // Always restore analytics when problem closes
+      setIsAnalyticsOpen(true);
+      localStorage.setItem('finalist_analytics_state', 'visible');
     } else {
       setActiveProblemId(id);
       localStorage.setItem("finalist_active_problem", id);
@@ -388,9 +382,6 @@ export default function Dashboard() {
   // =========================================================================
   // RENDER
   // =========================================================================
-  // 🌟 FIX: Fold button shows ONLY when a problem is open OR analytics is collapsed (not both closed)
-  const showFoldBtn = !!activeProblemId || !isAnalyticsOpen;
-
   return (
     <>
       <div className="bg-glow"></div>
@@ -467,10 +458,10 @@ export default function Dashboard() {
       </nav>
 
       <div className="dashboard">
-<div className={`middle-panel ${!activeProblemId ? 'expanded' : 'mobile-hidden'}`}>
-          
-          {/* 🌟 DESKTOP PROGRESS SECTION (Hidden on Mobile) */}
-          <div className="progress-section desktop-only">
+        <div className={`middle-panel ${!activeProblemId ? 'expanded' : 'mobile-hidden'}`}>
+
+          {/* 🌟 UNIFIED PROGRESS SECTION */}
+          <div className="progress-section">
             <div className="progress-left">
               <div className="circular-progress">
                 <svg width="120" height="120" viewBox="0 0 120 120" className="circle-svg">
@@ -489,17 +480,28 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+
             <div className="progress-right">
+              {/* 🌟 MOBILE ONLY: Streak Widget (Invisible on Desktop) */}
+              <div className="mobile-streak-widget">
+                <div className="ms-top">
+                  <i className="ri-fire-fill streak-icon"></i>
+                  <div>
+                    <span className="ms-count">{analyticsData?.streak?.current || 0}</span>
+                    <span className="ms-label"> Day Streak</span>
+                  </div>
+                </div>
+                <div className="ms-dots">
+                  {[...Array(7)].map((_, i) => <div key={i} className={`ms-dot ${i < (analyticsData?.streak?.current || 0) ? 'active' : ''}`}></div>)}
+                </div>
+              </div>
+
+              {/* Shared Difficulty Bars */}
               <div className="progress-row"><span className="bar-label">Basic</span><div className="bar-track"><div className="bar-fill basic-bar" style={{ width: `${stats.basic.pct}%` }}></div></div><span className="bar-stat">{stats.basic.solved}/{stats.basic.total}</span></div>
               <div className="progress-row"><span className="bar-label">Easy</span><div className="bar-track"><div className="bar-fill easy-bar" style={{ width: `${stats.easy.pct}%` }}></div></div><span className="bar-stat">{stats.easy.solved}/{stats.easy.total}</span></div>
               <div className="progress-row"><span className="bar-label">Med.</span><div className="bar-track"><div className="bar-fill medium-bar" style={{ width: `${stats.medium.pct}%` }}></div></div><span className="bar-stat">{stats.medium.solved}/{stats.medium.total}</span></div>
               <div className="progress-row"><span className="bar-label">Hard</span><div className="bar-track"><div className="bar-fill hard-bar" style={{ width: `${stats.hard.pct}%` }}></div></div><span className="bar-stat">{stats.hard.solved}/{stats.hard.total}</span></div>
             </div>
-          </div>
-
-          {/* 🌟 BLANK MOBILE CANVAS (Hidden on Desktop) */}
-          <div className="progress-section mobile-only" style={{ minHeight: '150px', border: '2px dashed #f87171', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-             <span style={{ color: '#f87171', fontSize: '14px', fontWeight: 'bold' }}>MOBILE CANVAS EMPTY</span>
           </div>
 
           <div className="divider"></div>
@@ -605,28 +607,48 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* VERTICAL DIVIDER */}
-        <div className={`vertical-divider ${!isAnalyticsOpen ? 'collapsed' : ''}`} id="vertical-divider" onMouseDown={handleDragStart}>
-          {/* 🌟 FIX: Fold button shows when workspace open OR when analytics is collapsed — matches original logic exactly */}
-          <button
-            className="panel-fold-btn"
-            id="panel-fold-btn"
-            data-tooltip={isAnalyticsOpen ? "Fold" : "Unfold"}
-            style={{ display: showFoldBtn ? 'flex' : 'none' }}
-            onClick={toggleAnalytics}
-          >
-            <i className="ri-arrow-right-double-line"></i>
-          </button>
+        {/* VERTICAL DIVIDER
+            🌟 NEW RULE: Drag + fold/unfold ONLY active when a problem is open.
+            When no problem is open, divider is a static decorative line — no cursor, no fold button. */}
+        <div
+          className={`vertical-divider ${activeProblemId && !isAnalyticsOpen ? 'collapsed' : ''}`}
+          id="vertical-divider"
+          onMouseDown={activeProblemId ? handleDragStart : undefined}
+          style={{ cursor: activeProblemId ? 'col-resize' : 'default' }}
+        >
+          {/* Fold button ONLY shown when a problem is open */}
+          {activeProblemId && (
+            <button
+              className="panel-fold-btn"
+              id="panel-fold-btn"
+              data-tooltip={isAnalyticsOpen ? "Fold" : "Unfold"}
+              style={{ display: 'flex' }}
+              onClick={toggleAnalytics}
+            >
+              <i className="ri-arrow-right-double-line"></i>
+            </button>
+          )}
         </div>
 
-        {/* STATS / ANALYTICS PANEL */}
-        {/* STATS / ANALYTICS PANEL */}
+        {/* STATS / ANALYTICS PANEL
+            🌟 Fix 1: overflow:hidden + maxHeight:100% locks it to dashboard — never bleeds past bottom.
+            🌟 Fix 3: When no problem open → always visible, fixed width, no hide/show allowed. */}
         <div
-          className={`stats-panel ${!isAnalyticsOpen ? 'hidden' : 'snap-back'} ${isDraggingUI ? 'dragging' : ''}`}
+          className={`stats-panel ${activeProblemId && !isAnalyticsOpen ? 'hidden' : 'snap-back'} ${isDraggingUI ? 'dragging' : ''}`}
           id="stats-panel"
-          style={{ width: isAnalyticsOpen ? `${analyticsWidth}px` : undefined, opacity: isAnalyticsOpen ? 1 : undefined }}
+          style={{
+            width: `${analyticsWidth}px`,
+            opacity: 1,
+            overflow: 'hidden',
+            maxHeight: '100%',
+            flexShrink: 0,
+            transition: isDraggingUI
+              ? 'none'
+              : (activeProblemId && !isAnalyticsOpen)
+                ? 'width 0.45s cubic-bezier(0.22,1,0.36,1), opacity 0.18s ease'
+                : 'width 0.55s cubic-bezier(0.22,1,0.36,1), opacity 0.4s ease 0.1s',
+          }}
         >
-          {/* 🌟 FIX: Passed liveTimer to trigger hour updates */}
           <AnalyticsPanel data={analyticsData} onBubbleClick={handleTagToggle} panelWidth={analyticsWidth} liveTimer={elapsedTime} />
         </div>
       </div>
@@ -1052,86 +1074,111 @@ function AnalyticsPanel({ data, onBubbleClick, panelWidth, liveTimer }) {
 
   const topicsJson = JSON.stringify(data.topics);
 
-  // 🌟 FIX: Bubble packing matches the original exactly (padding=1, angle step=0.2, radius step=0.1)
-  useEffect(() => {
+  // Core bubble packing function — reads live container dimensions each time
+  const packBubbles = useCallback(() => {
     if (!bubblesRef.current || !data.topics) return;
     const container = bubblesRef.current;
-    container.innerHTML = '';
-    const activeTopics = data.topics.filter(t => t.solved > 0);
 
-    if (activeTopics.length === 0) {
-      container.innerHTML = "<div class='empty-placeholder' style='color: var(--text-muted); font-size: 13px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; line-height: 1.6;'>Solve problems to unlock<br>your Topic Cluster!</div>";
-      return;
-    }
+    // Wait one frame so layout is fully painted before reading dimensions
+    requestAnimationFrame(() => {
+      container.innerHTML = '';
+      const activeTopics = data.topics.filter(t => t.solved > 0);
 
-    const maxTotal = Math.max(...activeTopics.map(t => t.total));
-    let bubblesData = activeTopics.map(topic => {
-      const scaleFactor = topic.total / maxTotal;
-      const size = 40 + (scaleFactor * 50);
-      return { ...topic, size, r: size / 2, x: 0, y: 0 };
-    });
-    bubblesData.sort((a, b) => b.r - a.r);
-
-    const placed = [];
-    const padding = 1; // 🌟 FIX: Original uses padding=1
-    bubblesData.forEach(b => {
-      let angle = 0, radius = 0, isPlaced = false;
-      while (!isPlaced) {
-        b.x = Math.cos(angle) * radius; b.y = Math.sin(angle) * radius;
-        let collision = false;
-        for (let p of placed) {
-          const dx = b.x - p.x, dy = b.y - p.y, dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < b.r + p.r + padding) { collision = true; break; }
-        }
-        if (!collision) { isPlaced = true; placed.push(b); }
-        else { angle += 0.2; radius += 0.1; } // 🌟 FIX: Original uses 0.2/0.1 step
+      if (activeTopics.length === 0) {
+        container.innerHTML = "<div style='color:var(--text-muted);font-size:13px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;line-height:1.6;'>Solve problems to unlock<br>your Topic Cluster!</div>";
+        return;
       }
-    });
 
-    let minX = 0, maxX = 0, minY = 0, maxY = 0;
-    placed.forEach(p => {
-      minX = Math.min(minX, p.x - p.r); maxX = Math.max(maxX, p.x + p.r);
-      minY = Math.min(minY, p.y - p.r); maxY = Math.max(maxY, p.y + p.r);
-    });
+      // 🌟 Fix 2: Read ACTUAL live dimensions — not stale panelWidth prop
+      const boxW = container.clientWidth || 280;
+      const boxH = container.clientHeight || 250;
 
-    const clusterW = maxX - minX, clusterH = maxY - minY;
-    const boxW = container.clientWidth || 280, boxH = container.clientHeight || 250;
-    const scale = Math.min(1, (boxW - 20) / clusterW, (boxH - 20) / clusterH);
+      const maxTotal = Math.max(...activeTopics.map(t => t.total));
 
-    placed.forEach(p => {
-      const finalX = (p.x - minX) * scale + (boxW - clusterW * scale) / 2;
-      const finalY = (p.y - minY) * scale + (boxH - clusterH * scale) / 2;
-      const finalSize = p.size * scale;
-      const pct = p.total === 0 ? 0 : Math.round((p.solved / p.total) * 100);
+      // Scale bubble sizes relative to available box so they always fit
+      const maxBubbleSize = Math.min(90, (Math.min(boxW, boxH) / 3.5));
+      const minBubbleSize = Math.max(28, maxBubbleSize * 0.4);
 
-      const bubble = document.createElement("div");
-      bubble.className = "topic-bubble";
-      bubble.dataset.topic = p.name;
-      // Start at 0 size and animate in (matches original mount animation)
-      bubble.style.left = `${finalX}px`; bubble.style.top = `${finalY}px`;
-      bubble.style.width = `0px`; bubble.style.height = `0px`;
+      let bubblesData = activeTopics.map(topic => {
+        const scaleFactor = topic.total / maxTotal;
+        const size = minBubbleSize + (scaleFactor * (maxBubbleSize - minBubbleSize));
+        return { ...topic, size, r: size / 2, x: 0, y: 0 };
+      });
+      bubblesData.sort((a, b) => b.r - a.r);
 
-      bubble.setAttribute('data-tooltip', `${p.name}: ${p.solved} / ${p.total} Solved`);
-      bubble.onclick = (e) => { e.stopPropagation(); bubbleClickRef.current(p.name); };
+      const placed = [];
+      const padding = 1;
+      bubblesData.forEach(b => {
+        let angle = 0, radius = 0, isPlaced = false;
+        while (!isPlaced) {
+          b.x = Math.cos(angle) * radius; b.y = Math.sin(angle) * radius;
+          let collision = false;
+          for (let p of placed) {
+            const dx = b.x - p.x, dy = b.y - p.y;
+            if (Math.sqrt(dx * dx + dy * dy) < b.r + p.r + padding) { collision = true; break; }
+          }
+          if (!collision) { isPlaced = true; placed.push({ ...b }); }
+          else { angle += 0.2; radius += 0.1; }
+        }
+      });
 
-      const nameStyle = finalSize > 70 ? '11px' : (finalSize > 45 ? '9px' : '7.5px');
-      const nameOpacity = finalSize < 25 ? '0' : '1';
-      bubble.innerHTML = `
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      placed.forEach(p => {
+        minX = Math.min(minX, p.x - p.r); maxX = Math.max(maxX, p.x + p.r);
+        minY = Math.min(minY, p.y - p.r); maxY = Math.max(maxY, p.y + p.r);
+      });
+
+      const clusterW = maxX - minX, clusterH = maxY - minY;
+      // 🌟 Fix 2: Scale cluster to fit BOTH width and height of the real container
+      const scale = Math.min((boxW - 16) / clusterW, (boxH - 16) / clusterH, 1);
+
+      placed.forEach(p => {
+        const finalX = (p.x - minX) * scale + (boxW - clusterW * scale) / 2;
+        const finalY = (p.y - minY) * scale + (boxH - clusterH * scale) / 2;
+        const finalSize = p.size * scale;
+        const pct = p.total === 0 ? 0 : Math.round((p.solved / p.total) * 100);
+
+        const bubble = document.createElement("div");
+        bubble.className = "topic-bubble";
+        bubble.dataset.topic = p.name;
+        bubble.style.left = `${finalX}px`; bubble.style.top = `${finalY}px`;
+        bubble.style.width = `0px`; bubble.style.height = `0px`;
+        bubble.setAttribute('data-tooltip', `${p.name}: ${p.solved} / ${p.total} Solved`);
+        bubble.onclick = (e) => { e.stopPropagation(); bubbleClickRef.current(p.name); };
+
+        const fontSize = finalSize > 70 ? '11px' : (finalSize > 45 ? '9px' : '7.5px');
+        const nameOpacity = finalSize < 25 ? '0' : '1';
+        bubble.innerHTML = `
           <div class="bubble-mask">
-            <div class="wave" style="--fill-pct: ${pct}%; opacity: ${pct === 0 ? 0 : 1};"></div>
+            <div class="wave" style="--fill-pct:${pct}%;opacity:${pct === 0 ? 0 : 1};"></div>
           </div>
           <div class="bubble-content">
-            <span class="bubble-name" style="font-size: ${nameStyle}; opacity: ${nameOpacity};">${p.name}</span>
+            <span class="bubble-name" style="font-size:${fontSize};opacity:${nameOpacity};">${p.name}</span>
           </div>`;
 
-      container.appendChild(bubble);
-      bubble.offsetHeight; // Force reflow for animation
-
-      bubble.style.transition = 'left 0.8s cubic-bezier(0.16, 1, 0.3, 1), top 0.8s cubic-bezier(0.16, 1, 0.3, 1), width 0.5s cubic-bezier(0.16, 1, 0.3, 1), height 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s';
-      bubble.style.width = `${finalSize}px`;
-      bubble.style.height = `${finalSize}px`;
+        container.appendChild(bubble);
+        bubble.offsetHeight; // reflow for CSS transition
+        bubble.style.transition = 'left 0.8s cubic-bezier(0.16,1,0.3,1),top 0.8s cubic-bezier(0.16,1,0.3,1),width 0.5s cubic-bezier(0.16,1,0.3,1),height 0.5s cubic-bezier(0.16,1,0.3,1),transform 0.3s';
+        bubble.style.width = `${finalSize}px`;
+        bubble.style.height = `${finalSize}px`;
+      });
     });
-  }, [topicsJson, panelWidth]);
+  }, [topicsJson, data.topics]);
+
+  // Re-render when topics change
+  useEffect(() => { packBubbles(); }, [packBubbles]);
+
+  // 🌟 Fix 2: ResizeObserver on the bubbles container itself — repacks whenever it's resized (panel drag)
+  useEffect(() => {
+    if (!bubblesRef.current) return;
+    let resizeTimer;
+    const ro = new ResizeObserver(() => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(packBubbles, 50);
+    });
+    ro.observe(bubblesRef.current);
+    return () => { ro.disconnect(); clearTimeout(resizeTimer); };
+  }, [packBubbles]);
 
   // 🌟 FIX: Time spent uses cumulative local tracking and listens to liveTimer
   const timeSpentDisplay = useMemo(() => {
@@ -1196,10 +1243,29 @@ function AnalyticsPanel({ data, onBubbleClick, panelWidth, liveTimer }) {
         </div>
       </div>
 
-      {/* TOPIC BUBBLES CARD */}
-      <div className="stat-card stat-large" style={{ flexDirection: 'column', padding: '20px', alignItems: 'flex-start' }}>
-        <span className="section-label" style={{ marginBottom: '15px' }}>Topic Distribution</span>
-        <div className="bubbles-container" id="topic-bubbles" ref={bubblesRef}></div>
+      {/* TOPIC BUBBLES CARD
+          🌟 Fix 1: stat-large is flex column. bubbles-container gets flex:1 + overflow:hidden
+          so the cluster is always contained within the card — never bleeds below the panel. */}
+      <div className="stat-card stat-large" style={{
+        flexDirection: 'column',
+        padding: '20px',
+        alignItems: 'flex-start',
+        display: 'flex',
+        overflow: 'hidden',  /* hard clip — nothing escapes this card */
+      }}>
+        <span className="section-label" style={{ marginBottom: '12px', flexShrink: 0 }}>Topic Distribution</span>
+        <div
+          className="bubbles-container"
+          id="topic-bubbles"
+          ref={bubblesRef}
+          style={{
+            flex: 1,
+            width: '100%',
+            minHeight: 0,       /* critical: lets flex shrink below content */
+            position: 'relative',
+            overflow: 'hidden', /* bubbles are absolute-positioned inside; clip them here */
+          }}
+        ></div>
       </div>
     </>
   );

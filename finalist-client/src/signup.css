@@ -45,6 +45,8 @@ body {
 .split-container {
   width: 100vw;
   height: 100vh;
+  /* 🌟 FIX: Acts as a solid wall to block the dashboard grid from showing on the left! */
+  background-color: var(--bg-main) !important; 
 }
 
 /* =========================================================
@@ -1254,15 +1256,17 @@ input:focus {
 
   .mobile-wave {
     position: absolute;
-    bottom: -2px;
+    bottom: -1px;
     left: 0;
     width: 100%;
-    height: clamp(40px, 7dvh, 70px);
-    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path fill="%230d0d0d" d="M0,160 C480,380 800,-80 1440,160 L1440,350 L0,350 Z"></path><path fill="none" stroke="%23ffffff" stroke-opacity="0.08" stroke-width="4" d="M0,160 C480,380 800,-80 1440,160"></path></svg>') no-repeat center bottom;
+    height: clamp(40px, 8dvh, 70px);
+    
+    /* 🌟 THE ELEGANT FIX: Replaced harsh neon with a soft, sleek curve and faint icy glow */
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path fill="%230d0d0d" d="M0,160 C480,380 800,-80 1440,160 L1440,350 L0,350 Z"></path><path fill="none" stroke="rgba(110, 160, 234, 0.4)" stroke-width="2" d="M0,160 C480,380 800,-80 1440,160"></path></svg>') no-repeat center bottom;
     background-size: 100% 100%;
     pointer-events: none;
     z-index: 25;
-    filter: drop-shadow(0 -4px 16px rgba(110, 160, 234, 0.15));
+    filter: drop-shadow(0 -4px 15px rgba(110, 160, 234, 0.15));
   }
 
   /* HIDE EXTRA RIGHT-PANEL DESKTOP ELEMENTS */
@@ -1276,7 +1280,11 @@ input:focus {
     position: relative !important;
     transform: scale(0.50) !important;
     transform-origin: top center;
-    margin: 0 !important;
+    /* 🌟 FIX: Pushes the animation safely down away from the navbar! */
+    margin-top: 50px !important; 
+    margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     z-index: 20;
   }
 
@@ -1465,92 +1473,57 @@ input:focus {
 }
 
 /* =========================================================
-   THE NUCLEAR LANDSCAPE FIX 
+   THE NUCLEAR LANDSCAPE FIX (HARD FLEXBOX LOCK)
 ========================================================= */
 @media (max-width: 950px) and (max-height: 600px) and (orientation: landscape) {
 
-  body,
-  html,
-  .split-container,
-  .mobile-layout {
-    height: auto !important;
-    min-height: 100% !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch;
-    display: block !important;
+  /* 1. FREEZE THE ENTIRE SCREEN: No part of the main window is allowed to scroll */
+  body, html, #root, .split-container, .mobile-layout {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important; 
   }
 
+  /* 2. Stack elements vertically */
+  .mobile-layout {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* 3. TRAP THE NAVBAR: It gets exactly 60px, cannot shrink, cannot grow, cannot move. */
   .mobile-top-stage {
-    flex: none !important;
+    flex: 0 0 60px !important; 
     height: 60px !important;
     min-height: 60px !important;
     padding: 0 !important;
-    display: block !important;
     background: var(--bg-main) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-
-    position: fixed !important;
-    /* 🌟 FIX: Changed from sticky to fixed */
-    top: 0 !important;
-    left: 0 !important;
-    /* 🌟 FIX: Anchor to the left */
-    width: 100% !important;
-    /* 🌟 FIX: Force it to span the screen */
+    position: relative !important; /* No sticky/fixed needed! */
     z-index: 100 !important;
   }
 
   .mobile-nav {
     position: relative !important;
     top: 15px !important;
-    left: 0 !important;
-    right: 0 !important;
     padding: 0 20px !important;
   }
 
+  /* 4. THE SCROLLING ZONE: The form fills the remaining space and handles its own scroll */
+  .mobile-bottom-form {
+    flex: 1 1 auto !important; /* Takes all space leftover by the 60px navbar */
+    height: 0 !important; /* Forces the browser to calculate the true remaining height */
+    overflow-y: auto !important; /* THIS is the only thing allowed to scroll */
+    -webkit-overflow-scrolling: touch !important; /* Smooth scroll for iOS */
+    padding: 20px 20px 40px !important; 
+    display: block !important;
+  }
+
+  /* Hide the extra visual elements */
   .mobile-wave,
   .algo-visualizer,
   .hero-text,
   .top-right-pills {
     display: none !important;
-  }
-
-  .mobile-bottom-form {
-    flex: none !important;
-    height: auto !important;
-    min-height: auto !important;
-    overflow: visible !important;
-
-    /* 🌟 FIX: Increased top padding from 20px to 80px to clear the 60px header! */
-    padding: 80px 20px 80px !important;
-  }
-
-  .form-title {
-    font-size: 20px !important;
-    margin-bottom: 2px !important;
-  }
-
-  .form-subtitle {
-    font-size: 11px !important;
-    margin-bottom: 12px !important;
-  }
-
-  .name-row {
-    margin-bottom: 6px !important;
-  }
-
-  .input-group {
-    margin-bottom: 8px !important;
-  }
-
-  input,
-  .toggle-password {
-    height: 36px !important;
-  }
-
-  .primary-btn {
-    height: 40px !important;
-    margin-top: 4px !important;
   }
 }
 
@@ -1624,4 +1597,23 @@ input:focus {
     transform-origin: center center !important;
     margin: 0 !important;
   }
+}
+
+/* =========================================================
+   🌟 FIX: QUARANTINE DASHBOARD CSS BLEED & RESTORE GRID
+========================================================= */
+.split-container .right-panel {
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  
+  /* 🌟 THE GRID RESTORE: Apply the glowing grid directly to this panel */
+  background-color: var(--bg-main) !important;
+  background-image:
+    radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(59, 130, 246, 0.12), transparent 50%),
+    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 40px 40px, 40px 40px !important;
+  background-position: 0 0, 0 0, 0 0 !important;
 }

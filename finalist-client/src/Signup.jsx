@@ -27,28 +27,32 @@ export default function Signup() {
 
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+    // 1. Desktop Mouse Glow (Only runs if right-panel exists)
     const rightPanel = document.querySelector('.right-panel');
-    const runesContainer = document.getElementById('runes-container');
-
-    if (runesContainer && rightPanel) {
+    if (rightPanel) {
       rightPanel.addEventListener('mousemove', (e) => {
         const rect = rightPanel.getBoundingClientRect();
         rightPanel.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
         rightPanel.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
       });
+    }
 
-      const runes = ['{}', '</>', '[]', '=>', '();', '&&', '||', '!='];
-      runeInterval = setInterval(() => {
+    // 2. The Runes Engine (Finds ALL containers, desktop or mobile!)
+    const runes = ['{}', '</>', '[]', '=>', '();', '&&', '||', '!='];
+    runeInterval = setInterval(() => {
+      const allContainers = document.querySelectorAll('.runes-container');
+      allContainers.forEach(container => {
         const rune = document.createElement('div');
         rune.className = 'rune';
         rune.textContent = runes[Math.floor(Math.random() * runes.length)];
         rune.style.left = Math.random() * 100 + '%';
         rune.style.animationDuration = (Math.random() * 6 + 6) + 's';
         rune.style.fontSize = (Math.random() * 10 + 14) + 'px';
-        runesContainer.appendChild(rune);
+        container.appendChild(rune);
         setTimeout(() => rune.remove(), 12000);
-      }, 400);
-    }
+      });
+    }, 400);
+
 
     const visContainer = document.getElementById('algo-visualizer');
 
@@ -636,8 +640,8 @@ export default function Signup() {
             />
             <span
               className="toggle-password"
-              onMouseDown={(e) => { e.preventDefault(); setShowPassword(!showPassword); }}
-              onTouchStart={(e) => { e.preventDefault(); setShowPassword(!showPassword); }}
+              onClick={() => setShowPassword(!showPassword)}
+              onMouseDown={(e) => e.preventDefault()} 
             >
               <img src={showPassword ? "/assets/eye-open.png" : "/assets/eye-closed.png"} alt="Toggle" />
             </span>
@@ -654,8 +658,8 @@ export default function Signup() {
             />
             <span
               className="toggle-password"
-              onMouseDown={(e) => { e.preventDefault(); setShowConfirmPassword(!showConfirmPassword); }}
-              onTouchStart={(e) => { e.preventDefault(); setShowConfirmPassword(!showConfirmPassword); }}
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              onMouseDown={(e) => e.preventDefault()}
             >
               <img src={showConfirmPassword ? "/assets/eye-open.png" : "/assets/eye-closed.png"} alt="Toggle" />
             </span>
@@ -738,10 +742,21 @@ export default function Signup() {
                 <Link to="/signin" className="nav-signin-btn">Sign In <i className="ri-arrow-right-line"></i></Link>
               </div>
             </div>
-            <FormPanel />
+            {FormPanel()}
           </div>
 
-          <div className="right-panel" style={{ justifyContent: 'space-around' }}>
+          <div
+            className="right-panel"
+            style={{ justifyContent: 'space-around' }}
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+              e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+            }}
+          >
+            {/* 🌟 FIX: The missing spotlight div has been restored! */}
+            <div className="spotlight-overlay"></div>
+
             <div className="runes-container" id="runes-container"></div>
             <TopPills />
             <div className="signup-content">
@@ -771,7 +786,7 @@ export default function Signup() {
           </div>
 
           <div className="mobile-bottom-form">
-            <FormPanel />
+            {FormPanel()}
           </div>
         </div>
       )}
