@@ -108,20 +108,20 @@ export default function Dashboard() {
     let ticking = false;
     const handleMouseMove = (e) => {
       if (!globalTooltip.classList.contains('active')) return;
-      
+
       if (!ticking) {
         window.requestAnimationFrame(() => {
           let x = e.clientX, y = e.clientY - 15;
           const rect = globalTooltip.getBoundingClientRect();
-          
+
           if (x + (rect.width / 2) > window.innerWidth - 15) x = window.innerWidth - (rect.width / 2) - 15;
           if (x - (rect.width / 2) < 15) x = (rect.width / 2) + 15;
           if (y - rect.height < 10) { y = e.clientY + 25; globalTooltip.style.transform = `translate(-50%, 0)`; }
           else { globalTooltip.style.transform = `translate(-50%, -100%)`; }
-          
+
           globalTooltip.style.left = `${x}px`;
           globalTooltip.style.top = `${y}px`;
-          
+
           ticking = false; // Unlock for the next frame
         });
         ticking = true; // Lock until frame is drawn
@@ -189,11 +189,13 @@ export default function Dashboard() {
     const token = localStorage.getItem('token');
     async function fetchDashboardData() {
       try {
+        const API_BASE = import.meta.env.VITE_API_URL; // 🌟 Grabs your Render URL
+
         const [resProblems, resProgress, resProfile, resAnalytics] = await Promise.all([
-          fetch("/api/problems", { headers: { "Authorization": "Bearer " + token } }),
-          fetch("/api/progress", { headers: { "Authorization": "Bearer " + token } }),
-          fetch("/api/auth/profile", { headers: { "Authorization": "Bearer " + token } }),
-          fetch("/api/progress/analytics", { headers: { "Authorization": "Bearer " + token } })
+          fetch(`${API_BASE}/api/problems`, { headers: { "Authorization": "Bearer " + token } }),
+          fetch(`${API_BASE}/api/progress`, { headers: { "Authorization": "Bearer " + token } }),
+          fetch(`${API_BASE}/api/auth/profile`, { headers: { "Authorization": "Bearer " + token } }),
+          fetch(`${API_BASE}/api/progress/analytics`, { headers: { "Authorization": "Bearer " + token } })
         ]);
 
         if (resProblems.ok) setProblemsData(await resProblems.json());
@@ -329,8 +331,8 @@ export default function Dashboard() {
 
     // 3. Sync with backend quietly in the background
     try {
-      await fetch(`/api/progress/toggle-solved/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } });
-      const resAnalytics = await fetch("/api/progress/analytics", { headers: { "Authorization": "Bearer " + token } });
+      await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } });
+      const resAnalytics = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/analytics`, { headers: { "Authorization": "Bearer " + token } });
       if (resAnalytics.ok) setAnalyticsData(await resAnalytics.json());
     } catch (err) {
       setSolvedIds(prev => isCurrentlySolved ? [...prev, String(id)] : prev.filter(i => i !== String(id)));
@@ -342,7 +344,7 @@ export default function Dashboard() {
     const token = localStorage.getItem('token');
     const isCurrentlyStarred = starredIds.includes(String(id));
     setStarredIds(prev => isCurrentlyStarred ? prev.filter(i => i !== String(id)) : [...prev, String(id)]);
-    try { await fetch(`/api/progress/toggle-star/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } }); } catch (err) { }
+    try { await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-star/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } }); } catch (err) { }
   };
 
   const handleDragStart = (e) => {
@@ -803,8 +805,7 @@ function WorkspacePanel({ problem, isStarred, onToggleStar, onClose }) {
       let savedCode = null;
       let cloudChat = [];
       try {
-        const res = await fetch(`/api/workspace/${problem._id}`, { headers: { "Authorization": "Bearer " + token } });
-        if (res.ok) {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/workspace/${problem._id}`, { headers: { "Authorization": "Bearer " + token } }); if (res.ok) {
           const data = await res.json();
           savedCode = data.code || localStorage.getItem(`finalist_code_${problem._id}`);
           cloudChat = (data.chat && data.chat.length > 0) ? data.chat : savedChat;
@@ -863,7 +864,7 @@ function WorkspacePanel({ problem, isStarred, onToggleStar, onClose }) {
       clearTimeout(saveTimeout);
       saveTimeout = setTimeout(async () => {
         try {
-          await fetch(`/api/workspace/code/${problem?._id}`, {
+          await fetch(`${import.meta.env.VITE_API_URL}/api/workspace/code/${problem?._id}`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
             body: JSON.stringify({ code: jsonCache })
@@ -922,7 +923,7 @@ function WorkspacePanel({ problem, isStarred, onToggleStar, onClose }) {
     setIsAiThinking(true);
 
     try {
-      const aiRes = await fetch('/api/ai/ask', {
+      const aiRes = await fetch(`${import.meta.env.VITE_API_URL}/api/ai/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({
@@ -950,7 +951,7 @@ function WorkspacePanel({ problem, isStarred, onToggleStar, onClose }) {
           setChatHistory(completedChat);
           localStorage.setItem(`finalist_ai_${problem._id}`, JSON.stringify(completedChat));
           // Cloud save chat
-          fetch(`/api/workspace/chat/${problem._id}`, {
+          fetch(`${import.meta.env.VITE_API_URL}/api/workspace/chat/${problem._id}`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
             body: JSON.stringify({ chat: completedChat })
@@ -977,7 +978,7 @@ function WorkspacePanel({ problem, isStarred, onToggleStar, onClose }) {
     localStorage.removeItem(`finalist_ai_${problem._id}`);
     setShowClearConfirm(false);
     try {
-      await fetch(`/api/workspace/chat/${problem._id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/workspace/chat/${problem._id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
         body: JSON.stringify({ chat: [] })
