@@ -40,9 +40,10 @@ export default function Dashboard() {
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
 
-  // --- STOPWATCH STATE ---
+  // --- STOPWATCH & PASSIVE TIME STATE ---
   const [elapsedTime, setElapsedTime] = useState(parseInt(localStorage.getItem('finalist_timer_elapsed')) || 0);
   const [isRunning, setIsRunning] = useState(localStorage.getItem('finalist_timer_running') === 'true');
+  const [dashboardTime, setDashboardTime] = useState(parseInt(localStorage.getItem('finalist_cumulative_time')) || 0);
   const lastTickRef = useRef(parseInt(localStorage.getItem('finalist_last_tick')) || Date.now());
   const intervalRef = useRef(null);
 
@@ -103,16 +104,28 @@ export default function Dashboard() {
         globalTooltip.classList.add('active');
       }
     };
+    // 🌟 THE FIX: Ticking lock prevents the browser from doing tooltip math faster than the screen can draw!
+    let ticking = false;
     const handleMouseMove = (e) => {
       if (!globalTooltip.classList.contains('active')) return;
-      let x = e.clientX, y = e.clientY - 15;
-      const rect = globalTooltip.getBoundingClientRect();
-      if (x + (rect.width / 2) > window.innerWidth - 15) x = window.innerWidth - (rect.width / 2) - 15;
-      if (x - (rect.width / 2) < 15) x = (rect.width / 2) + 15;
-      if (y - rect.height < 10) { y = e.clientY + 25; globalTooltip.style.transform = `translate(-50%, 0)`; }
-      else { globalTooltip.style.transform = `translate(-50%, -100%)`; }
-      globalTooltip.style.left = `${x}px`;
-      globalTooltip.style.top = `${y}px`;
+      
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          let x = e.clientX, y = e.clientY - 15;
+          const rect = globalTooltip.getBoundingClientRect();
+          
+          if (x + (rect.width / 2) > window.innerWidth - 15) x = window.innerWidth - (rect.width / 2) - 15;
+          if (x - (rect.width / 2) < 15) x = (rect.width / 2) + 15;
+          if (y - rect.height < 10) { y = e.clientY + 25; globalTooltip.style.transform = `translate(-50%, 0)`; }
+          else { globalTooltip.style.transform = `translate(-50%, -100%)`; }
+          
+          globalTooltip.style.left = `${x}px`;
+          globalTooltip.style.top = `${y}px`;
+          
+          ticking = false; // Unlock for the next frame
+        });
+        ticking = true; // Lock until frame is drawn
+      }
     };
     const handleMouseOut = (e) => {
       if (e.target.closest('[data-tooltip]')) globalTooltip.classList.remove('active');
@@ -139,10 +152,18 @@ export default function Dashboard() {
     if (urlToken) { localStorage.setItem('token', urlToken); navigate('/problems', { replace: true }); }
   }, [navigate]);
 
+  // 🌟 THE FIX: Synced the global background glow to the monitor's refresh rate!
   useEffect(() => {
+    let ticking = false;
     const handleMouseMove = (e) => {
-      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
-      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
+          document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     document.addEventListener('mousemove', handleMouseMove);
     return () => document.removeEventListener('mousemove', handleMouseMove);
@@ -197,7 +218,7 @@ export default function Dashboard() {
   }, [navigate]);
 
   // =========================================================================
-  // 4. ENGINE: STOPWATCH
+  // 4A. ENGINE: MANUAL STOPWATCH (Only times your active coding sessions)
   // =========================================================================
   const formatTime = (ms) => {
     let h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
@@ -206,26 +227,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (isRunning) {
-      const now = Date.now();
-      const missed = now - lastTickRef.current;
-      if (missed > 0 && missed < 86400000) {
-        setElapsedTime(prev => prev + missed);
-        const cum = parseInt(localStorage.getItem('finalist_cumulative_time')) || 0;
-        localStorage.setItem('finalist_cumulative_time', cum + missed);
-      }
       lastTickRef.current = Date.now();
       localStorage.setItem('finalist_last_tick', lastTickRef.current);
-
       intervalRef.current = setInterval(() => {
         const currentNow = Date.now();
         const delta = currentNow - lastTickRef.current;
         lastTickRef.current = currentNow;
         localStorage.setItem('finalist_last_tick', currentNow);
-
-        // 🌟 FIX: Update global cumulative time every second
-        const cum = parseInt(localStorage.getItem('finalist_cumulative_time')) || 0;
-        localStorage.setItem('finalist_cumulative_time', cum + delta);
-
         setElapsedTime(prev => {
           const newTime = prev + delta;
           localStorage.setItem('finalist_timer_elapsed', newTime);
@@ -242,18 +250,91 @@ export default function Dashboard() {
   const resetTimer = () => { setIsRunning(false); localStorage.setItem('finalist_timer_running', 'false'); setElapsedTime(0); localStorage.setItem('finalist_timer_elapsed', 0); };
 
   // =========================================================================
+  // 4B. ENGINE: PASSIVE DASHBOARD TRACKER (Auto-tracks active time on site)
+  // =========================================================================
+  useEffect(() => {
+    let lastPassiveTick = Date.now();
+
+    const passiveInterval = setInterval(() => {
+      // 🌟 THE WALL: If they leave the tab, do absolutely nothing!
+      if (document.hidden) {
+        lastPassiveTick = Date.now(); // Reset the anchor so away-time isn't counted
+        return;
+      }
+
+      const now = Date.now();
+      const delta = now - lastPassiveTick;
+      lastPassiveTick = now;
+
+      // Add to permanent storage
+      const cum = parseInt(localStorage.getItem('finalist_cumulative_time')) || 0;
+      const newCum = cum + delta;
+      localStorage.setItem('finalist_cumulative_time', newCum);
+
+      // Update state to keep the Streak Card in sync
+      setDashboardTime(newCum);
+    }, 1000);
+
+    // 🌟 Resync perfectly if the user tabs out and comes back
+    const handleVisibility = () => {
+      if (!document.hidden) lastPassiveTick = Date.now();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      clearInterval(passiveInterval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
+
+  // =========================================================================
   // 5. ENGINE: INTERACTION & DRAGGER
   // =========================================================================
   const handleToggleSolved = async (e, id) => {
     e.stopPropagation();
     const token = localStorage.getItem('token');
     const isCurrentlySolved = solvedIds.includes(String(id));
+
+    // 1. Instant ID Update
     setSolvedIds(prev => isCurrentlySolved ? prev.filter(i => i !== String(id)) : [...prev, String(id)]);
+
+    // 🌟 2. OPTIMISTIC UI FIX: Instantly calculate the new Heatmap and Topic stats in the browser!
+    const problem = problemsData.find(p => String(p._id) === String(id));
+    const tags = problem?.tags || [];
+    const todayStr = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+    setAnalyticsData(prev => {
+      const newTopics = prev.topics.map(t => {
+        if (tags.includes(t.name)) {
+          return { ...t, solved: Math.max(0, t.solved + (isCurrentlySolved ? -1 : 1)) };
+        }
+        return t;
+      });
+
+      const newHeatmap = prev.heatmap.map(d => {
+        if (d.date === todayStr) {
+          const newCount = Math.max(0, d.count + (isCurrentlySolved ? -1 : 1));
+          let level = 0;
+          if (newCount > 0) level = 1;
+          if (newCount >= 3) level = 2;
+          if (newCount >= 5) level = 3;
+          if (newCount >= 8) level = 4;
+          return { ...d, count: newCount, level };
+        }
+        return d;
+      });
+
+      return { ...prev, topics: newTopics, heatmap: newHeatmap };
+    });
+
+    // 3. Sync with backend quietly in the background
     try {
       await fetch(`/api/progress/toggle-solved/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } });
       const resAnalytics = await fetch("/api/progress/analytics", { headers: { "Authorization": "Bearer " + token } });
       if (resAnalytics.ok) setAnalyticsData(await resAnalytics.json());
-    } catch (err) { setSolvedIds(prev => isCurrentlySolved ? [...prev, String(id)] : prev.filter(i => i !== String(id))); }
+    } catch (err) {
+      setSolvedIds(prev => isCurrentlySolved ? [...prev, String(id)] : prev.filter(i => i !== String(id)));
+    }
   };
 
   const handleToggleStar = async (e, id) => {
@@ -277,10 +358,19 @@ export default function Dashboard() {
     const handleMouseMove = (e) => {
       // 🌟 NEW RULE: Drag only active when a problem is open
       if (!isDraggingRef.current || !activeProblemId) return;
+
       let rawWidth = startWidthRef.current - (e.clientX - startXRef.current);
-      if (rawWidth >= 320) { setAnalyticsWidth(rawWidth); }
-      else if (rawWidth > 270) { setAnalyticsWidth(320 - ((320 - rawWidth) * 0.4)); }
-      else { collapseAnalytics(); }
+
+      // 🌟 THE WALL FIX: If they try to drag left (making it wider than 320), force it to stay exactly at 320!
+      if (rawWidth >= 320) {
+        setAnalyticsWidth(320);
+      }
+      else if (rawWidth > 270) {
+        setAnalyticsWidth(320 - ((320 - rawWidth) * 0.4));
+      }
+      else {
+        collapseAnalytics();
+      }
     };
     const handleMouseUp = () => {
       if (isDraggingRef.current) {
@@ -553,8 +643,19 @@ export default function Dashboard() {
                   )}
                   {selectedTags.length > 0 && <div className="topic-divider" style={{ display: 'block' }}></div>}
                   <div className="topics-container">
-                    {availableTags.map(tag => (<div key={tag} className="topic-pill-item" onClick={(e) => { e.stopPropagation(); handleTagToggle(tag); setTopicSearch(""); }}>{tag}</div>))}
-                  </div>
+                    {availableTags.map(tag => (
+                      <div
+                        key={tag}
+                        className="topic-pill-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTagToggle(tag);
+                          // 🌟 THE FIX: We removed setTopicSearch("") so your typed text stays!
+                        }}
+                      >
+                        {tag}
+                      </div>
+                    ))}                  </div>
                 </div>
               </div>
             </div>
@@ -602,22 +703,19 @@ export default function Dashboard() {
               problem={problemsData.find(p => String(p._id) === activeProblemId)}
               isStarred={starredIds.includes(activeProblemId)}
               onToggleStar={handleToggleStar}
-              onClose={() => handleProblemClick(activeProblemId)} // 🌟 SPRINT 1: Close Trigger
+              onClose={() => handleProblemClick(activeProblemId)}
             />
           )}
         </div>
 
-        {/* VERTICAL DIVIDER
-            🌟 NEW RULE: Drag + fold/unfold ONLY active when a problem is open.
-            When no problem is open, divider is a static decorative line — no cursor, no fold button. */}
-        <div
-          className={`vertical-divider ${activeProblemId && !isAnalyticsOpen ? 'collapsed' : ''}`}
-          id="vertical-divider"
-          onMouseDown={activeProblemId ? handleDragStart : undefined}
-          style={{ cursor: activeProblemId ? 'col-resize' : 'default' }}
-        >
-          {/* Fold button ONLY shown when a problem is open */}
-          {activeProblemId && (
+        {/* VERTICAL DIVIDER */}
+        {activeProblemId && (
+          <div
+            className={`vertical-divider ${!isAnalyticsOpen ? 'collapsed' : ''}`}
+            id="vertical-divider"
+            onMouseDown={handleDragStart}
+            style={{ cursor: 'col-resize' }}
+          >
             <button
               className="panel-fold-btn"
               id="panel-fold-btn"
@@ -627,12 +725,10 @@ export default function Dashboard() {
             >
               <i className="ri-arrow-right-double-line"></i>
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* STATS / ANALYTICS PANEL
-            🌟 Fix 1: overflow:hidden + maxHeight:100% locks it to dashboard — never bleeds past bottom.
-            🌟 Fix 3: When no problem open → always visible, fixed width, no hide/show allowed. */}
+        {/* STATS / ANALYTICS PANEL */}
         <div
           className={`stats-panel ${activeProblemId && !isAnalyticsOpen ? 'hidden' : 'snap-back'} ${isDraggingUI ? 'dragging' : ''}`}
           id="stats-panel"
@@ -642,14 +738,15 @@ export default function Dashboard() {
             overflow: 'hidden',
             maxHeight: '100%',
             flexShrink: 0,
+            /* 🌟 THE FIX: Synchronized Bezier curves to match the Middle and Right panels perfectly */
             transition: isDraggingUI
               ? 'none'
               : (activeProblemId && !isAnalyticsOpen)
-                ? 'width 0.45s cubic-bezier(0.22,1,0.36,1), opacity 0.18s ease'
-                : 'width 0.55s cubic-bezier(0.22,1,0.36,1), opacity 0.4s ease 0.1s',
+                ? 'width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease'
+                : 'width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease 0.1s',
           }}
         >
-          <AnalyticsPanel data={analyticsData} onBubbleClick={handleTagToggle} panelWidth={analyticsWidth} liveTimer={elapsedTime} />
+          <AnalyticsPanel data={analyticsData} onBubbleClick={handleTagToggle} panelWidth={analyticsWidth} liveTimer={dashboardTime} />
         </div>
       </div>
     </>
@@ -1079,23 +1176,27 @@ function AnalyticsPanel({ data, onBubbleClick, panelWidth, liveTimer }) {
     if (!bubblesRef.current || !data.topics) return;
     const container = bubblesRef.current;
 
-    // Wait one frame so layout is fully painted before reading dimensions
     requestAnimationFrame(() => {
-      container.innerHTML = '';
       const activeTopics = data.topics.filter(t => t.solved > 0);
+      const placeholder = container.querySelector('.empty-placeholder');
 
       if (activeTopics.length === 0) {
-        container.innerHTML = "<div style='color:var(--text-muted);font-size:13px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;line-height:1.6;'>Solve problems to unlock<br>your Topic Cluster!</div>";
+        if (!placeholder) {
+          container.innerHTML = "<div class='empty-placeholder' style='color:var(--text-muted);font-size:13px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;line-height:1.6;'>Solve problems to unlock<br>your Topic Cluster!</div>";
+        }
         return;
+      } else if (placeholder) {
+        placeholder.remove();
       }
 
-      // 🌟 Fix 2: Read ACTUAL live dimensions — not stale panelWidth prop
+      // 🌟 THE REFILL FIX: Find existing bubbles instead of destroying the container
+      const existingBubbles = Array.from(container.querySelectorAll('.topic-bubble'));
+      const seenTopics = new Set();
+
       const boxW = container.clientWidth || 280;
       const boxH = container.clientHeight || 250;
-
       const maxTotal = Math.max(...activeTopics.map(t => t.total));
 
-      // Scale bubble sizes relative to available box so they always fit
       const maxBubbleSize = Math.min(90, (Math.min(boxW, boxH) / 3.5));
       const minBubbleSize = Math.max(28, maxBubbleSize * 0.4);
 
@@ -1129,38 +1230,66 @@ function AnalyticsPanel({ data, onBubbleClick, panelWidth, liveTimer }) {
       });
 
       const clusterW = maxX - minX, clusterH = maxY - minY;
-      // 🌟 Fix 2: Scale cluster to fit BOTH width and height of the real container
       const scale = Math.min((boxW - 16) / clusterW, (boxH - 16) / clusterH, 1);
 
       placed.forEach(p => {
+        seenTopics.add(p.name);
         const finalX = (p.x - minX) * scale + (boxW - clusterW * scale) / 2;
         const finalY = (p.y - minY) * scale + (boxH - clusterH * scale) / 2;
         const finalSize = p.size * scale;
         const pct = p.total === 0 ? 0 : Math.round((p.solved / p.total) * 100);
 
-        const bubble = document.createElement("div");
-        bubble.className = "topic-bubble";
-        bubble.dataset.topic = p.name;
-        bubble.style.left = `${finalX}px`; bubble.style.top = `${finalY}px`;
-        bubble.style.width = `0px`; bubble.style.height = `0px`;
+        let bubble = container.querySelector(`.topic-bubble[data-topic="${p.name}"]`);
+
+        // 🌟 ONLY create a new bubble if it doesn't already exist
+        if (!bubble) {
+          bubble = document.createElement("div");
+          bubble.className = "topic-bubble";
+          bubble.dataset.topic = p.name;
+          bubble.innerHTML = `
+            <div class="bubble-mask">
+              <div class="wave" style="--fill-pct: 0%; opacity: 0;"></div>
+            </div>
+            <div class="bubble-content">
+              <span class="bubble-name"></span>
+            </div>`;
+          bubble.style.left = `${finalX}px`; bubble.style.top = `${finalY}px`;
+          bubble.style.width = `0px`; bubble.style.height = `0px`;
+          bubble.onclick = (e) => { e.stopPropagation(); bubbleClickRef.current(p.name); };
+          container.appendChild(bubble);
+          bubble.offsetHeight; // Force CSS reflow
+          bubble.style.transition = 'left 0.8s cubic-bezier(0.16,1,0.3,1),top 0.8s cubic-bezier(0.16,1,0.3,1),width 0.5s cubic-bezier(0.16,1,0.3,1),height 0.5s cubic-bezier(0.16,1,0.3,1),transform 0.3s';
+        }
+
+        // 🌟 Smoothly update properties of the existing bubble
         bubble.setAttribute('data-tooltip', `${p.name}: ${p.solved} / ${p.total} Solved`);
-        bubble.onclick = (e) => { e.stopPropagation(); bubbleClickRef.current(p.name); };
-
-        const fontSize = finalSize > 70 ? '11px' : (finalSize > 45 ? '9px' : '7.5px');
-        const nameOpacity = finalSize < 25 ? '0' : '1';
-        bubble.innerHTML = `
-          <div class="bubble-mask">
-            <div class="wave" style="--fill-pct:${pct}%;opacity:${pct === 0 ? 0 : 1};"></div>
-          </div>
-          <div class="bubble-content">
-            <span class="bubble-name" style="font-size:${fontSize};opacity:${nameOpacity};">${p.name}</span>
-          </div>`;
-
-        container.appendChild(bubble);
-        bubble.offsetHeight; // reflow for CSS transition
-        bubble.style.transition = 'left 0.8s cubic-bezier(0.16,1,0.3,1),top 0.8s cubic-bezier(0.16,1,0.3,1),width 0.5s cubic-bezier(0.16,1,0.3,1),height 0.5s cubic-bezier(0.16,1,0.3,1),transform 0.3s';
+        bubble.style.left = `${finalX}px`;
+        bubble.style.top = `${finalY}px`;
         bubble.style.width = `${finalSize}px`;
         bubble.style.height = `${finalSize}px`;
+
+        const nameSpan = bubble.querySelector('.bubble-name');
+        if (nameSpan) {
+          nameSpan.textContent = p.name;
+          nameSpan.style.fontSize = finalSize > 70 ? '11px' : (finalSize > 45 ? '9px' : '7.5px');
+          nameSpan.style.opacity = finalSize < 25 ? '0' : '1';
+        }
+
+        const wave = bubble.querySelector('.wave');
+        if (wave) {
+          wave.style.setProperty('--fill-pct', `${pct}%`);
+          wave.style.opacity = pct === 0 ? "0" : "1";
+        }
+      });
+
+      // 🌟 Unmount animation for topics that dropped to 0
+      existingBubbles.forEach(b => {
+        if (!seenTopics.has(b.dataset.topic)) {
+          b.style.width = "0px";
+          b.style.height = "0px";
+          b.style.opacity = "0";
+          setTimeout(() => b.remove(), 400);
+        }
       });
     });
   }, [topicsJson, data.topics]);
@@ -1169,12 +1298,15 @@ function AnalyticsPanel({ data, onBubbleClick, panelWidth, liveTimer }) {
   useEffect(() => { packBubbles(); }, [packBubbles]);
 
   // 🌟 Fix 2: ResizeObserver on the bubbles container itself — repacks whenever it's resized (panel drag)
+  // 🌟 THE HEAVY MATH FIX: Suspend collision-detection during CSS animations
   useEffect(() => {
     if (!bubblesRef.current) return;
     let resizeTimer;
     const ro = new ResizeObserver(() => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(packBubbles, 50);
+      // 🌟 CHANGED FROM 50 to 450: The JS will now wait for the 400ms CSS panel slide 
+      // to completely finish before it attempts to do the heavy bubble math!
+      resizeTimer = setTimeout(packBubbles, 450);
     });
     ro.observe(bubblesRef.current);
     return () => { ro.disconnect(); clearTimeout(resizeTimer); };
@@ -1192,43 +1324,75 @@ function AnalyticsPanel({ data, onBubbleClick, panelWidth, liveTimer }) {
   return (
     <>
       {/* STREAK CARD */}
-      <div className="stat-card stat-small" style={{ padding: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div className="streak-main" style={{ flex: 1, paddingRight: '20px', minWidth: 0 }}>
-          <div className="streak-top">
-            <i className="ri-fire-fill streak-icon"></i>
-            <div className="streak-info">
-              <span className="streak-count" id="streak-count-val">{data?.streak?.current || 0}</span>
-              <span className="streak-label">Day Streak</span>
+      <div className="stat-card stat-small" style={{
+        padding: '12px 16px', /* 🌟 THE FIX: Tighter global padding */
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flex: 'none'
+      }}>
+        <div className="streak-main" style={{ flex: 1, paddingRight: '15px', minWidth: 0 }}>
+
+          {/* 🌟 THE FIX: Shrunk the fire icon and put "6" and "DAY STREAK" on the exact same baseline */}
+          <div className="streak-top" style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <i className="ri-fire-fill streak-icon" style={{ fontSize: '26px' }}></i>
+            <div className="streak-info" style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+              <span className="streak-count" id="streak-count-val" style={{ fontSize: '22px', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+                {data?.streak?.current || 0}
+              </span>
+              <span className="streak-label" style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>
+                Day Streak
+              </span>
             </div>
           </div>
+
           <div className="streak-week" id="streak-week-container">
             {weekDays.map(day => (
-              <div key={day.name} className="day-tracker">
-                <div className={`day-circle ${day.isActive ? 'active' : ''}`}><i className="ri-check-line"></i></div>
-                <span className={`day-name ${day.isToday ? 'today' : ''}`}>{day.name}</span>
+              <div key={day.name} className="day-tracker" style={{ gap: '4px' }}>
+                {/* 🌟 THE FIX: Shrunk the day circles from 22px to 18px */}
+                <div className={`day-circle ${day.isActive ? 'active' : ''}`} style={{ width: '18px', height: '18px', fontSize: '9px' }}>
+                  <i className="ri-check-line"></i>
+                </div>
+                <span className={`day-name ${day.isToday ? 'today' : ''}`} style={{ fontSize: '9px' }}>{day.name}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="streak-secondary">
+
+        {/* 🌟 THE FIX: Packed the secondary stats tighter and reduced font sizes slightly */}
+        <div className="streak-secondary" style={{ gap: '8px', paddingLeft: '15px' }}>
           <div className="stat-mini">
-            <span className="stat-mini-label">Max Streak</span>
-            <span className="stat-mini-value" id="max-streak-val">{data?.streak?.max || 0} Days</span>
+            <span className="stat-mini-label" style={{ fontSize: '9px', marginBottom: '1px' }}>Max Streak</span>
+            <span className="stat-mini-value" id="max-streak-val" style={{ fontSize: '13px' }}>{data?.streak?.max || 0} Days</span>
           </div>
           <div className="stat-mini">
-            <span className="stat-mini-label">Time Spent</span>
-            <span className="stat-mini-value" id="time-spent-val">{timeSpentDisplay}</span>
+            <span className="stat-mini-label" style={{ fontSize: '9px', marginBottom: '1px' }}>Time Spent</span>
+            <span className="stat-mini-value" id="time-spent-val" style={{ fontSize: '13px' }}>{timeSpentDisplay}</span>
           </div>
         </div>
       </div>
 
       {/* ACTIVITY HEATMAP CARD */}
-      <div className="stat-card stat-medium" style={{ flexDirection: 'column', padding: '15px 20px', alignItems: 'flex-start' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: '10px' }}>
+      <div className="stat-card" style={{
+        flexDirection: 'column',
+        padding: '20px',
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+        display: 'flex',
+        overflow: 'visible',
+        /* 🌟 THE ULTIMATE FIX: 'none' physically prevents the card from growing, 
+           forcing it to wrap tightly around the squares and give all dead space to the bubbles! */
+        flex: 'none'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: '15px', flexShrink: 0 }}>
           <span className="section-label" style={{ marginBottom: 0 }}>Activity Log</span>
           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Last 16 Weeks</span>
         </div>
-        <div className="heatmap-container" id="activity-heatmap">
+
+        <div className="heatmap-container" id="activity-heatmap" style={{
+          width: '100%',
+          height: 'auto', /* 🌟 Keeps the grid perfectly sized to the squares */
+        }}>
           {(data?.heatmap || []).map((day, idx) => {
             const dateObj = new Date(day.date);
             const dateString = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -1242,7 +1406,6 @@ function AnalyticsPanel({ data, onBubbleClick, panelWidth, liveTimer }) {
           })}
         </div>
       </div>
-
       {/* TOPIC BUBBLES CARD
           🌟 Fix 1: stat-large is flex column. bubbles-container gets flex:1 + overflow:hidden
           so the cluster is always contained within the card — never bleeds below the panel. */}
