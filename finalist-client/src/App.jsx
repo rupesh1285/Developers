@@ -4,26 +4,26 @@ import Signup from './Signup';
 import Signin from './Signin';
 import Dashboard from './Dashboard';
 
-// 🌟 THE UPGRADED BOUNCER (Protects the Dashboard & Catches OAuth Tokens)
+// 🌟 THE UPGRADED BOUNCER (Protects Dashboard & Kicks to Landing)
 const RequireAuth = ({ children }) => {
-  // 1. First, check if there is a brand new token waiting in the URL from Google/GitHub
+  // 1. Check if there is a brand new token waiting in the URL from Google/GitHub
   const urlParams = new URLSearchParams(window.location.search);
   const urlToken = urlParams.get('token');
   
   if (urlToken) {
-    // Save it to memory immediately!
+    // Save it to memory immediately
     localStorage.setItem('token', urlToken);
     
-    // Clean up the URL bar so the giant token disappears and looks professional
+    // Clean up the URL bar
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
-  // 2. Now check if we have a token in memory
+  // 2. Check memory for the token
   const token = localStorage.getItem('token');
   
-  // If there is STILL no token, kick them to the login page
-  if (!token) {
-    return <Navigate to="/signin" replace />;
+  // 3. If no token (or a fake 'null' string), kick them to the Landing page
+  if (!token || token === 'null' || token === 'undefined') {
+    return <Navigate to="/" replace />;
   }
   
   // Otherwise, let them in!
@@ -33,11 +33,13 @@ const RequireAuth = ({ children }) => {
 // 🌟 THE SMART REDIRECT (For the Landing Page)
 const SmartLanding = () => {
   const token = localStorage.getItem('token');
-  // If they already have a token, skip the landing page and go straight to work
-  if (token) {
+  
+  // If they have a real token, skip the landing page and go straight to the Dashboard
+  if (token && token !== 'null' && token !== 'undefined') {
     return <Navigate to="/problems" replace />;
   }
-  // Otherwise, show them the beautiful landing page
+  
+  // Otherwise, show them the Landing page
   return <Landing />;
 };
 
