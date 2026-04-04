@@ -191,11 +191,18 @@ export default function Dashboard() {
       try {
         const API_BASE = import.meta.env.VITE_API_URL; // 🌟 Grabs your Render URL
 
+        // 🌟 GRAB LOCAL TIMEZONE OFFSET
+        const tzOffset = String(new Date().getTimezoneOffset());
+        const authHeaders = { 
+          "Authorization": "Bearer " + token,
+          "Timezone-Offset": tzOffset 
+        };
+
         const [resProblems, resProgress, resProfile, resAnalytics] = await Promise.all([
-          fetch(`${API_BASE}/api/problems`, { headers: { "Authorization": "Bearer " + token } }),
-          fetch(`${API_BASE}/api/progress`, { headers: { "Authorization": "Bearer " + token } }),
-          fetch(`${API_BASE}/api/auth/profile`, { headers: { "Authorization": "Bearer " + token } }),
-          fetch(`${API_BASE}/api/progress/analytics`, { headers: { "Authorization": "Bearer " + token } })
+          fetch(`${API_BASE}/api/problems`, { headers: authHeaders }),
+          fetch(`${API_BASE}/api/progress`, { headers: authHeaders }),
+          fetch(`${API_BASE}/api/auth/profile`, { headers: authHeaders }),
+          fetch(`${API_BASE}/api/progress/analytics`, { headers: authHeaders })
         ]);
 
         if (resProblems.ok) setProblemsData(await resProblems.json());
@@ -331,8 +338,11 @@ export default function Dashboard() {
 
     // 3. Sync with backend quietly in the background
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } });
-      const resAnalytics = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/analytics`, { headers: { "Authorization": "Bearer " + token } });
+      const tzOffset = String(new Date().getTimezoneOffset());
+      const authHeaders = { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset };
+      
+      await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, { method: "POST", headers: authHeaders });
+      const resAnalytics = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/analytics`, { headers: authHeaders });
       if (resAnalytics.ok) setAnalyticsData(await resAnalytics.json());
     } catch (err) {
       setSolvedIds(prev => isCurrentlySolved ? [...prev, String(id)] : prev.filter(i => i !== String(id)));
