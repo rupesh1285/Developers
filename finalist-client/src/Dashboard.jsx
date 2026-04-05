@@ -802,6 +802,14 @@ function WorkspacePanel({ problem, isStarred, onToggleStar, onClose }) {
     "text/x-java": `// Write logic for ${problem?.title}\nclass Solution {\n    public void solve() {\n        \n    }\n}`
   };
 
+  // 🌟 THE FIX: Force the tab to reset to "Description" when opening a new problem
+  useEffect(() => {
+    if (problem) {
+      setActiveTab('tab-desc');
+      localStorage.setItem("finalist_active_tab", 'tab-desc');
+    }
+  }, [problem?._id]);
+
   // Load saved code + chat on problem mount
   useEffect(() => {
     if (!problem) return;
