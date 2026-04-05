@@ -193,9 +193,9 @@ export default function Dashboard() {
 
         // 🌟 GRAB LOCAL TIMEZONE OFFSET
         const tzOffset = String(new Date().getTimezoneOffset());
-        const authHeaders = { 
+        const authHeaders = {
           "Authorization": "Bearer " + token,
-          "Timezone-Offset": tzOffset 
+          "Timezone-Offset": tzOffset
         };
 
         const [resProblems, resProgress, resProfile, resAnalytics] = await Promise.all([
@@ -340,7 +340,7 @@ export default function Dashboard() {
     try {
       const tzOffset = String(new Date().getTimezoneOffset());
       const authHeaders = { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset };
-      
+
       await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, { method: "POST", headers: authHeaders });
       const resAnalytics = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/analytics`, { headers: authHeaders });
       if (resAnalytics.ok) setAnalyticsData(await resAnalytics.json());
@@ -783,6 +783,7 @@ function WorkspacePanel({ problem, isStarred, onToggleStar, onClose }) {
   const codeCacheRef = useRef({}); // 🌟 FIX: Per-language code cache (JSON object, exactly like original)
   const aiHistoryRef = useRef(null);
   const aiInputRef = useRef(null);
+  const langPillRef = useRef(null); // 🌟 THE FIX: Ref for the language dropdown
 
   // 🌟 Full language map matching the original exactly
   const LANG_MAP = {
@@ -907,6 +908,18 @@ function WorkspacePanel({ problem, isStarred, onToggleStar, onClose }) {
     setActiveTab(tab);
     localStorage.setItem("finalist_active_tab", tab);
   };
+
+  // 🌟 THE FIX: Click-Outside listener to auto-close the language menu
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      // If the menu is open, AND the user clicked somewhere that is NOT inside the dropdown
+      if (langPillRef.current && !langPillRef.current.contains(e.target)) {
+        setLangMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLangChange = (newLang) => {
     if (!cmInstanceRef.current) return;
@@ -1064,12 +1077,11 @@ function WorkspacePanel({ problem, isStarred, onToggleStar, onClose }) {
       {/* CODE TAB — 🌟 FIX: Stripped wrapper and inline styles */}
       <div className={`tab-pane ${activeTab === 'tab-notes' ? 'active' : ''}`} id="tab-notes">
         <div className="ide-header">
-          <div className={`lang-pill ${langMenuOpen ? 'active' : ''}`} id={`lang-dropdown-${problem._id}`} onClick={() => setLangMenuOpen(!langMenuOpen)}>
-            <div className="lang-pill-header">
-              <i className="ri-code-s-slash-line"></i>
-              <span className="lang-text" data-value={language}>{LANG_MAP[language] || 'JavaScript'}</span>
-              <i className="ri-arrow-down-s-line chevron-icon"></i>
-            </div>
+          <div ref={langPillRef} className={`lang-pill ${langMenuOpen ? 'active' : ''}`} id={`lang-dropdown-${problem._id}`} onClick={() => setLangMenuOpen(!langMenuOpen)}>            <div className="lang-pill-header">
+            <i className="ri-code-s-slash-line"></i>
+            <span className="lang-text" data-value={language}>{LANG_MAP[language] || 'JavaScript'}</span>
+            <i className="ri-arrow-down-s-line chevron-icon"></i>
+          </div>
             <div className="lang-menu">
               <div className="lang-item" data-value="javascript" onClick={(e) => { e.stopPropagation(); handleLangChange('javascript'); }}>JavaScript</div>
               <div className="lang-item" data-value="python" onClick={(e) => { e.stopPropagation(); handleLangChange('python'); }}>Python</div>
