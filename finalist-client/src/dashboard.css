@@ -2825,8 +2825,8 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between; 
-    gap: 20px; 
+    justify-content: space-between; /* 🌟 Pushes the ring and the tight right-box to opposite walls */
+    gap: 15px; 
     padding: 15px 20px; 
   }
 
@@ -2883,18 +2883,17 @@ body {
   }
 
   .progress-right {
-    flex: 1; 
+    flex: 0 0 auto !important; /* 🌟 THE FIX: Stops it from growing into the middle! */
     display: flex;
     flex-direction: column;
     justify-content: center; 
-    align-items: flex-start !important; /* 🌟 Stopped the stretching */
+    align-items: flex-start !important; 
     gap: 6px !important; 
   }
 
-  /* 🌟 THE WIDTH FIX: Hard-capped the columns and width to match the dots */
   .progress-row {
-    grid-template-columns: 35px 85px !important; /* Fixed label size and bar size */
-    width: 130px !important; /* Exactly matches the visual footprint of the streak */
+    grid-template-columns: 35px 85px !important; 
+    width: 130px !important; 
     gap: 10px !important;
   }
 
@@ -2907,7 +2906,7 @@ body {
     flex-direction: column;
     gap: 6px;
     margin-bottom: 8px;
-    width: 130px; /* 🌟 Matches the bars */
+    width: 130px; 
   }
 
   .ms-top {
@@ -2922,10 +2921,10 @@ body {
     font-size: 18px;
   }
 
-  /* 🌟 VISUAL CACHE-BUSTER: BRIGHT YELLOW */
+  /* 🌟 VISUAL CACHE-BUSTER: BRIGHT GREEN */
   .ms-label {
     font-size: 12px;
-    color: #ffff00 !important; 
+    color: #00ff00 !important; 
     font-weight: 800; 
   }
 
