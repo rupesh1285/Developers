@@ -608,66 +608,162 @@ export default function Dashboard() {
 
           <div className="divider"></div>
 
-          {/* 🌟 SPRINT 1: SIDE-BY-SIDE SEARCH & FILTER */}
+          {/* FILTER OVERLAY BACKDROP */}
+          {mobileFiltersOpen && (
+            <div
+              className={`mobile-filter-overlay ${mobileFiltersOpen ? 'active' : ''}`}
+              onClick={() => setMobileFiltersOpen(false)}
+            />
+          )}
+
+          {/* 🌟 SIDE-BY-SIDE SEARCH & FILTER */}
           <div className="filters-section">
             <div className="search-wrapper">
               <i className="ri-search-line search-icon"></i>
-              <input type="text" id="search-input" ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} autoComplete="off" placeholder="Search..." />
+              <input
+                type="text"
+                id="search-input"
+                ref={searchInputRef}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoComplete="off"
+                placeholder="Search..."
+              />
             </div>
 
-            <button className={`mobile-filter-btn ${mobileFiltersOpen ? 'active' : ''}`} onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}>
+            <button
+              className={`mobile-filter-btn ${mobileFiltersOpen ? 'active' : ''}`}
+              onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+            >
               <i className="ri-equalizer-line"></i>
+              {(selectedTags.length > 0 || diffFilter !== 'Difficulty' || statusFilter !== 'All Problems') && (
+                <span className="mobile-filter-dot"></span>
+              )}
             </button>
 
-            {/* Filter Dropdowns (Hidden on mobile unless button clicked) */}
+            {/* ===== BOTTOM SHEET FILTER PANEL ===== */}
             <div className={`filters-actions ${mobileFiltersOpen ? 'mobile-open' : ''}`}>
-              <div className={`filter-pill ${diffOpen ? 'active' : ''}`} id="diff-dropdown" onClick={() => { setDiffOpen(!diffOpen); setStatusOpen(false); setTopicMenuOpen(false); }}>
-                <span className="filter-text">{diffFilter}</span><i className="ri-arrow-down-s-line chevron-icon"></i>
+
+              {/* Sheet Header */}
+              <div className="filter-sheet-header">
+                <span className="filter-sheet-title">Filters</span>
+                <div className="filter-sheet-close" onClick={() => setMobileFiltersOpen(false)}>
+                  <i className="ri-close-line"></i>
+                </div>
+              </div>
+
+              {/* Scrollable Body */}
+              <div className="filter-sheet-body">
+
+                {/* Difficulty */}
+                <div className="filter-sheet-label">Difficulty</div>
+                {['Difficulty', 'Basic', 'Easy', 'Medium', 'Hard'].map(diff => (
+                  <div
+                    key={diff}
+                    className={`filter-sheet-option ${diffFilter === diff ? 'selected' : ''}`}
+                    onClick={() => { setDiffFilter(diff); localStorage.setItem("finalist_diff", diff); }}
+                  >
+                    <span>{diff === 'Difficulty' ? 'All Difficulties' : diff}</span>
+                    <i className="ri-check-line filter-check"></i>
+                  </div>
+                ))}
+
+                <div className="filter-sheet-divider"></div>
+
+                {/* Status */}
+                <div className="filter-sheet-label">Status</div>
+                {['All Problems', 'Solved', 'Unsolved', 'Starred'].map(status => (
+                  <div
+                    key={status}
+                    className={`filter-sheet-option ${statusFilter === status ? 'selected' : ''}`}
+                    onClick={() => { setStatusFilter(status); localStorage.setItem("finalist_status", status); }}
+                  >
+                    <span>{status}</span>
+                    <i className="ri-check-line filter-check"></i>
+                  </div>
+                ))}
+
+                <div className="filter-sheet-divider"></div>
+
+                {/* Topics */}
+                <div className="filter-sheet-label">
+                  Topics {selectedTags.length > 0 && (
+                    <span
+                      style={{ color: '#f87171', marginLeft: 8, cursor: 'pointer', fontWeight: 600 }}
+                      onClick={() => { setSelectedTags([]); localStorage.setItem("finalist_tags", "[]"); }}
+                    >
+                      Clear ({selectedTags.length})
+                    </span>
+                  )}
+                </div>
+
+                {/* Topic search */}
+                <div className="search-wrapper" style={{ marginBottom: 8, height: 40 }}>
+                  <i className="ri-search-line search-icon"></i>
+                  <input
+                    type="text"
+                    placeholder="Search tags..."
+                    value={topicSearch}
+                    onClick={e => e.stopPropagation()}
+                    onChange={(e) => { e.stopPropagation(); setTopicSearch(e.target.value); }}
+                    style={{ background: 'transparent', border: 'none', outline: 'none', color: '#fff', fontSize: 14, width: '100%' }}
+                  />
+                </div>
+
+                <div className="filter-sheet-topics">
+                  {allTags.filter(t => t.toLowerCase().includes(topicSearch.toLowerCase())).map(tag => (
+                    <div
+                      key={tag}
+                      className={`topic-pill-item ${selectedTags.includes(tag) ? 'selected' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); handleTagToggle(tag); }}
+                    >
+                      {tag}
+                      {selectedTags.includes(tag) && <i className="ri-close-line"></i>}
+                    </div>
+                  ))}
+                </div>
+
+              </div>{/* end filter-sheet-body */}
+            </div>{/* end filters-actions */}
+
+            {/* Desktop-only filter pills (hidden on mobile via CSS) */}
+            <div className="filters-actions-desktop">
+              <div className={`filter-pill ${diffOpen ? 'active' : ''}`} onClick={() => { setDiffOpen(!diffOpen); setStatusOpen(false); setTopicMenuOpen(false); }}>
+                <span className="filter-text">{diffFilter}</span>
+                <i className="ri-arrow-down-s-line chevron-icon"></i>
                 <div className="dropdown-menu">
                   {['Difficulty', 'Basic', 'Easy', 'Medium', 'Hard'].map(diff => (
                     <div key={diff} className="dropdown-item" onClick={(e) => { e.stopPropagation(); setDiffFilter(diff); localStorage.setItem("finalist_diff", diff); setDiffOpen(false); }}>{diff}</div>
                   ))}
                 </div>
               </div>
-              <div className={`filter-pill ${statusOpen ? 'active' : ''}`} id="status-dropdown" onClick={() => { setStatusOpen(!statusOpen); setDiffOpen(false); setTopicMenuOpen(false); }}>
-                <span className="filter-text">{statusFilter}</span><i className="ri-arrow-down-s-line chevron-icon"></i>
+              <div className={`filter-pill ${statusOpen ? 'active' : ''}`} onClick={() => { setStatusOpen(!statusOpen); setDiffOpen(false); setTopicMenuOpen(false); }}>
+                <span className="filter-text">{statusFilter}</span>
+                <i className="ri-arrow-down-s-line chevron-icon"></i>
                 <div className="dropdown-menu">
                   {['All Problems', 'Solved', 'Unsolved', 'Starred'].map(status => (
                     <div key={status} className="dropdown-item" onClick={(e) => { e.stopPropagation(); setStatusFilter(status); localStorage.setItem("finalist_status", status); setStatusOpen(false); }}>{status}</div>
                   ))}
                 </div>
               </div>
-
               <div className="filter-pill-wrapper" style={{ position: 'relative' }} ref={topicMenuRef}>
-                <div className={`icon-btn filter-trigger ${selectedTags.length > 0 || topicMenuOpen ? 'active-filter' : ''}`} id="topic-btn" title="Topic Filter" onClick={() => { setTopicMenuOpen(!topicMenuOpen); setDiffOpen(false); setStatusOpen(false); }}>
+                <div className={`icon-btn filter-trigger ${selectedTags.length > 0 || topicMenuOpen ? 'active-filter' : ''}`} onClick={() => { setTopicMenuOpen(!topicMenuOpen); setDiffOpen(false); setStatusOpen(false); }}>
                   <i className="ri-filter-3-line"></i>
                   <div className="filter-badge" style={{ display: selectedTags.length > 0 ? 'flex' : 'none' }}>{selectedTags.length}</div>
                 </div>
-                <div className={`topic-menu ${topicMenuOpen ? 'active' : ''}`} id="topic-menu">
+                <div className={`topic-menu ${topicMenuOpen ? 'active' : ''}`}>
                   <div className="topic-header">
-                    <div className="topic-search-box"><i className="ri-search-line"></i><input type="text" placeholder="Search tags..." value={topicSearch} onClick={e => e.stopPropagation()} onChange={(e) => { e.stopPropagation(); setTopicSearch(e.target.value); }} /></div>
+                    <div className="topic-search-box">
+                      <i className="ri-search-line"></i>
+                      <input type="text" placeholder="Search tags..." value={topicSearch} onClick={e => e.stopPropagation()} onChange={(e) => { e.stopPropagation(); setTopicSearch(e.target.value); }} />
+                    </div>
                     {selectedTags.length > 0 && <span className="clear-all-btn" onClick={() => { setSelectedTags([]); localStorage.setItem("finalist_tags", "[]"); setTopicSearch(""); }}>Clear</span>}
                   </div>
-                  {selectedTags.length > 0 && (
-                    <div className="topics-container" style={{ display: 'flex' }}>
-                      {selectedTags.map(tag => (<div key={tag} className="topic-pill-item selected" onClick={(e) => { e.stopPropagation(); handleTagToggle(tag); }}>{tag} <i className="ri-close-line"></i></div>))}
-                    </div>
-                  )}
+                  {selectedTags.length > 0 && <div className="topics-container" style={{ display: 'flex' }}>{selectedTags.map(tag => (<div key={tag} className="topic-pill-item selected" onClick={(e) => { e.stopPropagation(); handleTagToggle(tag); }}>{tag} <i className="ri-close-line"></i></div>))}</div>}
                   {selectedTags.length > 0 && <div className="topic-divider" style={{ display: 'block' }}></div>}
                   <div className="topics-container">
-                    {availableTags.map(tag => (
-                      <div
-                        key={tag}
-                        className="topic-pill-item"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTagToggle(tag);
-                          // 🌟 THE FIX: We removed setTopicSearch("") so your typed text stays!
-                        }}
-                      >
-                        {tag}
-                      </div>
-                    ))}                  </div>
+                    {availableTags.map(tag => (<div key={tag} className="topic-pill-item" onClick={(e) => { e.stopPropagation(); handleTagToggle(tag); }}>{tag}</div>))}
+                  </div>
                 </div>
               </div>
             </div>

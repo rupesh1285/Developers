@@ -2767,6 +2767,25 @@ body {
   visibility: visible;
 }
 
+/* Desktop: show the old pill filters, hide the new bottom-sheet architecture */
+.filters-actions-desktop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-filter-overlay,
+.filter-sheet-header,
+.filter-sheet-body,
+.filter-sheet-label,
+.filter-sheet-option,
+.filter-sheet-close,
+.filter-sheet-divider,
+.filter-sheet-topics,
+.mobile-filter-dot {
+  display: none;
+}
+
 /* =========================================================
    17. MOBILE RESPONSIVENESS (SPRINT 1 - FIGMA LAYOUT)
 ========================================================= */
@@ -2850,80 +2869,81 @@ body {
   /* Hide raw numbers next to bars to save space */
 
   /* 3. New Progress & Streak Card */
-.progress-section {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 10px 14px;
-  gap: 10px;
-  margin-bottom: 0;
-}
+  .progress-section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 10px;
+    margin-bottom: 0;
+  }
 
-.divider {
-  display: none !important; /* Completely remove the glowing divider line */
-}
+  .divider {
+    display: none !important;
+    /* Completely remove the glowing divider line */
+  }
 
   .progress-left {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.circular-progress {
-  width: 90px !important;
-  height: 90px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  position: relative !important;
-}
+  .circular-progress {
+    width: 90px !important;
+    height: 90px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+  }
 
-.circular-progress svg {
-  position: absolute !important;
-  width: 100px !important;
-  height: 100px !important;
-  transform: rotate(-90deg) scale(0.9) !important;
-}
+  .circular-progress svg {
+    position: absolute !important;
+    width: 100px !important;
+    height: 100px !important;
+    transform: rotate(-90deg) scale(0.9) !important;
+  }
 
   .circle-text {
-  position: absolute !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 2 !important;
-  transform: translateY(0) !important;
-}
+    position: absolute !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 2 !important;
+    transform: translateY(0) !important;
+  }
 
   #total-solved-count {
-  font-size: 18px !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-  color: #fff !important;
-  white-space: nowrap !important;
-  letter-spacing: -0.5px !important;
-}
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    color: #fff !important;
+    white-space: nowrap !important;
+    letter-spacing: -0.5px !important;
+  }
 
-.total-label {
-  font-size: 9px !important;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1px !important;
-  margin-top: 3px !important;
-}
+  .total-label {
+    font-size: 9px !important;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px !important;
+    margin-top: 3px !important;
+  }
 
-.progress-right {
-  margin-left: auto !important;
-  flex: 0 0 auto !important;
-  width: 135px !important;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: stretch !important;
-  gap: 5px !important;
-}
+  .progress-right {
+    margin-left: auto !important;
+    flex: 0 0 auto !important;
+    width: 135px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch !important;
+    gap: 5px !important;
+  }
 
   .bar-stat {
     display: none !important;
@@ -2931,84 +2951,86 @@ body {
 
   /* ✅ FIX: grid sums to exactly 140px to match .progress-right width above */
   .progress-row {
-  display: grid !important;
-  grid-template-columns: 34px 1fr !important;
-  width: 100% !important;
-  gap: 8px !important;
-  align-items: center !important;
-}
+    display: grid !important;
+    grid-template-columns: 34px 1fr !important;
+    width: 100% !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
 
-.bar-label {
-  font-size: 10px !important;
-  white-space: nowrap;
-}
+  .bar-label {
+    font-size: 10px !important;
+    white-space: nowrap;
+  }
 
-.bar-track {
-  height: 6px; /* Slightly thinner bar on mobile */
-}
+  .bar-track {
+    height: 6px;
+    /* Slightly thinner bar on mobile */
+  }
 
 
   /* ✅ FIX: width: 100% so it stretches to same 140px as the bars — right edges align */
   .mobile-streak-widget {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
-  padding-bottom: 5px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: 1px;
-}
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 1px;
+  }
 
   .ms-top {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 700;
-  color: #fff;
-}
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    color: #fff;
+  }
 
-.ms-count {
-  font-size: 16px;
-  line-height: 1;
-}
+  .ms-count {
+    font-size: 16px;
+    line-height: 1;
+  }
 
-/* 7. CACHE-BUSTER: Bright Blue confirms this CSS version is live */
-.ms-label {
-  font-size: 10px;
-  color: #3b82f6 !important;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+  /* 7. CACHE-BUSTER: Bright Blue confirms this CSS version is live */
+  .ms-label {
+    font-size: 10px;
+    color: #3b82f6 !important;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
 
-.ms-dots {
-  display: flex;
-  gap: 3px;
-  width: 100%;
-}
+  .ms-dots {
+    display: flex;
+    gap: 3px;
+    width: 100%;
+  }
 
-.ms-dot {
-  flex: 1;
-  height: 4px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
+  .ms-dot {
+    flex: 1;
+    height: 4px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
 
-.ms-dot.active {
-  background: #3b82f6;
-  border-color: #6ea0ea;
-  box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
-}
+  .ms-dot.active {
+    background: #3b82f6;
+    border-color: #6ea0ea;
+    box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
+  }
 
   /* 4. Side-by-Side Search & Filter */
   .filters-section {
-  flex-direction: row;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 6px;  /* Was inheriting the desktop 15px — cut it down */
-  padding: 0 2px;
-}
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+    /* Was inheriting the desktop 15px — cut it down */
+    padding: 0 2px;
+  }
 
   .search-wrapper {
     flex: 1;
@@ -3035,253 +3057,274 @@ body {
     background: rgba(59, 130, 246, 0.15);
     color: #3b82f6;
   }
+
   .problems-panel {
-  padding: 4px 0;      /* Tighten top breathing room under the filter row */
-}
-  /* 4. Premium filter dropdown panel */
-.filters-actions {
-  display: none;
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  width: 100%;
-  flex-direction: column;
-  background: rgba(8, 10, 16, 0.97);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-top: 1px solid rgba(255, 255, 255, 0.18); /* Frosted top edge highlight */
-  border-radius: 16px;
-  padding: 12px 10px;
-  gap: 6px;
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.85),
-    0 0 0 1px rgba(110, 160, 234, 0.06) inset,
-    0 1px 0 rgba(255, 255, 255, 0.06) inset;
-  z-index: 100;
-}
-
-.filters-actions.mobile-open {
-  display: flex;
-  animation: slideDown 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Premium individual filter pills inside the dropdown */
-.filters-actions .filter-pill {
-  width: 100%;
-  height: 46px;
-  padding: 0 14px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  justify-content: space-between;
-}
-
-.filters-actions .filter-pill:hover {
-  background: rgba(110, 160, 234, 0.08);
-  border-color: rgba(110, 160, 234, 0.25);
-  transform: none; /* No X-shift on mobile */
-}
-
-.filters-actions .filter-pill.active {
-  background: rgba(16, 18, 26, 0.98);
-  border-color: rgba(217, 70, 239, 0.5);
-  box-shadow:
-    0 0 0 3px rgba(217, 70, 239, 0.1),
-    0 0 18px rgba(217, 70, 239, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-.filters-actions .filter-pill .filter-text {
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-}
-
-/* Dropdown sub-menus inside the actions panel */
-.filters-actions .dropdown-menu {
-  position: relative;
-  top: auto;
-  left: auto;
-  width: 100%;
-  min-width: unset;
-  transform: none !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  background: rgba(6, 8, 14, 0.95);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  padding: 6px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-  margin-top: 4px;
-  display: none;
-  flex-direction: column;
-  gap: 2px;
-}
-
-/* Show sub-menu only when parent pill is active */
-.filters-actions .filter-pill.active .dropdown-menu {
-  display: flex;
-}
-
-.filters-actions .dropdown-item {
-  padding: 11px 14px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.1px;
-  transition: all 0.15s ease;
-}
-
-.filters-actions .dropdown-item:hover {
-  background: rgba(110, 160, 234, 0.12);
-  color: #fff;
-  transform: none; /* Remove the translateX slide on mobile */
-  border-radius: 8px;
-}
-
-/* Topic filter button inside the actions panel */
-.filters-actions .filter-pill-wrapper {
-  width: 100%;
-}
-
-.filters-actions .icon-btn.filter-trigger {
-  width: 100%;
-  height: 46px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  justify-content: center;
-  gap: 8px;
-  font-size: 15px;
-  padding: 0 14px;
-}
-
-.filters-actions .icon-btn.filter-trigger::after {
-  content: 'Topics';
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-muted);
-  font-family: 'Inter', sans-serif;
-}
-
-.filters-actions .icon-btn.filter-trigger:hover::after,
-.filters-actions .icon-btn.filter-trigger.active-filter::after {
-  color: #fff;
-}
-
-.filters-actions .topic-menu {
-  position: relative;
-  top: auto;
-  right: auto;
-  width: 100%;
-  transform: none !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: none;
-  border-radius: 10px;
-  margin-top: 4px;
-  background: rgba(6, 8, 14, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-}
-
-.filters-actions .topic-menu.active {
-  display: flex;
-}
-
-  /* 5. Workspace Bottom Sheet Slide-Up */
- /* 6. Right panel — fluid responsive units, no hardcoded pixels */
-.right-panel {
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: calc(100dvh - 65px) !important; /* dvh accounts for browser chrome on mobile */
-  z-index: 900 !important;
-  transform: translateY(100%) !important;
-  opacity: 1 !important;
-  border-radius: min(24px, 5vw) min(24px, 5vw) 0 0 !important;
-  background: rgba(10, 12, 18, 0.93) !important;
-  backdrop-filter: blur(28px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-bottom: none !important;
-  box-shadow:
-    0 -8px 40px rgba(0, 0, 0, 0.6),
-    0 -1px 0 rgba(110, 160, 234, 0.15) !important;
-  transition: transform 0.48s cubic-bezier(0.32, 0.72, 0, 1) !important;
-  padding-top: clamp(28px, 5vh, 44px) !important; /* Scales with viewport height */
-  overflow: hidden !important;
-}
-
-.right-panel:not(.collapsed) {
-  transform: translateY(0) !important;
-}
-
-.right-panel .workspace-content {
-  position: relative !important;
-  width: 100% !important;
-  height: 100% !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  padding: 0 clamp(12px, 4vw, 24px) clamp(16px, 4vh, 32px) !important;
-}
-
-  /* 🌟 THE BEAUTIFUL SLIDER: Native iOS-style drag handle */
-  .right-panel::before {
-    content: '';
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 42px;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.25);
-    border-radius: 10px;
-    z-index: 2020;
-    pointer-events: none;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+    padding: 4px 0;
+    /* Tighten top breathing room under the filter row */
   }
 
-  /* 🌟 BEAUTIFUL & SMALL CLOSE BUTTON (Top-Right) */
-  /* 2. Close button: Top-center, premium native feel */
-  .mobile-close-btn {
-    display: flex;
+  /* 4. Premium filter dropdown panel */
+  .filters-actions {
+    display: none;
     position: absolute;
-    top: 18px;
-    /* Floats above the content area, below the drag handle */
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    width: 80px;
-    /* Wide pill shape — very sleek */
-    height: 28px;
-    border-radius: 50px;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 14px;
-    align-items: center;
-    justify-content: center;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    flex-direction: column;
+    background: rgba(8, 10, 16, 0.97);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    /* Frosted top edge highlight */
+    border-radius: 16px;
+    padding: 12px 10px;
+    gap: 6px;
     box-shadow:
-      0 2px 12px rgba(0, 0, 0, 0.4),
-      0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+      0 20px 40px rgba(0, 0, 0, 0.85),
+      0 0 0 1px rgba(110, 160, 234, 0.06) inset,
+      0 1px 0 rgba(255, 255, 255, 0.06) inset;
+    z-index: 100;
+  }
+
+  .filters-actions.mobile-open {
+    display: flex;
+    animation: slideDown 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Premium individual filter pills inside the dropdown */
+  .filters-actions .filter-pill {
+    width: 100%;
+    height: 46px;
+    padding: 0 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    justify-content: space-between;
+  }
+
+  .filters-actions .filter-pill:hover {
+    background: rgba(110, 160, 234, 0.08);
+    border-color: rgba(110, 160, 234, 0.25);
+    transform: none;
+    /* No X-shift on mobile */
+  }
+
+  .filters-actions .filter-pill.active {
+    background: rgba(16, 18, 26, 0.98);
+    border-color: rgba(217, 70, 239, 0.5);
+    box-shadow:
+      0 0 0 3px rgba(217, 70, 239, 0.1),
+      0 0 18px rgba(217, 70, 239, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .filters-actions .filter-pill .filter-text {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  /* Dropdown sub-menus inside the actions panel */
+  .filters-actions .dropdown-menu {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    min-width: unset;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    background: rgba(6, 8, 14, 0.95);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 6px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+    margin-top: 4px;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  /* Show sub-menu only when parent pill is active */
+  .filters-actions .filter-pill.active .dropdown-menu {
+    display: flex;
+  }
+
+  .filters-actions .dropdown-item {
+    padding: 11px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    transition: all 0.15s ease;
+  }
+
+  .filters-actions .dropdown-item:hover {
+    background: rgba(110, 160, 234, 0.12);
+    color: #fff;
+    transform: none;
+    /* Remove the translateX slide on mobile */
+    border-radius: 8px;
+  }
+
+  /* Topic filter button inside the actions panel */
+  .filters-actions .filter-pill-wrapper {
+    width: 100%;
+  }
+
+  .filters-actions .icon-btn.filter-trigger {
+    width: 100%;
+    height: 46px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    justify-content: center;
+    gap: 8px;
+    font-size: 15px;
+    padding: 0 14px;
+  }
+
+  .filters-actions .icon-btn.filter-trigger::after {
+    content: 'Topics';
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+  }
+
+  .filters-actions .icon-btn.filter-trigger:hover::after,
+  .filters-actions .icon-btn.filter-trigger.active-filter::after {
+    color: #fff;
+  }
+
+  .filters-actions .topic-menu {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 100%;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: none;
+    border-radius: 10px;
+    margin-top: 4px;
+    background: rgba(6, 8, 14, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  }
+
+  .filters-actions .topic-menu.active {
+    display: flex;
+  }
+
+  /* 5. Workspace Bottom Sheet Slide-Up */
+  /* FIX 1: Right Panel — fully fluid, no hardcoded px heights */
+  .right-panel {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    /* dvh accounts for browser address bar collapsing on scroll */
+    height: calc(100dvh - 65px) !important;
+    z-index: 900 !important;
+    transform: translateY(100%) !important;
+    opacity: 1 !important;
+    border-radius: 20px 20px 0 0 !important;
+    background: rgba(10, 12, 18, 0.96) !important;
+    backdrop-filter: blur(32px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.09) !important;
+    border-bottom: none !important;
+    box-shadow:
+      0 -12px 50px rgba(0, 0, 0, 0.7),
+      0 -1px 0 rgba(110, 160, 234, 0.18) !important;
+    transition: transform 0.46s cubic-bezier(0.32, 0.72, 0, 1) !important;
+    /* clamp: min 24px gutter, scales with viewport, max 52px */
+    padding-top: clamp(24px, 5dvh, 52px) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .right-panel:not(.collapsed) {
+    transform: translateY(0) !important;
+  }
+
+  /* FIX 4: Slider handle — completely removed */
+  .right-panel::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  .right-panel .workspace-content {
+    position: relative !important;
+    /* Fill the remaining height after padding-top */
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    /* Override the desktop 450px min-width */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    /* Fluid horizontal padding scales from 14px → 22px with viewport width */
+    padding: 0 clamp(14px, 4vw, 22px) clamp(20px, 4dvh, 36px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    /* Reset the desktop butterFadeIn animation delay so content appears immediately */
+    animation: butterFadeIn 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+    opacity: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* FIX 3: Close button — perfect circle, centered X, premium feel */
+  .mobile-close-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: absolute;
+    /* Sits inside workspace-content, just below the drag handle zone */
+    top: 12px;
+    right: 16px;
+    left: auto;
+    transform: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    /* Perfect circle */
+    background: rgba(255, 255, 255, 0.09);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 15px;
+    /* Remix Icon size */
+    line-height: 1;
+    box-shadow:
+      0 2px 10px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
     z-index: 2010;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-close-btn i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    line-height: 1;
   }
 
   .mobile-close-btn:active {
-    background: rgba(248, 113, 113, 0.18);
-    border-color: rgba(248, 113, 113, 0.4);
+    background: rgba(248, 113, 113, 0.22);
+    border-color: rgba(248, 113, 113, 0.45);
     color: #f87171;
-    transform: translateX(-50%) scale(0.93);
-    box-shadow: 0 0 16px rgba(248, 113, 113, 0.2);
+    transform: scale(0.88);
+    box-shadow: 0 0 16px rgba(248, 113, 113, 0.25);
   }
 
   /* Complete Mobile Nukes */
@@ -3290,5 +3333,261 @@ body {
   .nav-timer,
   .brand-text {
     display: none !important;
+  }
+
+  /* FIX 2: Mobile Filter — Fullscreen Bottom Sheet Overlay */
+
+  /* Dim backdrop behind the sheet */
+  .mobile-filter-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 800;
+    opacity: 0;
+    transition: opacity 0.28s ease;
+  }
+
+  .mobile-filter-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+
+  /* The sheet itself */
+  .filters-actions {
+    display: none !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    max-height: 82dvh !important;
+    z-index: 850 !important;
+    flex-direction: column !important;
+    background: #0d0f18 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: 1px solid rgba(110, 160, 234, 0.25) !important;
+    border-bottom: none !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.9) !important;
+    overflow: hidden !important;
+    transform: translateY(100%) !important;
+    transition: transform 0.36s cubic-bezier(0.32, 0.72, 0, 1) !important;
+  }
+
+  .filters-actions.mobile-open {
+    display: flex !important;
+    transform: translateY(0) !important;
+    animation: none !important;
+    /* Override the old slideDown animation */
+  }
+
+  /* Sheet drag handle (decorative) */
+  .filters-actions::before {
+    content: '';
+    display: block;
+    width: 38px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    margin: 12px auto 0;
+    flex-shrink: 0;
+  }
+
+  /* Sheet header row */
+  .filter-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    flex-shrink: 0;
+  }
+
+  .filter-sheet-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.3px;
+  }
+
+  .filter-sheet-close {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .filter-sheet-close:active {
+    background: rgba(248, 113, 113, 0.2);
+    border-color: rgba(248, 113, 113, 0.4);
+    color: #f87171;
+  }
+
+  /* Scrollable body of the sheet */
+  .filter-sheet-body {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filter-sheet-body::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Section label inside the sheet */
+  .filter-sheet-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: rgba(255, 255, 255, 0.3);
+    padding: 8px 4px 4px;
+  }
+
+  /* Each filter row option */
+  .filter-sheet-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #c9d1db;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .filter-sheet-option:active {
+    background: rgba(110, 160, 234, 0.1);
+    border-color: rgba(110, 160, 234, 0.3);
+  }
+
+  .filter-sheet-option.selected {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #fff;
+  }
+
+  .filter-sheet-option.selected .filter-check {
+    opacity: 1;
+    color: #3b82f6;
+  }
+
+  .filter-check {
+    opacity: 0;
+    font-size: 16px;
+    transition: opacity 0.2s ease;
+  }
+
+  /* Topic pills grid inside the sheet */
+  .filter-sheet-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  .filter-sheet-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin: 6px 0;
+  }
+
+  /* Override: hide old nested dropdowns/pills completely on mobile */
+  .filters-actions .filter-pill,
+  .filters-actions .filter-pill-wrapper,
+  .filters-actions .dropdown-menu,
+  .filters-actions .topic-menu {
+    display: none !important;
+  }
+
+  /* Show bottom-sheet elements on mobile, hide desktop pills */
+  .filters-actions-desktop {
+    display: none !important;
+  }
+
+  .mobile-filter-btn {
+    position: relative;
+    /* For the dot indicator */
+  }
+
+  .mobile-filter-dot {
+    display: block;
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 1.5px solid #0d0f18;
+    box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);
+  }
+
+  /* FIX 5: Premium panel title & header on mobile */
+  .right-panel .workspace-content .panel-header {
+    flex-direction: column !important;
+    /* Stack title above actions row */
+    align-items: flex-start !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 14px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    margin-top: 0 !important;
+  }
+
+  .right-panel .workspace-content .panel-title {
+    font-size: clamp(18px, 5vw, 24px) !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    color: #ffffff !important;
+    letter-spacing: -0.3px !important;
+    /* Allow wrapping for very long titles, but keep it tight */
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  .right-panel .workspace-content .panel-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-top: 0 !important;
+  }
+
+  /* Slightly smaller difficulty tag on mobile to not crowd */
+  .right-panel .workspace-content .panel-difficulty {
+    font-size: 10px !important;
+    height: 20px !important;
+    padding: 0 10px !important;
+    min-width: 50px !important;
+  }
+
+  /* Tighter star button */
+  .right-panel .workspace-content .panel-star {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 16px !important;
   }
 }
