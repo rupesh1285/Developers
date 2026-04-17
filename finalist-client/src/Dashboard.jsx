@@ -560,7 +560,7 @@ export default function Dashboard() {
       </nav>
 
       <div className="dashboard">
-        <div className={`middle-panel ${!activeProblemId ? 'expanded' : 'mobile-hidden'}`}>
+        <div className={`middle-panel ${!activeProblemId ? 'expanded' : ''}`}>
 
           {/* 🌟 UNIFIED PROGRESS SECTION */}
           <div className="progress-section">
