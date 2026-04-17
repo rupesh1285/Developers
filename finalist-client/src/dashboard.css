@@ -2825,14 +2825,12 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between; /* 🌟 Pushes the ring and the tight right-box to opposite walls */
-    gap: 15px; 
     padding: 15px 20px; 
+    /* Removed justify-content because margin-left: auto will handle the spacing perfectly */
   }
 
   .progress-left {
-    width: auto;
-    flex-shrink: 0; 
+    flex: 0 0 auto; 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2883,7 +2881,8 @@ body {
   }
 
   .progress-right {
-    flex: 0 0 auto !important; /* 🌟 THE FIX: Stops it from growing into the middle! */
+    margin-left: auto !important; /* 🌟 THE NUCLEAR RIGHT-PUSH */
+    flex: 0 0 auto !important; 
     display: flex;
     flex-direction: column;
     justify-content: center; 
@@ -2891,7 +2890,13 @@ body {
     gap: 6px !important; 
   }
 
+  /* Just in case the raw stats are fighting the grid */
+  .bar-stat {
+    display: none !important;
+  }
+
   .progress-row {
+    display: grid !important;
     grid-template-columns: 35px 85px !important; 
     width: 130px !important; 
     gap: 10px !important;
@@ -2921,10 +2926,10 @@ body {
     font-size: 18px;
   }
 
-  /* 🌟 VISUAL CACHE-BUSTER: BRIGHT GREEN */
+  /* 🌟 VISUAL CACHE-BUSTER: BRIGHT ORANGE */
   .ms-label {
     font-size: 12px;
-    color: #00ff00 !important; 
+    color: #ff8c00 !important; 
     font-weight: 800; 
   }
 
