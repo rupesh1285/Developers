@@ -3258,25 +3258,20 @@ body {
     content: none !important;
   }
 
-  .right-panel .workspace-content {
+ .right-panel .workspace-content {
     position: relative !important;
-    /* Fill the remaining height after padding-top */
     flex: 1 1 0 !important;
     min-height: 0 !important;
     width: 100% !important;
     min-width: 0 !important;
-    /* Override the desktop 450px min-width */
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    /* Fluid horizontal padding scales from 14px → 22px with viewport width */
     padding: 0 clamp(14px, 4vw, 22px) clamp(20px, 4dvh, 36px) !important;
     display: flex !important;
     flex-direction: column !important;
-    /* Reset the desktop butterFadeIn animation delay so content appears immediately */
-    animation: butterFadeIn 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
-    opacity: 0 !important;
+    animation: butterFadeIn 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
     box-sizing: border-box !important;
-  }
+}
 
   /* FIX 3: Close button — perfect circle, centered X, premium feel */
   .mobile-close-btn {
