@@ -2825,8 +2825,9 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 15px; /* 🌟 Tightened gap */
-    padding: 12px 15px; /* 🌟 Reduced top/bottom padding to make the card slimmer */
+    justify-content: space-between;
+    gap: 20px; /* 🌟 Gave it a bit more breathing room horizontally */
+    padding: 16px 15px; 
   }
 
   .progress-left {
@@ -2837,8 +2838,8 @@ body {
   }
 
   .circular-progress {
-    width: 80px !important; /* 🌟 Shrunk the ring container slightly */
-    height: 80px !important;
+    width: 105px !important; /* 🌟 Increased from 80px to match the right side height */
+    height: 105px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -2849,8 +2850,8 @@ body {
     position: absolute !important;
     width: 120px !important;
     height: 120px !important;
-    /* 🌟 Scaled the actual SVG down to match the 80px container (120 * 0.66 = ~80) */
-    transform: rotate(-90deg) scale(0.66) !important; 
+    /* 🌟 Scaled up to 0.88 so the glowing ring fills the new 105px box */
+    transform: rotate(-90deg) scale(0.88) !important; 
   }
 
   .circle-text {
@@ -2864,28 +2865,29 @@ body {
   }
 
   #total-solved-count { 
-    font-size: 18px !important; /* 🌟 Shrunk text so it fits perfectly inside the ring */
+    font-size: 22px !important; /* 🌟 Increased font size to comfortably fill the bigger ring */
     font-weight: 800 !important; 
     line-height: 1 !important;
     color: #fff !important;
-    white-space: nowrap !important; /* 🌟 THE MAGIC FIX: Forces "38 / 50" onto one single line */
-    letter-spacing: -0.5px !important; /* Pulls the numbers slightly closer together */
+    white-space: nowrap !important;
+    letter-spacing: -0.5px !important; 
   }
   
   .total-label {
-    font-size: 9px !important;
+    font-size: 10px !important;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px !important;
-    margin-top: 2px !important;
+    margin-top: 4px !important;
   }
 
   .progress-right {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    justify-content: center; /* 🌟 Vertically locks the stack with the ring */
+    gap: 6px !important; /* 🌟 Slightly tightened the gaps so the stack doesn't outgrow the ring */
   }
 
   .mobile-streak-widget {
