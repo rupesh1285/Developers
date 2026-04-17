@@ -2825,19 +2825,19 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 15px 20px; 
-    /* Removed justify-content because margin-left: auto will handle the spacing perfectly */
+    padding: 15px 20px;
+    gap: 12px;
   }
 
   .progress-left {
-    flex: 0 0 auto; 
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
   .circular-progress {
-    width: 105px !important; 
+    width: 105px !important;
     height: 105px !important;
     display: flex !important;
     align-items: center !important;
@@ -2849,7 +2849,7 @@ body {
     position: absolute !important;
     width: 120px !important;
     height: 120px !important;
-    transform: rotate(-90deg) scale(0.88) !important; 
+    transform: rotate(-90deg) scale(0.88) !important;
   }
 
   .circle-text {
@@ -2859,18 +2859,18 @@ body {
     align-items: center !important;
     justify-content: center !important;
     z-index: 2 !important;
-    transform: translateY(0) !important; 
+    transform: translateY(0) !important;
   }
 
-  #total-solved-count { 
-    font-size: 22px !important; 
-    font-weight: 800 !important; 
+  #total-solved-count {
+    font-size: 22px !important;
+    font-weight: 800 !important;
     line-height: 1 !important;
     color: #fff !important;
     white-space: nowrap !important;
-    letter-spacing: -0.5px !important; 
+    letter-spacing: -0.5px !important;
   }
-  
+
   .total-label {
     font-size: 10px !important;
     font-weight: 700;
@@ -2880,76 +2880,87 @@ body {
     margin-top: 4px !important;
   }
 
+  /* ✅ FIX: Explicit width + stretch alignment locks right edge flush to card wall */
   .progress-right {
-    margin-left: auto !important; /* 🌟 THE NUCLEAR RIGHT-PUSH */
-    flex: 0 0 auto !important; 
+    margin-left: auto !important;
+    flex: 0 0 auto !important;
+    width: 140px !important;          /* single source of truth for right column width */
     display: flex;
     flex-direction: column;
-    justify-content: center; 
-    align-items: flex-start !important; 
-    gap: 6px !important; 
+    justify-content: center;
+    align-items: stretch !important;  /* children fill the full 140px, right-aligning their edges */
+    gap: 7px !important;
   }
 
-  /* Just in case the raw stats are fighting the grid */
   .bar-stat {
     display: none !important;
   }
 
+  /* ✅ FIX: grid sums to exactly 140px to match .progress-right width above */
   .progress-row {
     display: grid !important;
-    grid-template-columns: 35px 85px !important; 
-    width: 130px !important; 
+    grid-template-columns: 38px 1fr !important;  /* 1fr fills remaining space perfectly */
+    width: 100% !important;                       /* fills parent's 140px */
     gap: 10px !important;
+    align-items: center !important;
   }
 
   .bar-label {
     font-size: 11px !important;
+    white-space: nowrap;
   }
 
+  /* ✅ FIX: width: 100% so it stretches to same 140px as the bars — right edges align */
   .mobile-streak-widget {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-bottom: 8px;
-    width: 130px; 
+    gap: 5px;
+    width: 100%;                 /* fills parent's 140px — matches bar width perfectly */
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 2px;
   }
 
   .ms-top {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     font-weight: 700;
     color: #fff;
   }
 
   .ms-count {
     font-size: 18px;
+    line-height: 1;
   }
 
-  /* 🌟 VISUAL CACHE-BUSTER: BRIGHT ORANGE */
+  /* 🌟 CACHE-BUSTER: Bright Pink — confirms CSS applied */
   .ms-label {
-    font-size: 12px;
-    color: #ff8c00 !important; 
-    font-weight: 800; 
+    font-size: 11px;
+    color: #ff00ff !important;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .ms-dots {
     display: flex;
     gap: 4px;
+    width: 100%;
   }
 
   .ms-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+    flex: 1;                           /* dots stretch to fill full width evenly */
+    height: 5px;
+    border-radius: 3px;               /* pill shape instead of circles — fits width better */
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
   }
 
   .ms-dot.active {
     background: #3b82f6;
     border-color: #6ea0ea;
-    box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+    box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
   }
 
   /* 4. Side-by-Side Search & Filter */
@@ -3007,50 +3018,64 @@ body {
     animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  /* 5. Workspace Bottom Sheet Slide-Up */
 /* 5. Workspace Bottom Sheet Slide-Up */
   .right-panel {
     position: fixed !important;
     bottom: 0 !important;
     left: 0 !important;
     width: 100% !important;
-    /* Stops exactly below a 65px navbar */
-    height: calc(100vh - 65px) !important; 
-    z-index: 900 !important; /* High, but under the 1000 z-index navbar */
+    height: calc(100vh - 65px) !important;
+    z-index: 900 !important;
     transform: translateY(100%) !important;
     opacity: 1 !important;
     border-radius: 24px 24px 0 0 !important;
-    background: rgba(10, 12, 18, 0.85) !important;
-    backdrop-filter: blur(25px) saturate(150%) !important;
+    background: rgba(10, 12, 18, 0.92) !important;
+    backdrop-filter: blur(28px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-bottom: none !important;
-    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1) !important;
-    padding-top: 40px !important;
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.6), 0 -1px 0 rgba(110, 160, 234, 0.15) !important;
+    transition: transform 0.48s cubic-bezier(0.32, 0.72, 0, 1) !important;
+    padding-top: 52px !important;  /* room for the close button above content */
+    overflow: hidden !important;
   }
 
   .right-panel:not(.collapsed) {
     transform: translateY(0) !important;
   }
 
-  /* 6. Centered Circle Close Button */
+  /* ✅ FIX: position:relative so the close button's top:-26px is relative to THIS element */
+  .right-panel .workspace-content {
+    position: relative !important;
+    height: 100% !important;
+  }
+
+  /* ✅ FIX: Close button now positioned relative to .workspace-content, not .right-panel */
   .mobile-close-btn {
     display: flex;
-    position: absolute;
-    top: -20px;
+    position: absolute;      /* relative to .workspace-content (which is now position:relative) */
+    top: -26px;              /* peeks 26px above the workspace-content top edge */
     left: 50%;
     transform: translateX(-50%);
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: #1e1e1e;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(20, 22, 30, 0.98);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
     color: #fff;
-    font-size: 24px;
+    font-size: 20px;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5), 0 0 0 4px rgba(10, 12, 18, 0.4);
     z-index: 2010;
     cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .mobile-close-btn:active {
+    background: rgba(248, 113, 113, 0.15);
+    border-color: rgba(248, 113, 113, 0.4);
+    transform: translateX(-50%) scale(0.92);
   }
 
   /* Complete Mobile Nukes */
