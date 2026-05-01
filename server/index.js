@@ -21,8 +21,9 @@ const app = express();
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
 
+// 🌟 FIX: Allow both the live Vercel site AND your local Vite server
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: [FRONTEND_URL, "http://localhost:5173"], 
   credentials: true
 }));
 
