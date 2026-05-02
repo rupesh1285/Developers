@@ -87,8 +87,12 @@ export default React.memo(function TopicCluster({ data, onBubbleClick }) {
           bubble.style.width = `0px`; bubble.style.height = `0px`;
           bubble.onclick = (e) => { e.stopPropagation(); bubbleClickRef.current(p.name); };
           container.appendChild(bubble);
-          bubble.offsetHeight; 
-          bubble.style.transition = 'left 0.8s cubic-bezier(0.16,1,0.3,1),top 0.8s cubic-bezier(0.16,1,0.3,1),width 0.5s cubic-bezier(0.16,1,0.3,1),height 0.5s cubic-bezier(0.16,1,0.3,1),transform 0.3s';
+          // Wait for the browser to paint, THEN apply the transition
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              bubble.style.transition = 'left 0.8s cubic-bezier(0.16,1,0.3,1),top 0.8s cubic-bezier(0.16,1,0.3,1),width 0.5s cubic-bezier(0.16,1,0.3,1),height 0.5s cubic-bezier(0.16,1,0.3,1),transform 0.3s';
+            });
+          });
         }
 
         bubble.setAttribute('data-tooltip', `${p.name}: ${p.solved} / ${p.total} Solved`);
