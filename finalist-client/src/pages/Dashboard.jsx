@@ -1,0 +1,431 @@
+import WorkspacePanel from '../components/WorkspacePanel';
+import AnalyticsPanel from '../components/AnalyticsPanel';
+import TimerProvider from '../components/TimerProvider'; // 🌟 PATCH D: Swapped Navbar for TimerProvider
+import ProblemExplorer from '../components/ProblemExplorer';
+
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import "../dashboard.css";
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+
+  // --- REAL DATABASE STATE ---
+  const [problemsData, setProblemsData] = useState([]);
+  const [solvedIds, setSolvedIds] = useState([]);
+  const [starredIds, setStarredIds] = useState([]);
+  const [analyticsData, setAnalyticsData] = useState({ streak: { current: 0, max: 0, timeSpentHrs: 0 }, heatmap: [], topics: [] });
+  const [userProfile, setUserProfile] = useState({ name: 'Developer', email: 'developer@finalist.com', avatar: '' });
+
+  // --- UI STATE ---
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [activeProblemId, setActiveProblemId] = useState(localStorage.getItem("finalist_active_problem") || null);
+  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(!!localStorage.getItem("finalist_active_problem"));
+  // 🌟 PATCH C: Memoize the active problem prop
+  const activeProblem = useMemo(
+    () => problemsData.find(p => String(p._id) === activeProblemId) ?? null,
+    [problemsData, activeProblemId]
+  );
+
+  // --- ANALYTICS & DRAGGER STATE ---
+  const [analyticsWidth, setAnalyticsWidth] = useState(parseInt(localStorage.getItem('finalist_analytics_width')) || 320);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(localStorage.getItem('finalist_analytics_state') !== 'hidden');
+  const isDraggingRef = useRef(false);
+  const [isDraggingUI, setIsDraggingUI] = useState(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
+  const analyticsWidthRef = useRef(analyticsWidth); // 🌟 PATCH A: Added Ref for lag-free dragging
+
+  // --- SEARCH BAR TYPING EFFECT STATE ---
+  const searchInputRef = useRef(null);
+
+  // --- LIFTED FILTER STATE ---
+  const [selectedTags, setSelectedTags] = useState(JSON.parse(localStorage.getItem("finalist_tags") || "[]"));
+
+  const handleTagToggle = useCallback((tag) => {
+    setSelectedTags(prev => {
+      const newTags = prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag];
+      localStorage.setItem("finalist_tags", JSON.stringify(newTags));
+      return newTags;
+    });
+  }, []);
+
+  // =========================================================================
+  // 2. ENGINE: NATIVE GLOBAL TOOLTIP PHYSICS
+  // =========================================================================
+  useEffect(() => {
+    const globalTooltip = document.createElement('div');
+    globalTooltip.className = 'global-tooltip';
+    document.body.appendChild(globalTooltip);
+
+    const handleMouseOver = (e) => {
+      const target = e.target.closest('[data-tooltip]');
+      if (target) {
+        globalTooltip.textContent = target.getAttribute('data-tooltip');
+        globalTooltip.classList.add('active');
+      }
+    };
+    let ticking = false;
+    const handleMouseMove = (e) => {
+      if (!globalTooltip.classList.contains('active')) return;
+
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          let x = e.clientX, y = e.clientY - 15;
+          const rect = globalTooltip.getBoundingClientRect();
+
+          if (x + (rect.width / 2) > window.innerWidth - 15) x = window.innerWidth - (rect.width / 2) - 15;
+          if (x - (rect.width / 2) < 15) x = (rect.width / 2) + 15;
+          if (y - rect.height < 10) { y = e.clientY + 25; globalTooltip.style.transform = `translate(-50%, 0)`; }
+          else { globalTooltip.style.transform = `translate(-50%, -100%)`; }
+
+          globalTooltip.style.left = `${x}px`;
+          globalTooltip.style.top = `${y}px`;
+
+          ticking = false; 
+        });
+        ticking = true; 
+      }
+    };
+    const handleMouseOut = (e) => {
+      if (e.target.closest('[data-tooltip]')) globalTooltip.classList.remove('active');
+    };
+
+    document.addEventListener('mouseover', handleMouseOver);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseout', handleMouseOut);
+
+    return () => {
+      document.removeEventListener('mouseover', handleMouseOver);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseout', handleMouseOut);
+      if (document.body.contains(globalTooltip)) document.body.removeChild(globalTooltip);
+    };
+  }, []);
+
+  // =========================================================================
+  // 3. ENGINE: MOUSE GLOW & OAUTH
+  // =========================================================================
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+    if (urlToken) { localStorage.setItem('token', urlToken); navigate('/problems', { replace: true }); }
+  }, [navigate]);
+
+  useEffect(() => {
+    let ticking = false;
+    const handleMouseMove = (e) => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
+          document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // =========================================================================
+  // 3c. ENGINE: DATA FETCHING
+  // =========================================================================
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    async function fetchDashboardData() {
+      try {
+        const API_BASE = import.meta.env.VITE_API_URL;
+        const tzOffset = String(new Date().getTimezoneOffset());
+        const authHeaders = {
+          "Authorization": "Bearer " + token,
+          "Timezone-Offset": tzOffset
+        };
+
+        const [resProblems, resProgress, resProfile, resAnalytics] = await Promise.all([
+          fetch(`${API_BASE}/api/problems`, { headers: authHeaders }),
+          fetch(`${API_BASE}/api/progress`, { headers: authHeaders }),
+          fetch(`${API_BASE}/api/auth/profile`, { headers: authHeaders }),
+          fetch(`${API_BASE}/api/progress/analytics`, { headers: authHeaders })
+        ]);
+
+        if (resProblems.ok) setProblemsData(await resProblems.json());
+
+        if (resProgress.ok) {
+          const progress = await resProgress.json();
+          setSolvedIds(progress.filter(p => p.solved).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem)));
+          setStarredIds(progress.filter(p => p.starred).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem)));
+        }
+
+        if (resProfile.ok) setUserProfile(await resProfile.json());
+        if (resAnalytics.ok) setAnalyticsData(await resAnalytics.json());
+
+        setTimeout(() => setIsLoading(false), 300);
+      } catch (err) {
+        console.error("Dashboard Load Error:", err);
+        setIsLoading(false);
+      }
+    }
+    fetchDashboardData();
+  }, [navigate]);
+
+  // =========================================================================
+  // 5. ENGINE: INTERACTION & DRAGGER
+  // =========================================================================
+  const handleToggleSolved = async (e, id) => {
+    e.stopPropagation();
+    const token = localStorage.getItem('token');
+    const isCurrentlySolved = solvedIds.includes(String(id));
+
+    setSolvedIds(prev => isCurrentlySolved ? prev.filter(i => i !== String(id)) : [...prev, String(id)]);
+
+    const problem = problemsData.find(p => String(p._id) === String(id));
+    const tags = problem?.tags || [];
+    const todayStr = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+    setAnalyticsData(prev => {
+      const newTopics = prev.topics.map(t => {
+        if (tags.includes(t.name)) {
+          return { ...t, solved: Math.max(0, t.solved + (isCurrentlySolved ? -1 : 1)) };
+        }
+        return t;
+      });
+
+      const newHeatmap = prev.heatmap.map(d => {
+        if (d.date === todayStr) {
+          const newCount = Math.max(0, d.count + (isCurrentlySolved ? -1 : 1));
+          let level = 0;
+          if (newCount > 0) level = 1;
+          if (newCount >= 3) level = 2;
+          if (newCount >= 5) level = 3;
+          if (newCount >= 8) level = 4;
+          return { ...d, count: newCount, level };
+        }
+        return d;
+      });
+
+      return { ...prev, topics: newTopics, heatmap: newHeatmap };
+    });
+
+    try {
+      const tzOffset = String(new Date().getTimezoneOffset());
+      const authHeaders = { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset };
+
+      await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, { method: "POST", headers: authHeaders });
+      const resAnalytics = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/analytics`, { headers: authHeaders });
+      if (resAnalytics.ok) setAnalyticsData(await resAnalytics.json());
+    } catch (err) {
+      setSolvedIds(prev => isCurrentlySolved ? [...prev, String(id)] : prev.filter(i => i !== String(id)));
+    }
+  };
+
+  const handleToggleStar = async (e, id) => {
+    e.stopPropagation();
+    const token = localStorage.getItem('token');
+    const isCurrentlyStarred = starredIds.includes(String(id));
+    setStarredIds(prev => isCurrentlyStarred ? prev.filter(i => i !== String(id)) : [...prev, String(id)]);
+    try { await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-star/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } }); } catch (err) { }
+  };
+
+  const handleDragStart = (e) => {
+    if (e.target.closest('#panel-fold-btn')) return;
+    isDraggingRef.current = true;
+    setIsDraggingUI(true); 
+    startXRef.current = e.clientX;
+    startWidthRef.current = analyticsWidthRef.current; // 🌟 Syncing with Ref
+    document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none';
+  };
+
+ // 🌟 PATCH B+: The DOM Bypass. 60fps buttery smooth dragging.
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDraggingRef.current || !activeProblemId) return;
+
+      let rawWidth = startWidthRef.current - (e.clientX - startXRef.current);
+
+      if (rawWidth >= 320) {
+        analyticsWidthRef.current = 320;
+      } else if (rawWidth > 270) {
+        analyticsWidthRef.current = 320 - ((320 - rawWidth) * 0.4);
+      } else {
+        collapseAnalytics();
+        return;
+      }
+
+      // 🌟 BYPASS REACT: Update the DOM directly instead of calling setAnalyticsWidth
+      const statsPanel = document.getElementById('stats-panel');
+      if (statsPanel) {
+        statsPanel.style.width = `${analyticsWidthRef.current}px`;
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isDraggingRef.current) {
+        isDraggingRef.current = false;
+        setIsDraggingUI(false); 
+        document.body.style.cursor = 'default'; 
+        document.body.style.userSelect = 'auto';
+        
+        const snapped = analyticsWidthRef.current < 320 ? 320 : analyticsWidthRef.current;
+        analyticsWidthRef.current = snapped;
+        
+        // 🌟 ONLY tell React to re-render when the user drops the panel
+        setAnalyticsWidth(snapped);
+        localStorage.setItem('finalist_analytics_width', snapped);
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => { 
+      document.removeEventListener('mousemove', handleMouseMove); 
+      document.removeEventListener('mouseup', handleMouseUp); 
+    };
+  }, [activeProblemId]);
+
+  const collapseAnalytics = () => {
+    isDraggingRef.current = false;
+    document.body.style.cursor = 'default'; document.body.style.userSelect = 'auto';
+    setIsAnalyticsOpen(false);
+    localStorage.setItem('finalist_analytics_state', 'hidden');
+  };
+
+  const toggleAnalytics = (e) => {
+    e.stopPropagation();
+    const newState = !isAnalyticsOpen;
+    setIsAnalyticsOpen(newState);
+    localStorage.setItem('finalist_analytics_state', newState ? 'visible' : 'hidden');
+  };
+
+ // 🌟 THE FIX: Mount first, animate second. Slide away first, unmount second.
+  const handleProblemClick = useCallback((id) => {
+    if (activeProblemId === id && isWorkspaceOpen) {
+      // 1. Start the CSS slide-away animation immediately
+      setIsWorkspaceOpen(false);
+      setIsAnalyticsOpen(true);
+      localStorage.setItem('finalist_analytics_state', 'visible');
+
+      // 2. Wait 450ms for the animation to finish before destroying the DOM!
+      setTimeout(() => {
+        setActiveProblemId(null);
+        localStorage.removeItem("finalist_active_problem");
+      }, 450); 
+    } else {
+      // 1. Give React the data to build the heavy DOM (it builds it off-screen)
+      setActiveProblemId(id);
+      localStorage.setItem("finalist_active_problem", id);
+
+      // 2. Wait for the browser to paint the hidden DOM, THEN trigger the slide-in
+      if (!isWorkspaceOpen) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setIsWorkspaceOpen(true);
+          });
+        });
+      }
+    }
+  }, [activeProblemId, isWorkspaceOpen]);
+
+  // =========================================================================
+  // RENDER
+  // =========================================================================
+  return (
+    <>
+      <div className="bg-glow"></div>
+      <div className="runes-container" id="runes-container"></div>
+
+      <div id="global-preloader" className={!isLoading ? "hidden" : ""}>
+        <div className="loader-content">
+          <svg className="loader-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M25 20 L75 20 L75 35 L45 35 L45 45 L65 45 L65 60 L45 60 L45 80 L25 80 Z" fill="url(#loader-glow)" />
+            <defs>
+              <linearGradient id="loader-glow" x1="0" y1="0" x2="100" y2="100">
+                <stop offset="0%" stopColor="#6ea0ea" />
+                <stop offset="100%" stopColor="#3b82f6" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div className="loading-bar-container"><div className="loading-bar"></div></div>
+          <div className="loading-text">INITIALIZING WORKSPACE...</div>
+        </div>
+      </div>
+
+      {/* 🌟 PATCH D: Navbar replaced with TimerProvider */}
+      <TimerProvider userProfile={userProfile} />
+
+      <div className="dashboard">
+        <ProblemExplorer 
+          problemsData={problemsData}
+          solvedIds={solvedIds}
+          starredIds={starredIds}
+          analyticsData={analyticsData}
+          activeProblemId={activeProblemId}
+          handleProblemClick={handleProblemClick}
+          handleToggleSolved={handleToggleSolved}
+          handleToggleStar={handleToggleStar}
+          selectedTags={selectedTags}
+          handleTagToggle={handleTagToggle}
+          isWorkspaceOpen={isWorkspaceOpen} // 🌟 PASS THE NEW STATE HERE
+        />
+
+        {/* RIGHT WORKSPACE PANEL */}
+        <div className={`right-panel ${!isWorkspaceOpen ? 'collapsed' : ''}`} id="right-panel">
+          {activeProblemId && (
+            <WorkspacePanel
+              problem={activeProblem} // 🌟 PATCH C: Using the memoized prop!
+              isStarred={starredIds.includes(activeProblemId)}
+              onToggleStar={handleToggleStar}
+              onClose={() => handleProblemClick(activeProblemId)}
+            />
+          )}
+        </div>
+
+        {/* VERTICAL DIVIDER */}
+        {activeProblemId && (
+          <div
+            className={`vertical-divider ${!isAnalyticsOpen ? 'collapsed' : ''}`}
+            id="vertical-divider"
+            onMouseDown={handleDragStart}
+            style={{ cursor: 'col-resize' }}
+          >
+            <button
+              className="panel-fold-btn"
+              id="panel-fold-btn"
+              data-tooltip={isAnalyticsOpen ? "Fold" : "Unfold"}
+              style={{ display: 'flex' }}
+              onClick={toggleAnalytics}
+            >
+              <i className="ri-arrow-right-double-line"></i>
+            </button>
+          </div>
+        )}
+
+        {/* STATS / ANALYTICS PANEL */}
+        <div
+          className={`stats-panel ${activeProblemId && !isAnalyticsOpen ? 'hidden' : 'snap-back'} ${isDraggingUI ? 'dragging' : ''}`}
+          id="stats-panel"
+          style={{
+            width: `${analyticsWidth}px`,
+            opacity: 1,
+            overflow: 'hidden',
+            maxHeight: '100%',
+            flexShrink: 0,
+            transition: isDraggingUI
+              ? 'none'
+              : (activeProblemId && !isAnalyticsOpen)
+                ? 'width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease'
+                : 'width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease 0.1s',
+          }}
+        >
+          <AnalyticsPanel 
+            data={analyticsData} 
+            onBubbleClick={handleTagToggle} 
+            panelWidth={analyticsWidth} 
+            liveTimer={0} // 🌟 Passed as 0 since AnalyticsPanel handles it natively now
+          />
+        </div>
+      </div>
+    </>
+  );
+}

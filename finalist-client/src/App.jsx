@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Landing from './Landing';
 import Signup from './Signup';
 import Signin from './Signin';
-import Dashboard from './Dashboard';
+// 🌟 FIX: Imported with the exact name you are using in the Route!
+import DashboardNew from './pages/Dashboard';
 
 // 🌟 THE UPGRADED BOUNCER (Protects Dashboard & Kicks to Landing)
 const RequireAuth = ({ children }) => {
@@ -58,7 +59,7 @@ export default function App() {
           path="/problems" 
           element={
             <RequireAuth>
-              <Dashboard />
+              <DashboardNew />
             </RequireAuth>
           } 
         /> 

@@ -477,11 +477,13 @@ body {
   flex-direction: column;
   gap: 8px;
   padding: 0;
-  transition: flex 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  
+  /* 🌟 THE PREMIUM WEB STANDARD: Fast start, buttery smooth settle */
+  transition: flex 0.45s cubic-bezier(0.16, 1, 0.3, 1); 
+  
   will-change: flex;
-
-  /* 🌟 THE RENDER FIX: Isolates layout math from the rest of the page */
   contain: layout style;
+  transform: translateZ(0); /* Hardware acceleration */
 }
 
 .middle-panel.expanded {
@@ -640,6 +642,7 @@ body {
   padding: 0 14px;
   transition: all 0.3s ease;
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+  
 }
 
 .search-wrapper:focus-within {
@@ -697,10 +700,6 @@ body {
 
   cursor: pointer;
   transition: all 0.3s ease;
-
-
-
-  /* ... keep existing flex/padding properties ... */
   background: rgba(16, 18, 26, 0.7);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -1078,15 +1077,19 @@ body {
   /* Let the strip blend until hovered */
   border: 1px solid transparent;
   transition: all 0.2s ease;
+  content-visibility: auto;
+  contain-intrinsic-size: 42px; /* Matches your height: 42px */
+  transform: translateZ(0);
 }
 
-.problem-strip:nth-child(odd) {
+/* 🌟 THE FIX: Replaced nth-child with explicit classes for virtualization */
+.problem-strip.zebra-odd {
   background: rgba(110, 160, 234, 0.06);
   border-top: 1px solid rgba(110, 160, 234, 0.04);
   border-bottom: 1px solid rgba(110, 160, 234, 0.04);
 }
 
-.problem-strip:nth-child(even) {
+.problem-strip.zebra-even {
   background: transparent;
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
@@ -1193,18 +1196,19 @@ body {
 .right-panel {
   flex: 1;
   height: 100%;
-  /* 🌟 THE FIX: Removed padding from the outer animated shell to prevent reflow lags */
   padding: 0;
   overflow-y: auto;
   scrollbar-width: none;
   min-width: 0;
-  transition:
-    flex 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
-    opacity 0.4s ease 0.1s,
-    transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
   transform: translateX(0);
   opacity: 1;
   will-change: flex, transform, opacity;
+
+  /* 🌟 Matches the middle panel perfectly */
+  transition:
+    flex 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease 0.05s,
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .right-panel.collapsed {
@@ -1214,12 +1218,13 @@ body {
   border: none;
   opacity: 0;
   overflow: hidden;
-  /* Gives it a subtle sweeping exit */
   transform: translateX(30px);
+  
+  /* 🌟 The exit curve: Slightly faster so it gets out of your way */
   transition:
-    flex 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    flex 0.35s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.2s ease,
-    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .workspace-content {
@@ -1906,10 +1911,12 @@ body {
   flex-direction: column;
   gap: 8px;
   /* 🌟 THE FIX: Removed 'width' transition from the base state so JS dragging is instant and stutter-free! */
-  transition: opacity 0.3s ease, padding 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: width, opacity, padding;
   overflow: visible;
+  /* 🌟 Smooth collapse */
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, padding 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 
 .stats-panel.hidden {
   width: 0 !important;
@@ -1923,7 +1930,7 @@ body {
 }
 
 .stats-panel.snap-back {
-  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease 0.1s;
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease 0.1s;
 }
 
 .stat-card {
@@ -3585,4 +3592,13 @@ body {
     height: 30px !important;
     font-size: 16px !important;
   }
+}
+/* 🌟 Virtualized List Scrollbar Formatting */
+.virtualized-list-scrollbar {
+  scrollbar-width: none; /* Firefox */
+}
+
+.virtualized-list-scrollbar::-webkit-scrollbar {
+  width: 0px; /* Hides it completely, or change to 4px for a slim bar */
+  background: transparent;
 }
