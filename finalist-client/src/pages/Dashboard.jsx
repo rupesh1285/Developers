@@ -1,11 +1,12 @@
-import WorkspacePanel from '../components/WorkspacePanel';
-import AnalyticsPanel from '../components/AnalyticsPanel';
-import TimerProvider from '../components/TimerProvider'; // 🌟 PATCH D: Swapped Navbar for TimerProvider
-import ProblemExplorer from '../components/ProblemExplorer';
-
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AnalyticsPanel from '../components/AnalyticsPanel';
+import TimerProvider from '../components/TimerProvider';
+import ProblemExplorer from '../components/ProblemExplorer';
 import "../dashboard.css";
+
+const WorkspacePanel = lazy(() => import('../components/WorkspacePanel'));
+
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -372,12 +373,14 @@ export default function Dashboard() {
         {/* RIGHT WORKSPACE PANEL */}
         <div className={`right-panel ${!isWorkspaceOpen ? 'collapsed' : ''}`} id="right-panel">
           {activeProblemId && (
-            <WorkspacePanel
-              problem={activeProblem} // 🌟 PATCH C: Using the memoized prop!
-              isStarred={starredIds.includes(activeProblemId)}
-              onToggleStar={handleToggleStar}
-              onClose={() => handleProblemClick(activeProblemId)}
-            />
+            <Suspense fallback={<div style={{ color: 'var(--text-muted)', padding: '20px' }}>Loading Workspace...</div>}>
+              <WorkspacePanel
+                problem={activeProblem} 
+                isStarred={starredIds.includes(activeProblemId)}
+                onToggleStar={handleToggleStar}
+                onClose={() => handleProblemClick(activeProblemId)}
+              />
+            </Suspense>
           )}
         </div>
 
