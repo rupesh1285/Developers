@@ -130,45 +130,53 @@ export default function Dashboard() {
     return () => document.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // =========================================================================
-  // 3c. ENGINE: DATA FETCHING
+// =========================================================================
+  // 3c. ENGINE: DECOUPLED DATA FETCHING & INSTANT CACHE
   // =========================================================================
   useEffect(() => {
     const token = localStorage.getItem('token');
-    async function fetchDashboardData() {
-      try {
-        const API_BASE = import.meta.env.VITE_API_URL;
-        const tzOffset = String(new Date().getTimezoneOffset());
-        const authHeaders = {
-          "Authorization": "Bearer " + token,
-          "Timezone-Offset": tzOffset
-        };
+    if (!token) return;
 
-        const [resProblems, resProgress, resProfile, resAnalytics] = await Promise.all([
-          fetch(`${API_BASE}/api/problems`, { headers: authHeaders }),
-          fetch(`${API_BASE}/api/progress`, { headers: authHeaders }),
-          fetch(`${API_BASE}/api/auth/profile`, { headers: authHeaders }),
-          fetch(`${API_BASE}/api/progress/analytics`, { headers: authHeaders })
-        ]);
+    const API_BASE = import.meta.env.VITE_API_URL;
+    const tzOffset = String(new Date().getTimezoneOffset());
+    const authHeaders = { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset };
 
-        if (resProblems.ok) setProblemsData(await resProblems.json());
-
-        if (resProgress.ok) {
-          const progress = await resProgress.json();
-          setSolvedIds(progress.filter(p => p.solved).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem)));
-          setStarredIds(progress.filter(p => p.starred).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem)));
-        }
-
-        if (resProfile.ok) setUserProfile(await resProfile.json());
-        if (resAnalytics.ok) setAnalyticsData(await resAnalytics.json());
-
-        setTimeout(() => setIsLoading(false), 300);
-      } catch (err) {
-        console.error("Dashboard Load Error:", err);
-        setIsLoading(false);
-      }
+    // 🌟 1. THE INSTANT PAINT: Load problems from cache immediately so Lighthouse gives you a 95+
+    const cachedProblems = localStorage.getItem('finalist_problems_cache');
+    if (cachedProblems) {
+      setProblemsData(JSON.parse(cachedProblems));
+      setIsLoading(false); // Drop the preloader instantly!
     }
-    fetchDashboardData();
+
+    // 🌟 2. DECOUPLED FETCHING: No more Promise.all. Let each load at its own speed.
+    
+    // Fetch Problems (Updates cache silently in background)
+    fetch(`${API_BASE}/api/problems`, { headers: authHeaders })
+      .then(res => res.json())
+      .then(data => {
+        setProblemsData(data);
+        localStorage.setItem('finalist_problems_cache', JSON.stringify(data));
+        if (!cachedProblems) setIsLoading(false);
+      }).catch(err => { if (!cachedProblems) setIsLoading(false); });
+
+    // Fetch Profile
+    fetch(`${API_BASE}/api/auth/profile`, { headers: authHeaders })
+      .then(res => res.json())
+      .then(data => setUserProfile(data)).catch(() => {});
+
+    // Fetch Progress
+    fetch(`${API_BASE}/api/progress`, { headers: authHeaders })
+      .then(res => res.json())
+      .then(progress => {
+        setSolvedIds(progress.filter(p => p.solved).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem)));
+        setStarredIds(progress.filter(p => p.starred).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem)));
+      }).catch(() => {});
+
+    // Fetch Analytics (The heavy one - now loads quietly without blocking the UI)
+    fetch(`${API_BASE}/api/progress/analytics`, { headers: authHeaders })
+      .then(res => res.json())
+      .then(data => setAnalyticsData(data)).catch(() => {});
+
   }, [navigate]);
 
   // =========================================================================
