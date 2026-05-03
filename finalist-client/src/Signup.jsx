@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; 
 import './signup.css';
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const navigate = useNavigate();
 
   // 1. THE LAYOUT ENGINE
   useEffect(() => {
@@ -592,7 +600,6 @@ export default function Signup() {
     };
   }, [isMobile]);
 
-  // --- THE UI COMPONENTS ---
   const FormPanel = () => (
     <div className="form-wrapper" id="form-wrapper">
       <h1 className="form-title">
@@ -613,21 +620,24 @@ export default function Signup() {
       </h1>
       <p className="form-subtitle illuminate">Start tracking your interview journey today.</p>
 
-      <form onSubmit={(e) => e.preventDefault()}>
+      {/* Display errors if they exist */}
+      {errorMsg && <div style={{color: '#ff4d4d', marginBottom: '10px', fontSize: '14px'}}>{errorMsg}</div>}
+
+      <form onSubmit={handleManualSignup}>
         <div className="name-row">
           <div className="input-group">
             <label>First Name</label>
-            <input type="text" placeholder="First name" required />
+            <input type="text" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
           </div>
           <div className="input-group">
             <label>Last Name</label>
-            <input type="text" placeholder="Last name" required />
+            <input type="text" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
           </div>
         </div>
 
         <div className="input-group">
           <label>Email</label>
-          <input type="email" placeholder="name@example.com" required />
+          <input type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
 
         <div className="input-group">
@@ -636,6 +646,8 @@ export default function Signup() {
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Create a strong password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
             <span
@@ -654,6 +666,8 @@ export default function Signup() {
             <input
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
             <span
@@ -676,7 +690,6 @@ export default function Signup() {
       </div>
 
       <div className="oauth-row">
-        {/* 🌟 REACT OAUTH REDIRECTS */}
         <button
           type="button"
           className="oauth-btn"
