@@ -5,7 +5,8 @@ import './signin.css';
 export default function Signin() {
     const [showPassword, setShowPassword] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-
+    
+    // Auth States
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
@@ -21,13 +22,12 @@ export default function Signin() {
         return () => mobileQuery.removeEventListener('change', handleLayoutShift);
     }, []);
 
-    // 2. THE ANIMATION ENGINE (Runes, Spotlight, & Typist)
+    // 2. THE ANIMATION ENGINE
     useEffect(() => {
         let runeInterval;
         let typistTimeout;
         let isTyping = true;
 
-        // --- A. SPOTLIGHT & RUNES ---
         const rightPanel = document.querySelector('.right-panel');
         const runesContainer = document.getElementById('runes-container');
 
@@ -51,12 +51,9 @@ export default function Signin() {
             }, 400);
         }
 
-        // --- B. CINEMATIC CODE TYPIST ---
         const codeSnippets = [
             { file: "binary_search.py", code: "def binary_search(arr, target):\n    low, high = 0, len(arr) - 1^\n\n    while low <= high:\n        mid = (low + high) / 2^\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:^\n            low = mid + 1\n        else:\n            high = mid - 1\n\n    return -1" },
-            { file: "GraphDFS.java", code: "public void dfs(Node node, Set<Node> visited) {\n    if (node == null) return;^\n\n    visited.add(node);\n    System.out.println(node.val);^\n\n    for (Node neighbor : node.neighbors) {\n        if (!visited.contains(neighbor)) {^\n            dfs(neighbor, visited);\n        }\n    }\n}" },
-            { file: "MergeSort.cpp", code: "void mergeSort(vector<int>& arr, int l, int r) {\n    if (l >= r) return;^\n    \n    int m = l + (r - l) / 2;\n    mergeSort(arr, l, m);^\n    mergeSort(arr, m + 1, r);\n    \n    merge(arr, l, m, r);^\n}" },
-            { file: "useAuth.ts", code: "const useAuth = () => {\n    const [user, setUser] = useState(null);^\n    \n    useEffect(() => {\n        const token = localStorage.getItem('token');^\n        if (token) {\n            fetchUser(token).then(setUser);^\n        }\n    }, []);\n\n    return user;\n};" }
+            { file: "GraphDFS.java", code: "public void dfs(Node node, Set<Node> visited) {\n    if (node == null) return;^\n\n    visited.add(node);\n    System.out.println(node.val);^\n\n    for (Node neighbor : node.neighbors) {\n        if (!visited.contains(neighbor)) {^\n            dfs(neighbor, visited);\n        }\n    }\n}" }
         ];
 
         let selectedSnippet = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
@@ -97,10 +94,8 @@ export default function Signin() {
             }
         }
 
-        // Start typing after a short delay
         typistTimeout = setTimeout(typeCode, 1000);
 
-        // Cleanup when component unmounts or switches between desktop/mobile
         return () => {
             clearInterval(runeInterval);
             clearTimeout(typistTimeout);
@@ -108,6 +103,33 @@ export default function Signin() {
         };
     }, [isMobile]);
 
+    // 3. AUTH LOGIC
+    const handleManualLogin = async (e) => {
+        e.preventDefault();
+        setErrorMsg('');
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Login failed');
+            }
+
+            localStorage.setItem('token', data.token);
+            navigate('/problems'); 
+            
+        } catch (error) {
+            setErrorMsg(error.message);
+        }
+    };
+
+    // 4. UI COMPONENTS
     const FormPanel = () => (
         <div className="form-wrapper" id="form-wrapper">
             <h1 className="form-title">
@@ -126,7 +148,6 @@ export default function Signin() {
             </h1>
             <p className="form-subtitle illuminate">Pick up exactly where you left off.</p>
 
-            {/* Display errors if they exist */}
             {errorMsg && <div style={{color: '#ff4d4d', marginBottom: '10px', fontSize: '14px'}}>{errorMsg}</div>}
 
             <form onSubmit={handleManualLogin}>
@@ -171,11 +192,7 @@ export default function Signin() {
             </div>
 
             <div className="oauth-row">
-                <button
-                    type="button"
-                    className="oauth-btn"
-                    onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`}
-                >
+                <button type="button" className="oauth-btn" onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`}>
                     <svg width="18" height="18" viewBox="0 0 48 48">
                         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.7 17.74 9.5 24 9.5z" />
                         <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
@@ -184,11 +201,7 @@ export default function Signin() {
                     </svg>
                     Google
                 </button>
-                <button
-                    type="button"
-                    className="oauth-btn"
-                    onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/github`}
-                >
+                <button type="button" className="oauth-btn" onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/github`}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff">
                         <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.113.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
                     </svg>
@@ -209,11 +222,6 @@ export default function Signin() {
                 <div className="heat-cell lvl-0"></div><div className="heat-cell lvl-1"></div><div className="heat-cell lvl-3"></div><div className="heat-cell lvl-2"></div>
                 <div className="heat-cell lvl-1"></div><div className="heat-cell lvl-1"></div><div className="heat-cell lvl-3"></div><div className="heat-cell lvl-2"></div>
                 <div className="heat-cell lvl-0"></div><div className="heat-cell lvl-2"></div><div className="heat-cell lvl-3"></div><div className="heat-cell lvl-1"></div>
-                <div className="heat-cell lvl-1"></div><div className="heat-cell lvl-2"></div><div className="heat-cell lvl-2"></div><div className="heat-cell lvl-3"></div>
-                <div className="heat-cell lvl-1"></div><div className="heat-cell lvl-3"></div><div className="heat-cell lvl-1"></div><div className="heat-cell lvl-0"></div>
-                <div className="heat-cell lvl-1"></div><div className="heat-cell lvl-2"></div><div className="heat-cell lvl-3"></div><div className="heat-cell lvl-2"></div>
-                <div className="heat-cell lvl-1"></div><div className="heat-cell lvl-2"></div><div className="heat-cell lvl-3"></div><div className="heat-cell lvl-2"></div>
-                <div className="heat-cell lvl-1"></div><div className="heat-cell lvl-1"></div><div className="heat-cell lvl-2"></div><div className="heat-cell lvl-pulse"></div>
             </div>
         </div>
     );
@@ -260,7 +268,6 @@ export default function Signin() {
                             <img src="/assets/logo.png" className="logo" alt="FINALIST Logo" />
                             <div className="login-badge">
                                 <span className="muted-text">New to FINALIST?</span>
-                                {/* 🌟 REACT ROUTER LINK - Notice how we use <Link> instead of <a href>! */}
                                 <Link to="/signup" className="nav-signin-btn">Sign Up <i className="ri-arrow-right-line"></i></Link>
                             </div>
                         </div>
@@ -276,9 +283,7 @@ export default function Signin() {
                             e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
                         }}
                     >
-                        {/* 🌟 FIX: The missing spotlight div has been restored! */}
                         <div className="spotlight-overlay"></div>
-
                         <div className="runes-container" id="runes-container"></div>
                         <StreakHeatmap />
                         <div className="signin-content">
