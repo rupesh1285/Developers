@@ -19,11 +19,14 @@ const app = express();
 // 🌟 ADDED: CORS Configuration (Allows your React frontend to talk to this backend)
 // It uses an environment variable, falling back to localhost for local testing
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
 
-app.get('/api/ping', (req, res) => {
-    res.status(200).send('Finalist Backend is awake!');
+app.get('/', (req, res) => {
+    // This line will make it show up in the Render logs!
+    console.log(`[${new Date().toISOString()}] ⚡ Ping received! Keeping server awake.`); 
+    
+    res.status(200).send('Finalist API Server Running');
 });
-
 // 🌟 FIX: Allow both the live Vercel site AND your local Vite server
 app.use(cors({
   origin: [FRONTEND_URL, "http://localhost:5173"], 

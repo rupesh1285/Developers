@@ -41,9 +41,45 @@ router.post("/", protect, async (req, res) => {
     }
 });
 
-/* =========================
-   GET ALL PROBLEMS
-========================= */
+/* ==========================================================
+   BULK INJECT PROBLEMS (Handles 50, 100, 200+ at once)
+   ========================================================== */
+router.post("/bulk", protect, async (req, res) => {
+    try {
+        const problemsArray = req.body;
+
+        // 1. Validate payload is an array
+        if (!Array.isArray(problemsArray) || problemsArray.length === 0) {
+            return res.status(400).json({ error: "Payload must be a non-empty array of problems." });
+        }
+
+        // 2. Find the current highest problemNumber to continue the sequence
+        const lastProblem = await Problem.findOne().sort({ problemNumber: -1 });
+        let nextNumber = lastProblem && lastProblem.problemNumber ? lastProblem.problemNumber + 1 : 1;
+
+        // 3. Inject the auto-incrementing problemNumber into every problem
+        const problemsToInsert = problemsArray.map(prob => {
+            const mappedProblem = {
+                ...prob,
+                problemNumber: nextNumber
+            };
+            nextNumber++; 
+            return mappedProblem;
+        });
+
+        // 4. insertMany runs strict validation against your Schema!
+        const insertedProblems = await Problem.insertMany(problemsToInsert);
+        
+        res.status(201).json({ 
+            message: `Successfully injected ${insertedProblems.length} problems!`,
+            insertedCount: insertedProblems.length
+        });
+
+    } catch (error) {
+        console.error("Bulk Injection Error:", error);
+        res.status(400).json({ error: "Bulk insertion failed due to validation errors.", details: error.message });
+    }
+});
 
 /* =========================
    GET ALL PROBLEMS (Sorted)

@@ -71,7 +71,7 @@ export default function Navbar({ userProfile, elapsedTime, isRunning, toggleTime
               <strong>{userProfile.name}</strong>
               <span>{userProfile.email}</span>
             </div>
-            <div id="logout-btn" className="menu-item danger" onClick={() => { localStorage.clear(); navigate('/signin'); }}>
+            <div id="logout-btn" className="menu-item danger" onClick={() => { localStorage.clear(); navigate('/'); }}>
               <i className="ri-logout-box-r-line"></i><span>Sign Out</span>
             </div>
           </div>
