@@ -36,13 +36,10 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     codeCacheRef.current = cache;
   }, [problem]);
 
-  // Initialize CodeMirror
+  // Initialize CodeMirror (🌟 FIX: Removed isActive block so it stays alive in background)
   useEffect(() => {
-    if (!isActive || !editorRef.current) return;
+    if (!editorRef.current) return;
     if (!window.CodeMirror) return;
-
-    // 🌟 THE FIX: Removed the 450ms delay! 
-    // It safely builds instantly off-screen before the panel slides in.
 
     if (cmInstanceRef.current) {
       cmInstanceRef.current.toTextArea();
@@ -89,7 +86,8 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
         cmInstanceRef.current = null;
       }
     };
-  }, [isActive, language, problem, cmInstanceRef]);
+    // 🌟 FIX: Removed isActive from dependency array
+  }, [language, problem, cmInstanceRef]);
 
   // Click outside for language menu
   useEffect(() => {
@@ -113,7 +111,6 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
   };
 
   return (
-    // 🌟 THE FIX: Added a hardcoded dark background to kill the white flash instantly
     <div className={`tab-pane ${isActive ? 'active' : ''}`} id="tab-notes" style={{ backgroundColor: '#0d1117' }}>
       <div className="ide-header" style={{ backgroundColor: '#0d1117' }}>
         <div ref={langPillRef} className={`lang-pill ${langMenuOpen ? 'active' : ''}`} onClick={() => setLangMenuOpen(!langMenuOpen)}>            
@@ -132,7 +129,6 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
         </div>
       </div>
       
-      {/* 🌟 Hide the underlying textarea completely while CodeMirror builds */}
       <textarea ref={editorRef} id={`cm-editor-${problem._id}`} style={{ opacity: 0, backgroundColor: '#0d1117', color: '#f8f8f2' }}></textarea>
     </div>
   );

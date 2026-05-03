@@ -5,11 +5,10 @@ const auth = require('../middleware/authMiddleware');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// 🌟 THE REAL MODELS FROM YOUR API KEY
 const MODEL_FALLBACKS = [
-    "gemini-2.5-flash",    // The newest, fastest coding model
-    "gemini-2.0-flash",    // Solid backup
-    "gemini-flash-latest"  // Ultimate fallback
+    "gemini-2.5-flash",    
+    "gemini-2.0-flash",    
+    "gemini-flash-latest"  
 ];
 
 router.post('/ask', auth, async (req, res) => {
@@ -18,24 +17,34 @@ router.post('/ask', auth, async (req, res) => {
     for (const modelName of MODEL_FALLBACKS) {
         try {
             console.log(`🤖 Attempting connection with: ${modelName}...`);
-            const model = genAI.getGenerativeModel({ model: modelName });
+            const model = genAI.getGenerativeModel({ 
+                model: modelName,
+                // 🧠 SYSTEM INSTRUCTION: This acts as the permanent "brain" or persona
+                systemInstruction: `You are Finalist, an elite, highly direct coding mentor. 
             
-            // 🌟 THE "SENIOR DEV" MENTOR BRAIN
-            const prompt = `You are Finalist, an elite, highly direct coding mentor. 
+                Context: The user is currently solving the problem: "${problemTitle}".
+                
+                Rule 1: NO ROBOTIC GREETINGS. Never say "I am an AI" or "How can I help you?". Talk like a senior developer. 
+                Rule 2: BE CONCISE. Get straight to the point. No fluff.
+                Rule 3: THE CODE POLICY. Provide hints, logical steps, or small 2-3 line snippets. Do NOT give the full answer immediately. HOWEVER, if the user explicitly demands the full code, you MUST provide it. 
+                Rule 4: ALWAYS format code in markdown blocks with the correct language tag.`
+            });
             
-            Context:
-            User is solving: ${problemTitle}
-            Current Code: 
-            ${code}
-            
-            User Message: ${message}
-            
-            Rule 1: NO ROBOTIC GREETINGS. Never say "I am an AI" or "How can I help you?". Talk like a senior developer. If the user just says "hi", respond with something casual like: "Hey. Working on ${problemTitle}? Need a hint or got a bug?"
-            Rule 2: BE CONCISE. Get straight to the point. No fluff.
-            Rule 3: THE CODE POLICY. If a user asks for help, provide hints or small, specific 2-3 line code blocks for a specific logic jump. Do NOT give the full answer immediately. HOWEVER, if the user explicitly demands the full code or solution, you MUST provide the complete, optimized code. 
-            Rule 4: Always format your code in markdown blocks with the correct language tag.`;
+            // 🔄 FORMAT HISTORY: Map your frontend history format to Gemini's required format
+            const formattedHistory = (chatHistory || []).map(msg => ({
+                role: msg.role === 'bot' ? 'model' : 'user',
+                parts: [{ text: msg.content }]
+            }));
 
-            const result = await model.generateContent(prompt);
+            // 💬 START CHAT: This passes the memory into the model
+            const chat = model.startChat({
+                history: formattedHistory,
+            });
+
+            // 📩 SEND MESSAGE: Inject the current code context alongside their question
+            const currentContext = `[CURRENT EDITOR CODE]\n${code || '(empty)'}\n\n[USER QUESTION]\n${message}`;
+            
+            const result = await chat.sendMessage(currentContext);
             const aiResponse = result.response.text();
 
             console.log(`✅ Success with ${modelName}!`);
