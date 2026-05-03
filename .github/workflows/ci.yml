@@ -1,11 +1,13 @@
 name: Finalist CI Pipeline
 
-# This tells GitHub to run this script every time you push to the main branch
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-frontend:
@@ -17,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Matches a stable modern Node environment
+          node-version: '24'
           
       - name: Install Frontend Dependencies
         working-directory: ./finalist-client
@@ -36,7 +38,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           
       - name: Install Backend Dependencies
         working-directory: ./server
