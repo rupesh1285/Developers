@@ -41,13 +41,7 @@ jobs:
       - name: Install Backend Dependencies
         working-directory: ./server
         run: npm install
-        
-      # Since Express doesn't have a 'build' step, we just ensure it initializes without crashing
-      - name: Test Backend Syntax
-        working-directory: ./server
-        run: node -e "require('./index.js')"
 
-        # Since Express doesn't have a 'build' step, we just ensure it initializes without crashing
       - name: Create Dummy .env File
         working-directory: ./server
         run: |
@@ -58,7 +52,6 @@ jobs:
           echo "JWT_SECRET=dummy_jwt_secret" >> .env
           echo "MONGO_URI=mongodb://localhost:27017/dummy_db" >> .env
 
-      # Now dotenv will find the file and load perfectly
       - name: Test Backend Syntax
         working-directory: ./server
         run: node -e "require('./index.js')"
