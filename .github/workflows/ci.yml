@@ -1,0 +1,48 @@
+name: Finalist CI Pipeline
+
+# This tells GitHub to run this script every time you push to the main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20' # Matches a stable modern Node environment
+          
+      - name: Install Frontend Dependencies
+        working-directory: ./finalist-client
+        run: npm install
+        
+      - name: Build Frontend
+        working-directory: ./finalist-client
+        run: npm run build
+
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          
+      - name: Install Backend Dependencies
+        working-directory: ./server
+        run: npm install
+        
+      # Since Express doesn't have a 'build' step, we just ensure it initializes without crashing
+      - name: Test Backend Syntax
+        working-directory: ./server
+        run: node -e "require('./index.js')"
