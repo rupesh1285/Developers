@@ -48,13 +48,17 @@ jobs:
         run: node -e "require('./index.js')"
 
         # Since Express doesn't have a 'build' step, we just ensure it initializes without crashing
+      - name: Create Dummy .env File
+        working-directory: ./server
+        run: |
+          echo "GOOGLE_CLIENT_ID=dummy_google_id" >> .env
+          echo "GOOGLE_CLIENT_SECRET=dummy_google_secret" >> .env
+          echo "GITHUB_CLIENT_ID=dummy_github_id" >> .env
+          echo "GITHUB_CLIENT_SECRET=dummy_github_secret" >> .env
+          echo "JWT_SECRET=dummy_jwt_secret" >> .env
+          echo "MONGO_URI=mongodb://localhost:27017/dummy_db" >> .env
+
+      # Now dotenv will find the file and load perfectly
       - name: Test Backend Syntax
         working-directory: ./server
-        env:
-          GOOGLE_CLIENT_ID: "dummy_client_id"
-          GOOGLE_CLIENT_SECRET: "dummy_client_secret"
-          GITHUB_CLIENT_ID: "dummy_github_id"
-          GITHUB_CLIENT_SECRET: "dummy_github_secret"
-          JWT_SECRET: "dummy_jwt_secret"
-          MONGO_URI: "mongodb://localhost:27017/dummy_db"
         run: node -e "require('./index.js')"
