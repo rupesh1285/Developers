@@ -10,10 +10,13 @@ const protect = require("../middleware/authMiddleware");
 router.get("/summary", protect, async (req, res) => {
     try {
         const userId = req.user._id;
-        const solvedProgress = await Progress.find({ user: userId, solved: true });
+        // 🌟 OPTIMIZATION: .lean() for raw JSON, .select() for only needed fields
+        const solvedProgress = await Progress.find({ user: userId, solved: true }).select('problem').lean();
         const solvedProblemIds = solvedProgress.map(p => p.problem);
-        const solvedProblems = await Problem.find({ _id: { $in: solvedProblemIds } });
-        const allProblems = await Problem.find({});
+        
+        // Only fetch the difficulty field, we don't need descriptions for math
+        const solvedProblems = await Problem.find({ _id: { $in: solvedProblemIds } }).select('difficulty').lean();
+        const allProblems = await Problem.find({}).select('difficulty').lean();
 
         const calculateStats = (difficulty) => {
             const total = allProblems.filter(p => p.difficulty === difficulty).length;
@@ -42,7 +45,8 @@ router.get("/summary", protect, async (req, res) => {
 ======================================= */
 router.get("/", protect, async (req, res) => {
     try {
-        const progress = await Progress.find({ user: req.user._id });
+        // 🌟 OPTIMIZATION: .lean()
+        const progress = await Progress.find({ user: req.user._id }).lean();
         res.json(progress);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -59,7 +63,6 @@ router.post("/toggle-solved/:problemId", protect, async (req, res) => {
 
         let progress = await Progress.findOne({ user: userId, problem: problemId });
 
-        // 🌟 READ THE TIMEZONE HEADER FROM REACT
         const clientOffset = req.headers['timezone-offset'] ? parseInt(req.headers['timezone-offset'], 10) : new Date().getTimezoneOffset();
         
         const getLocalDateStr = (dInput) => {
@@ -74,14 +77,11 @@ router.post("/toggle-solved/:problemId", protect, async (req, res) => {
                 progress.solveHistory.push(new Date());
             } else {
                 const todayStr = getLocalDateStr(new Date());
-                
-                // Filter out ALL instances of today's date using the client's timezone
                 if (progress.solveHistory && progress.solveHistory.length > 0) {
                     progress.solveHistory = progress.solveHistory.filter(dateObj => {
                         return getLocalDateStr(dateObj) !== todayStr;
                     });
                 }
-                
                 if (progress.solvedAt && getLocalDateStr(progress.solvedAt) === todayStr) {
                     progress.solvedAt = null;
                 }
@@ -127,17 +127,22 @@ router.post("/toggle-star/:problemId", protect, async (req, res) => {
 });
 
 /* =======================================
-   GET ANALYTICS (Timezone Aware!)
+   GET ANALYTICS (Optimized for Speed)
 ======================================= */
 router.get("/analytics", protect, async (req, res) => {
     try {
         const userId = req.user._id;
         const user = req.user;
-        const allProblems = await Problem.find({});
-        const allUserProgress = await Progress.find({ user: userId }).populate("problem");
+        
+        // 🌟 OPTIMIZATION: Pull ONLY tags from problems, and ONLY needed fields from progress. Use .lean() to prevent Mongoose overhead.
+        const allProblemsPromise = Problem.find({}).select('tags _id').lean();
+        const allUserProgressPromise = Progress.find({ user: userId }).select('problem solved solveHistory solvedAt').populate('problem', 'tags').lean();
+        
+        // Run both database queries simultaneously for double the speed
+        const [allProblems, allUserProgress] = await Promise.all([allProblemsPromise, allUserProgressPromise]);
+
         const currentlySolved = allUserProgress.filter(p => p.solved);
 
-        // 🌟 READ THE TIMEZONE HEADER FROM REACT
         const clientOffset = req.headers['timezone-offset'] ? parseInt(req.headers['timezone-offset'], 10) : new Date().getTimezoneOffset();
 
         const getLocalDateStr = (dateInput) => {
@@ -160,19 +165,20 @@ router.get("/analytics", protect, async (req, res) => {
 
             eventDates.forEach(dateObj => {
                 const dateStr = getLocalDateStr(dateObj);
-                
-                // The Bouncer: Discard if un-checked today
                 if (dateStr === todayStr && p.solved === false) return; 
 
                 if (!dailyUniqueSolves[dateStr]) dailyUniqueSolves[dateStr] = new Set();
-                dailyUniqueSolves[dateStr].add(p.problem._id.toString());
+                
+                // Handle populated objects safely since we used .lean()
+                const probId = p.problem._id ? p.problem._id.toString() : p.problem.toString();
+                dailyUniqueSolves[dateStr].add(probId);
             });
         });
 
         const activeDays = Object.keys(dailyUniqueSolves).sort((a, b) => new Date(b) - new Date(a));
 
         // ---------------------------------------------------------
-        // ENGINE 1: BULLETPROOF STREAK TRACKER (Using absolute milliseconds)
+        // ENGINE 1: BULLETPROOF STREAK TRACKER
         // ---------------------------------------------------------
         let currentStreak = 0;
         let maxStreak = 0;
@@ -211,7 +217,6 @@ router.get("/analytics", protect, async (req, res) => {
             if (!prevDateStr) {
                 tempStreak = 1;
             } else {
-                // Parse strings as UTC noon to safely diff without Daylight Savings issues
                 const currentD = new Date(dStr + "T12:00:00Z");
                 const prevD = new Date(prevDateStr + "T12:00:00Z");
                 const diffDays = Math.round((currentD - prevD) / 86400000);
@@ -224,7 +229,7 @@ router.get("/analytics", protect, async (req, res) => {
         });
 
         // ---------------------------------------------------------
-        // ENGINE 2: 16-WEEK ACTIVITY HEATMAP (Absolute ms back-stepping)
+        // ENGINE 2: 16-WEEK ACTIVITY HEATMAP
         // ---------------------------------------------------------
         const heatmap = [];
 

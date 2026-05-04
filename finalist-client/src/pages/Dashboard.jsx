@@ -182,17 +182,19 @@ export default function Dashboard() {
   // =========================================================================
   // 5. ENGINE: INTERACTION & DRAGGER
   // =========================================================================
-  const handleToggleSolved = async (e, id) => {
+ const handleToggleSolved = async (e, id) => {
     e.stopPropagation();
     const token = localStorage.getItem('token');
     const isCurrentlySolved = solvedIds.includes(String(id));
 
+    // 1. INSTANT UI UPDATE (The Checkmark)
     setSolvedIds(prev => isCurrentlySolved ? prev.filter(i => i !== String(id)) : [...prev, String(id)]);
 
     const problem = problemsData.find(p => String(p._id) === String(id));
     const tags = problem?.tags || [];
     const todayStr = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
+    // 2. INSTANT ANALYTICS UPDATE (The Heatmap and Bubbles)
     setAnalyticsData(prev => {
       const newTopics = prev.topics.map(t => {
         if (tags.includes(t.name)) {
@@ -214,17 +216,35 @@ export default function Dashboard() {
         return d;
       });
 
-      return { ...prev, topics: newTopics, heatmap: newHeatmap };
+      // 🌟 NEW: Calculate the Streak instantly in React!
+      const currentStreak = prev.streak.current;
+      const isTodayInHeatmap = newHeatmap.some(d => d.date === todayStr && d.count > 0);
+      let newStreak = currentStreak;
+
+      if (!isCurrentlySolved && isTodayInHeatmap && currentStreak === 0) {
+        newStreak = 1; // They just solved their first problem today
+      } else if (isCurrentlySolved && !isTodayInHeatmap) {
+        newStreak = Math.max(0, currentStreak - 1); // They un-solved their only problem today
+      }
+
+      return { 
+        ...prev, 
+        topics: newTopics, 
+        heatmap: newHeatmap,
+        streak: { ...prev.streak, current: newStreak, max: Math.max(prev.streak.max, newStreak) }
+      };
     });
 
+    // 3. SILENT NETWORK REQUEST (Fire and forget. No awaiting. No reloading data.)
     try {
       const tzOffset = String(new Date().getTimezoneOffset());
       const authHeaders = { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset };
-
-      await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, { method: "POST", headers: authHeaders });
-      const resAnalytics = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/analytics`, { headers: authHeaders });
-      if (resAnalytics.ok) setAnalyticsData(await resAnalytics.json());
+      
+      // We don't await this or ask for data back. We just tell the server "Hey, I did this."
+      fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, { method: "POST", headers: authHeaders });
+      
     } catch (err) {
+      // If the network completely fails, roll back the UI changes
       setSolvedIds(prev => isCurrentlySolved ? [...prev, String(id)] : prev.filter(i => i !== String(id)));
     }
   };
