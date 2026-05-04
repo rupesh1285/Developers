@@ -22,8 +22,6 @@ router.post("/", protect, async (req, res) => {
             : 1;
 
         // 3. Create the new problem object 
-        // Note: We "spread" the req.body (title, difficulty, etc.) 
-        // and manually inject the problemNumber so validation passes.
         const newProblem = new Problem({
             ...req.body,
             problemNumber: nextNumber
@@ -48,16 +46,13 @@ router.post("/bulk", protect, async (req, res) => {
     try {
         const problemsArray = req.body;
 
-        // 1. Validate payload is an array
         if (!Array.isArray(problemsArray) || problemsArray.length === 0) {
             return res.status(400).json({ error: "Payload must be a non-empty array of problems." });
         }
 
-        // 2. Find the current highest problemNumber to continue the sequence
         const lastProblem = await Problem.findOne().sort({ problemNumber: -1 });
         let nextNumber = lastProblem && lastProblem.problemNumber ? lastProblem.problemNumber + 1 : 1;
 
-        // 3. Inject the auto-incrementing problemNumber into every problem
         const problemsToInsert = problemsArray.map(prob => {
             const mappedProblem = {
                 ...prob,
@@ -67,7 +62,6 @@ router.post("/bulk", protect, async (req, res) => {
             return mappedProblem;
         });
 
-        // 4. insertMany runs strict validation against your Schema!
         const insertedProblems = await Problem.insertMany(problemsToInsert);
         
         res.status(201).json({ 
@@ -82,26 +76,28 @@ router.post("/bulk", protect, async (req, res) => {
 });
 
 /* =========================
-   GET ALL PROBLEMS (Sorted)
+   GET ALL PROBLEMS (Optimized for Sub-50ms Response)
 ========================= */
-
-// Remove 'protect' if you want public access, but keep it if you want it private
 router.get("/", async (req, res) => {
     try {
-        // .sort({ problemNumber: 1 }) means "Ascending Order (1, 2, 3...)"
-        const problems = await Problem.find().sort({ problemNumber: 1 });
+        // 🌟 THE FIX: Select only needed fields and use .lean() to strip Mongoose overhead
+        const problems = await Problem.find()
+            .select('_id title difficulty problemNumber tags') 
+            .sort({ problemNumber: 1 })
+            .lean(); 
 
         res.json(problems);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
-/* =========================
-   GET SINGLE PROBLEM
-========================= */
 
+/* =========================
+   GET SINGLE PROBLEM (Full Payload)
+========================= */
 router.get("/:id", async (req, res) => {
     try {
+        // When a user clicks a problem, WE DO want the full description and examples here.
         const problem = await Problem.findById(req.params.id);
 
         if (!problem) {
@@ -118,7 +114,6 @@ router.get("/:id", async (req, res) => {
 /* =========================
    UPDATE PROBLEM (Protected)
 ========================= */
-
 router.put("/:id", protect, async (req, res) => {
     try {
         const updatedProblem = await Problem.findByIdAndUpdate(
@@ -141,7 +136,6 @@ router.put("/:id", protect, async (req, res) => {
 /* =========================
    DELETE PROBLEM (Protected)
 ========================= */
-
 router.delete("/:id", protect, async (req, res) => {
     try {
         const problem = await Problem.findByIdAndDelete(req.params.id);
