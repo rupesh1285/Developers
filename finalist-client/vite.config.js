@@ -6,12 +6,14 @@ export default defineConfig({
   plugins: [react()],
   build: {
     target: 'esnext',
-    minify: 'terser', // Terser is slightly better at dead-code elimination than esbuild
+    minify: 'terser', 
     cssCodeSplit: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor'; 
+          }
         }
       }
     }
