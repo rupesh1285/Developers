@@ -1,7 +1,5 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useEffect, useRef } from 'react';
 
-// 🌟 1. Extract the Row and MEMOIZE it. 
-// This prevents 200+ elements from re-rendering every time you click one!
 const ProblemRow = memo(({ 
   problem, index, isSolved, isStarred, isActive, 
   handleProblemClick, handleToggleSolved, handleToggleStar 
@@ -33,7 +31,6 @@ const ProblemRow = memo(({
     </div>
   );
 }, (prevProps, nextProps) => {
-  // 🌟 THE MAGIC: Only re-render if the state of THIS SPECIFIC row changes
   return (
     prevProps.isActive === nextProps.isActive &&
     prevProps.isSolved === nextProps.isSolved &&
@@ -42,14 +39,44 @@ const ProblemRow = memo(({
   );
 });
 
-// 🌟 2. The Main List Component
 export default memo(function ProblemList({ 
   filteredProblems, solvedIds, starredIds, activeProblemId, 
   handleProblemClick, handleToggleSolved, handleToggleStar 
 }) {
+  // 🌟 THE MAGIC: Only render 25 items to start
+  const [visibleCount, setVisibleCount] = useState(25);
+  const listRef = useRef(null);
+
+  // Reset visible count if the user types in the search bar (filter changes)
+  useEffect(() => {
+    setVisibleCount(25);
+  }, [filteredProblems]);
+
+  // Handle native scroll to load more items gracefully
+  const handleScroll = () => {
+    if (!listRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = listRef.current;
+    
+    // If the user scrolls within 200px of the bottom, load 25 more
+    if (scrollTop + clientHeight >= scrollHeight - 200) {
+      if (visibleCount < filteredProblems.length) {
+        // Use requestAnimationFrame to prevent scroll blocking
+        requestAnimationFrame(() => {
+          setVisibleCount(prev => Math.min(prev + 25, filteredProblems.length));
+        });
+      }
+    }
+  };
+
   return (
-    <div className="problems-panel" id="problems-panel" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-      {filteredProblems.map((problem, index) => (
+    <div 
+      className="problems-panel" 
+      id="problems-panel" 
+      ref={listRef}
+      onScroll={handleScroll}
+      style={{ flex: 1, minHeight: 0, overflowY: 'auto', willChange: 'transform' }}
+    >
+      {filteredProblems.slice(0, visibleCount).map((problem, index) => (
         <ProblemRow
           key={problem._id}
           problem={problem}

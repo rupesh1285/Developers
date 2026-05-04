@@ -4,33 +4,79 @@ const protect = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-/* =========================
-   ADD NEW PROBLEM (Protected)
-========================= */
+// ==========================================================
+// 🚀 IN-MEMORY CACHE (Sub-5ms Response Time)
+// ==========================================================
+let cachedProblems = null;
+let lastCacheTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+const clearCache = () => {
+    cachedProblems = null;
+    lastCacheTime = 0;
+};
 
 /* ==========================================================
-   ADD NEW PROBLEM (With Auto-Incrementing problemNumber)
-   ========================================================== */
+   GET ALL PROBLEMS (Optimized & Cached)
+========================================================== */
+router.get("/", async (req, res) => {
+    try {
+        // 1. CHECK CACHE: Serve directly from RAM if valid
+        if (cachedProblems && (Date.now() - lastCacheTime < CACHE_DURATION)) {
+            return res.json(cachedProblems);
+        }
+
+        // 2. FETCH FROM DB: Strip heavy HTML descriptions, return raw JSON
+        const problems = await Problem.find()
+            .select('_id title difficulty problemNumber tags') 
+            .sort({ problemNumber: 1 })
+            .lean(); 
+
+        // 3. UPDATE CACHE
+        cachedProblems = problems;
+        lastCacheTime = Date.now();
+
+        res.json(problems);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/* ==========================================================
+   GET SINGLE PROBLEM (Full Payload)
+========================================================== */
+router.get("/:id", async (req, res) => {
+    try {
+        const problem = await Problem.findById(req.params.id);
+
+        if (!problem) {
+            return res.status(404).json({ message: "Problem not found" });
+        }
+
+        res.json(problem);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/* ==========================================================
+   ADD NEW PROBLEM (Protected)
+========================================================== */
 router.post("/", protect, async (req, res) => {
     try {
-        // 1. Find the current highest problemNumber in the database
         const lastProblem = await Problem.findOne().sort({ problemNumber: -1 });
-
-        // 2. Calculate the next number (Start at 1 if DB is empty)
         const nextNumber = lastProblem && lastProblem.problemNumber 
             ? lastProblem.problemNumber + 1 
             : 1;
 
-        // 3. Create the new problem object 
         const newProblem = new Problem({
             ...req.body,
             problemNumber: nextNumber
         });
 
-        // 4. Save to MongoDB
         const savedProblem = await newProblem.save();
         
-        // 5. Send back the success response
+        clearCache(); // 🌟 Invalidate cache so the new problem shows up
         res.status(201).json(savedProblem);
 
     } catch (error) {
@@ -41,7 +87,7 @@ router.post("/", protect, async (req, res) => {
 
 /* ==========================================================
    BULK INJECT PROBLEMS (Handles 50, 100, 200+ at once)
-   ========================================================== */
+========================================================== */
 router.post("/bulk", protect, async (req, res) => {
     try {
         const problemsArray = req.body;
@@ -64,6 +110,7 @@ router.post("/bulk", protect, async (req, res) => {
 
         const insertedProblems = await Problem.insertMany(problemsToInsert);
         
+        clearCache(); // 🌟 Invalidate cache 
         res.status(201).json({ 
             message: `Successfully injected ${insertedProblems.length} problems!`,
             insertedCount: insertedProblems.length
@@ -75,45 +122,9 @@ router.post("/bulk", protect, async (req, res) => {
     }
 });
 
-/* =========================
-   GET ALL PROBLEMS (Optimized for Sub-50ms Response)
-========================= */
-router.get("/", async (req, res) => {
-    try {
-        // 🌟 THE FIX: Select only needed fields and use .lean() to strip Mongoose overhead
-        const problems = await Problem.find()
-            .select('_id title difficulty problemNumber tags') 
-            .sort({ problemNumber: 1 })
-            .lean(); 
-
-        res.json(problems);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-/* =========================
-   GET SINGLE PROBLEM (Full Payload)
-========================= */
-router.get("/:id", async (req, res) => {
-    try {
-        // When a user clicks a problem, WE DO want the full description and examples here.
-        const problem = await Problem.findById(req.params.id);
-
-        if (!problem) {
-            return res.status(404).json({ message: "Problem not found" });
-        }
-
-        res.json(problem);
-
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-/* =========================
+/* ==========================================================
    UPDATE PROBLEM (Protected)
-========================= */
+========================================================== */
 router.put("/:id", protect, async (req, res) => {
     try {
         const updatedProblem = await Problem.findByIdAndUpdate(
@@ -126,6 +137,7 @@ router.put("/:id", protect, async (req, res) => {
             return res.status(404).json({ message: "Problem not found" });
         }
 
+        clearCache(); // 🌟 Invalidate cache
         res.json(updatedProblem);
 
     } catch (error) {
@@ -133,9 +145,9 @@ router.put("/:id", protect, async (req, res) => {
     }
 });
 
-/* =========================
+/* ==========================================================
    DELETE PROBLEM (Protected)
-========================= */
+========================================================== */
 router.delete("/:id", protect, async (req, res) => {
     try {
         const problem = await Problem.findByIdAndDelete(req.params.id);
@@ -144,6 +156,7 @@ router.delete("/:id", protect, async (req, res) => {
             return res.status(404).json({ message: "Problem not found" });
         }
 
+        clearCache(); // 🌟 Invalidate cache
         res.json({ message: "Problem deleted successfully" });
 
     } catch (error) {
