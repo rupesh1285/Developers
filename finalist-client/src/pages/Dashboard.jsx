@@ -7,7 +7,6 @@ import "../dashboard.css";
 
 const WorkspacePanel = lazy(() => import('../components/WorkspacePanel'));
 
-
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -18,16 +17,19 @@ export default function Dashboard() {
   const [analyticsData, setAnalyticsData] = useState({ streak: { current: 0, max: 0, timeSpentHrs: 0 }, heatmap: [], topics: [] });
   const [userProfile, setUserProfile] = useState({ name: 'Developer', email: 'developer@finalist.com', avatar: '' });
 
+  // 🌟 THE FIX 1: Lazy Cache for heavy problem descriptions
+  const [fullProblemCache, setFullProblemCache] = useState({});
+
   // --- UI STATE ---
   const [isLoading, setIsLoading] = useState(true);
-
   const [activeProblemId, setActiveProblemId] = useState(localStorage.getItem("finalist_active_problem") || null);
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(!!localStorage.getItem("finalist_active_problem"));
-  // 🌟 PATCH C: Memoize the active problem prop
-  const activeProblem = useMemo(
-    () => problemsData.find(p => String(p._id) === activeProblemId) ?? null,
-    [problemsData, activeProblemId]
-  );
+
+  // 🌟 THE FIX 2: Combine lightweight list data with the heavy fetched description
+  const activeProblem = useMemo(() => {
+    if (!activeProblemId) return null;
+    return fullProblemCache[activeProblemId] || problemsData.find(p => String(p._id) === activeProblemId) || null;
+  }, [problemsData, activeProblemId, fullProblemCache]);
 
   // --- ANALYTICS & DRAGGER STATE ---
   const [analyticsWidth, setAnalyticsWidth] = useState(parseInt(localStorage.getItem('finalist_analytics_width')) || 320);
@@ -36,7 +38,7 @@ export default function Dashboard() {
   const [isDraggingUI, setIsDraggingUI] = useState(false);
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
-  const analyticsWidthRef = useRef(analyticsWidth); // 🌟 PATCH A: Added Ref for lag-free dragging
+  const analyticsWidthRef = useRef(analyticsWidth); 
 
   // --- SEARCH BAR TYPING EFFECT STATE ---
   const searchInputRef = useRef(null);
@@ -50,6 +52,19 @@ export default function Dashboard() {
       localStorage.setItem("finalist_tags", JSON.stringify(newTags));
       return newTags;
     });
+  }, []);
+
+  // =========================================================================
+  // 1. FETCH FULL PROBLEM ON MOUNT (If user refreshed with an open problem)
+  // =========================================================================
+  useEffect(() => {
+    const initialId = localStorage.getItem("finalist_active_problem");
+    if (initialId) {
+        fetch(`${import.meta.env.VITE_API_URL}/api/problems/${initialId}`)
+            .then(res => res.json())
+            .then(fullData => setFullProblemCache(prev => ({...prev, [initialId]: fullData})))
+            .catch(console.error);
+    }
   }, []);
 
   // =========================================================================
@@ -130,7 +145,7 @@ export default function Dashboard() {
     return () => document.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-// =========================================================================
+  // =========================================================================
   // 3c. ENGINE: DECOUPLED DATA FETCHING & INSTANT CACHE
   // =========================================================================
   useEffect(() => {
@@ -141,16 +156,12 @@ export default function Dashboard() {
     const tzOffset = String(new Date().getTimezoneOffset());
     const authHeaders = { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset };
 
-    // 🌟 1. THE INSTANT PAINT: Load problems from cache immediately so Lighthouse gives you a 95+
     const cachedProblems = localStorage.getItem('finalist_problems_cache');
     if (cachedProblems) {
       setProblemsData(JSON.parse(cachedProblems));
-      setIsLoading(false); // Drop the preloader instantly!
+      setIsLoading(false);
     }
 
-    // 🌟 2. DECOUPLED FETCHING: No more Promise.all. Let each load at its own speed.
-    
-    // Fetch Problems (Updates cache silently in background)
     fetch(`${API_BASE}/api/problems`, { headers: authHeaders })
       .then(res => res.json())
       .then(data => {
@@ -159,12 +170,10 @@ export default function Dashboard() {
         if (!cachedProblems) setIsLoading(false);
       }).catch(err => { if (!cachedProblems) setIsLoading(false); });
 
-    // Fetch Profile
     fetch(`${API_BASE}/api/auth/profile`, { headers: authHeaders })
       .then(res => res.json())
       .then(data => setUserProfile(data)).catch(() => {});
 
-    // Fetch Progress
     fetch(`${API_BASE}/api/progress`, { headers: authHeaders })
       .then(res => res.json())
       .then(progress => {
@@ -172,7 +181,6 @@ export default function Dashboard() {
         setStarredIds(progress.filter(p => p.starred).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem)));
       }).catch(() => {});
 
-    // Fetch Analytics (The heavy one - now loads quietly without blocking the UI)
     fetch(`${API_BASE}/api/progress/analytics`, { headers: authHeaders })
       .then(res => res.json())
       .then(data => setAnalyticsData(data)).catch(() => {});
@@ -182,19 +190,17 @@ export default function Dashboard() {
   // =========================================================================
   // 5. ENGINE: INTERACTION & DRAGGER
   // =========================================================================
- const handleToggleSolved = async (e, id) => {
+  const handleToggleSolved = async (e, id) => {
     e.stopPropagation();
     const token = localStorage.getItem('token');
     const isCurrentlySolved = solvedIds.includes(String(id));
 
-    // 1. INSTANT UI UPDATE (The Checkmark)
     setSolvedIds(prev => isCurrentlySolved ? prev.filter(i => i !== String(id)) : [...prev, String(id)]);
 
     const problem = problemsData.find(p => String(p._id) === String(id));
     const tags = problem?.tags || [];
     const todayStr = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
-    // 2. INSTANT ANALYTICS UPDATE (The Heatmap and Bubbles)
     setAnalyticsData(prev => {
       const newTopics = prev.topics.map(t => {
         if (tags.includes(t.name)) {
@@ -216,15 +222,14 @@ export default function Dashboard() {
         return d;
       });
 
-      // 🌟 NEW: Calculate the Streak instantly in React!
       const currentStreak = prev.streak.current;
       const isTodayInHeatmap = newHeatmap.some(d => d.date === todayStr && d.count > 0);
       let newStreak = currentStreak;
 
       if (!isCurrentlySolved && isTodayInHeatmap && currentStreak === 0) {
-        newStreak = 1; // They just solved their first problem today
+        newStreak = 1; 
       } else if (isCurrentlySolved && !isTodayInHeatmap) {
-        newStreak = Math.max(0, currentStreak - 1); // They un-solved their only problem today
+        newStreak = Math.max(0, currentStreak - 1); 
       }
 
       return { 
@@ -235,16 +240,11 @@ export default function Dashboard() {
       };
     });
 
-    // 3. SILENT NETWORK REQUEST (Fire and forget. No awaiting. No reloading data.)
     try {
       const tzOffset = String(new Date().getTimezoneOffset());
       const authHeaders = { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset };
-      
-      // We don't await this or ask for data back. We just tell the server "Hey, I did this."
       fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, { method: "POST", headers: authHeaders });
-      
     } catch (err) {
-      // If the network completely fails, roll back the UI changes
       setSolvedIds(prev => isCurrentlySolved ? [...prev, String(id)] : prev.filter(i => i !== String(id)));
     }
   };
@@ -254,7 +254,7 @@ export default function Dashboard() {
     const token = localStorage.getItem('token');
     const isCurrentlyStarred = starredIds.includes(String(id));
     setStarredIds(prev => isCurrentlyStarred ? prev.filter(i => i !== String(id)) : [...prev, String(id)]);
-    try { await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-star/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } }); } catch (err) { }
+    try { fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-star/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } }); } catch (err) { }
   };
 
   const handleDragStart = (e) => {
@@ -262,11 +262,10 @@ export default function Dashboard() {
     isDraggingRef.current = true;
     setIsDraggingUI(true); 
     startXRef.current = e.clientX;
-    startWidthRef.current = analyticsWidthRef.current; // 🌟 Syncing with Ref
+    startWidthRef.current = analyticsWidthRef.current;
     document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none';
   };
 
- // 🌟 PATCH B+: The DOM Bypass. 60fps buttery smooth dragging.
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDraggingRef.current || !activeProblemId) return;
@@ -282,7 +281,6 @@ export default function Dashboard() {
         return;
       }
 
-      // 🌟 BYPASS REACT: Update the DOM directly instead of calling setAnalyticsWidth
       const statsPanel = document.getElementById('stats-panel');
       if (statsPanel) {
         statsPanel.style.width = `${analyticsWidthRef.current}px`;
@@ -299,7 +297,6 @@ export default function Dashboard() {
         const snapped = analyticsWidthRef.current < 320 ? 320 : analyticsWidthRef.current;
         analyticsWidthRef.current = snapped;
         
-        // 🌟 ONLY tell React to re-render when the user drops the panel
         setAnalyticsWidth(snapped);
         localStorage.setItem('finalist_analytics_width', snapped);
       }
@@ -327,34 +324,44 @@ export default function Dashboard() {
     localStorage.setItem('finalist_analytics_state', newState ? 'visible' : 'hidden');
   };
 
- // 🌟 THE FIX: Mount first, animate second. Slide away first, unmount second.
+  // 🌟 THE FIX 3: State Reference blocks stale closures, guaranteeing perfect toggle behavior
+  const stateRef = useRef({ activeProblemId, isWorkspaceOpen, fullProblemCache });
+  useEffect(() => {
+      stateRef.current = { activeProblemId, isWorkspaceOpen, fullProblemCache };
+  }, [activeProblemId, isWorkspaceOpen, fullProblemCache]);
+
   const handleProblemClick = useCallback((id) => {
-    if (activeProblemId === id && isWorkspaceOpen) {
-      // 1. Start the CSS slide-away animation immediately
+    const { activeProblemId, isWorkspaceOpen, fullProblemCache } = stateRef.current;
+    
+    if (activeProblemId === String(id) && isWorkspaceOpen) {
+      // CLOSE LOGIC
       setIsWorkspaceOpen(false);
       setIsAnalyticsOpen(true);
       localStorage.setItem('finalist_analytics_state', 'visible');
-
-      // 2. Wait 450ms for the animation to finish before destroying the DOM!
+      
       setTimeout(() => {
         setActiveProblemId(null);
         localStorage.removeItem("finalist_active_problem");
       }, 450); 
     } else {
-      // 1. Give React the data to build the heavy DOM (it builds it off-screen)
-      setActiveProblemId(id);
-      localStorage.setItem("finalist_active_problem", id);
+      // OPEN LOGIC
+      setActiveProblemId(String(id));
+      localStorage.setItem("finalist_active_problem", String(id));
+      
+      // 🌟 FETCH FULL PROBLEM DATA LAZILY
+      if (!fullProblemCache[id]) {
+          fetch(`${import.meta.env.VITE_API_URL}/api/problems/${id}`)
+              .then(res => res.json())
+              .then(fullData => {
+                  setFullProblemCache(prev => ({...prev, [id]: fullData}));
+              }).catch(console.error);
+      }
 
-      // 2. Wait for the browser to paint the hidden DOM, THEN trigger the slide-in
       if (!isWorkspaceOpen) {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            setIsWorkspaceOpen(true);
-          });
-        });
+         setIsWorkspaceOpen(true);
       }
     }
-  }, [activeProblemId, isWorkspaceOpen]);
+  }, []);
 
   // =========================================================================
   // RENDER
@@ -380,7 +387,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 🌟 PATCH D: Navbar replaced with TimerProvider */}
       <TimerProvider userProfile={userProfile} />
 
       <div className="dashboard">
@@ -395,7 +401,7 @@ export default function Dashboard() {
           handleToggleStar={handleToggleStar}
           selectedTags={selectedTags}
           handleTagToggle={handleTagToggle}
-          isWorkspaceOpen={isWorkspaceOpen} // 🌟 PASS THE NEW STATE HERE
+          isWorkspaceOpen={isWorkspaceOpen} 
         />
 
         {/* RIGHT WORKSPACE PANEL */}
@@ -453,7 +459,7 @@ export default function Dashboard() {
             data={analyticsData} 
             onBubbleClick={handleTagToggle} 
             panelWidth={analyticsWidth} 
-            liveTimer={0} // 🌟 Passed as 0 since AnalyticsPanel handles it natively now
+            liveTimer={0} 
           />
         </div>
       </div>
