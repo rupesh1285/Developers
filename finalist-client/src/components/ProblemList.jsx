@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect, useRef } from 'react';
+import React, { memo, useState, useEffect, useRef, useLayoutEffect } from 'react';
 
 const ProblemRow = memo(({ 
   problem, index, isSolved, isStarred, isActive, 
@@ -58,21 +58,38 @@ const ProblemRow = memo(({
 
 export default memo(function ProblemList({ 
   filteredProblems, solvedIds, starredIds, activeProblemId, 
-  handleProblemClick, handleToggleSolved, handleToggleStar 
+  handleProblemClick, handleToggleSolved, handleToggleStar,
+  filterKey
 }) {
   // 🌟 THE MAGIC: Only render 25 items to start
   const [visibleCount, setVisibleCount] = useState(25);
   const listRef = useRef(null);
+  const scrollTopRef = useRef(0);
+  const lastFilterKeyRef = useRef(filterKey);
 
-  // Reset visible count if the user types in the search bar (filter changes)
+  // Reset visible count only when filters (not status toggles) change
   useEffect(() => {
     setVisibleCount(25);
-  }, [filteredProblems]);
+    if (listRef.current) listRef.current.scrollTop = 0;
+    lastFilterKeyRef.current = filterKey;
+  }, [filterKey]);
+
+  // Clamp visible count if the filtered list shrinks
+  useEffect(() => {
+    setVisibleCount(prev => Math.min(prev, filteredProblems.length || 0));
+  }, [filteredProblems.length]);
+
+  useLayoutEffect(() => {
+    if (!listRef.current) return;
+    if (lastFilterKeyRef.current !== filterKey) return;
+    listRef.current.scrollTop = scrollTopRef.current;
+  }, [solvedIds, starredIds, filterKey]);
 
   // Handle native scroll to load more items gracefully
   const handleScroll = () => {
     if (!listRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = listRef.current;
+    scrollTopRef.current = scrollTop;
     
     // If the user scrolls within 200px of the bottom, load 25 more
     if (scrollTop + clientHeight >= scrollHeight - 200) {

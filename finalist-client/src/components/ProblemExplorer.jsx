@@ -67,6 +67,11 @@ export default React.memo(function ProblemExplorer({
     });
   }, [problemsData, deferredSearchQuery, diffFilter, statusFilter, solvedIds, starredIds, selectedTags]);
 
+  const filterKey = useMemo(() => {
+    const tagKey = [...selectedTags].sort().join(',');
+    return `${deferredSearchQuery}|${diffFilter}|${statusFilter}|${tagKey}`;
+  }, [deferredSearchQuery, diffFilter, statusFilter, selectedTags]);
+
   // --- RENDER ---
   return (
     <div className={`middle-panel ${!isWorkspaceOpen ? 'expanded' : ''}`}>
@@ -96,6 +101,7 @@ export default React.memo(function ProblemExplorer({
         handleProblemClick={handleProblemClick}
         handleToggleSolved={handleToggleSolved}
         handleToggleStar={handleToggleStar}
+        filterKey={filterKey}
       />
 
     </div>
