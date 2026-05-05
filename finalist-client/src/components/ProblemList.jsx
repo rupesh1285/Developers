@@ -76,7 +76,12 @@ export default memo(function ProblemList({
 
   // Clamp visible count if the filtered list shrinks
   useEffect(() => {
-    setVisibleCount(prev => Math.min(prev, filteredProblems.length || 0));
+    setVisibleCount(prev => {
+      const nextLen = filteredProblems.length || 0;
+      if (nextLen === 0) return 0;
+      if (prev === 0) return Math.min(25, nextLen);
+      return Math.min(prev, nextLen);
+    });
   }, [filteredProblems.length]);
 
   useLayoutEffect(() => {
