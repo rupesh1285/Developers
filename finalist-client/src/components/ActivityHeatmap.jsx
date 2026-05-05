@@ -12,6 +12,8 @@ export default React.memo(function ActivityHeatmap({ data }) {
           key={idx}
           className={`heatmap-square heat-${day.level}`}
           data-tooltip={day.count === 0 ? `No activity on ${dateString}` : `${day.count} problems solved on ${dateString}`}
+          role="img"
+          aria-label={day.count === 0 ? `No activity on ${dateString}` : `${day.count} problems solved on ${dateString}`}
         ></div>
       );
     });

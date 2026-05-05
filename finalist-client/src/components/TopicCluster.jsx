@@ -86,6 +86,14 @@ export default React.memo(function TopicCluster({ data, onBubbleClick }) {
           bubble.style.left = `${finalX}px`; bubble.style.top = `${finalY}px`;
           bubble.style.width = `0px`; bubble.style.height = `0px`;
           bubble.onclick = (e) => { e.stopPropagation(); bubbleClickRef.current(p.name); };
+          bubble.setAttribute('role', 'button');
+          bubble.setAttribute('tabindex', '0');
+          bubble.onkeydown = (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              bubbleClickRef.current(p.name);
+            }
+          };
           container.appendChild(bubble);
           // Wait for the browser to paint, THEN apply the transition
           requestAnimationFrame(() => {
@@ -95,7 +103,9 @@ export default React.memo(function TopicCluster({ data, onBubbleClick }) {
           });
         }
 
-        bubble.setAttribute('data-tooltip', `${p.name}: ${p.solved} / ${p.total} Solved`);
+        const tooltipText = `${p.name}: ${p.solved} / ${p.total} Solved`;
+        bubble.setAttribute('data-tooltip', tooltipText);
+        bubble.setAttribute('aria-label', tooltipText);
         bubble.style.left = `${finalX}px`; bubble.style.top = `${finalY}px`;
         bubble.style.width = `${finalSize}px`; bubble.style.height = `${finalSize}px`;
 

@@ -5,28 +5,45 @@ const ProblemRow = memo(({
   handleProblemClick, handleToggleSolved, handleToggleStar 
 }) => {
   const zebraClass = index % 2 === 0 ? 'zebra-odd' : 'zebra-even';
+  const onRowKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleProblemClick(String(problem._id));
+    }
+  };
   
   return (
     <div 
       className={`problem-strip ${zebraClass} ${isActive ? 'active-problem' : ''}`} 
       data-id={problem._id} 
       onClick={() => handleProblemClick(String(problem._id))}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isActive}
+      aria-label={`${problem.problemNumber}. ${problem.title}`}
+      onKeyDown={onRowKeyDown}
     >
       <div className="problem-left">
         <span className="problem-number">{problem.problemNumber}.</span>
         <span className="problem-title">{problem.title}</span>
       </div>
       <div className="problem-right">
-        <i 
-          className={`${isSolved ? 'ri-checkbox-circle-fill checked' : 'ri-checkbox-blank-circle-line'} checkbox-icon`} 
-          style={{ color: isSolved ? '#4ade80' : 'var(--text-muted)' }} 
+        <button
+          type="button"
+          className={`${isSolved ? 'ri-checkbox-circle-fill checked' : 'ri-checkbox-blank-circle-line'} checkbox-icon`}
+          style={{ color: isSolved ? '#4ade80' : 'var(--text-muted)' }}
           onClick={(e) => handleToggleSolved(e, String(problem._id))}
-        ></i>
+          aria-pressed={isSolved}
+          aria-label={isSolved ? "Mark as unsolved" : "Mark as solved"}
+        ></button>
         <span className={`difficulty ${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</span>
-        <i 
-          className={`${isStarred ? 'ri-star-fill active' : 'ri-star-line'} star-icon`} 
+        <button
+          type="button"
+          className={`${isStarred ? 'ri-star-fill active' : 'ri-star-line'} star-icon`}
           onClick={(e) => handleToggleStar(e, String(problem._id))}
-        ></i>
+          aria-pressed={isStarred}
+          aria-label={isStarred ? "Remove from starred" : "Add to starred"}
+        ></button>
       </div>
     </div>
   );

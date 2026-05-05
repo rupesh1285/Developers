@@ -19,6 +19,37 @@
   box-sizing: border-box;
 }
 
+button {
+  font: inherit;
+}
+
+button.filter-pill,
+button.dropdown-item,
+button.topic-pill-item,
+button.icon-btn,
+button.panel-star,
+button.mobile-close-btn,
+button.panel-fold-btn,
+button.checkbox-icon,
+button.star-icon,
+button.menu-item,
+button#profile-btn,
+button.filter-sheet-option,
+button.filter-sheet-close,
+button.clear-all-btn,
+button.lang-item {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0;
+}
+
+:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-main);
@@ -1133,6 +1164,11 @@ body {
   font-size: 18px;
   cursor: pointer;
   transition: 0.2s;
+  background: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .star-icon {
@@ -1141,6 +1177,11 @@ body {
   transition: 0.2s;
   color: var(--text-muted);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ri-star-fill,
@@ -3601,4 +3642,15 @@ body {
 .virtualized-list-scrollbar::-webkit-scrollbar {
   width: 0px; /* Hides it completely, or change to 4px for a slim bar */
   background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

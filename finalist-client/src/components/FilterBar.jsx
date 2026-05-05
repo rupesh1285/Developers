@@ -83,45 +83,53 @@ export default React.memo(function FilterBar({
             onChange={(e) => onSearchChange(e.target.value)}
             autoComplete="off"
             placeholder="Search..."
+            aria-label="Search problems"
           />
         </div>
 
-        <button className={`mobile-filter-btn ${mobileFiltersOpen ? 'active' : ''}`} onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}>
+        <button
+          className={`mobile-filter-btn ${mobileFiltersOpen ? 'active' : ''}`}
+          type="button"
+          onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+          aria-expanded={mobileFiltersOpen}
+          aria-controls="filters-actions"
+          aria-label="Toggle filters"
+        >
           <i className="ri-equalizer-line"></i>
           {(selectedTags.length > 0 || diffFilter !== 'Difficulty' || statusFilter !== 'All Problems') && (
             <span className="mobile-filter-dot"></span>
           )}
         </button>
 
-        <div className={`filters-actions ${mobileFiltersOpen ? 'mobile-open' : ''}`}>
+        <div className={`filters-actions ${mobileFiltersOpen ? 'mobile-open' : ''}`} id="filters-actions" role="dialog" aria-label="Filters">
           <div className="filter-sheet-header">
             <span className="filter-sheet-title">Filters</span>
-            <div className="filter-sheet-close" onClick={() => setMobileFiltersOpen(false)}>
+            <button className="filter-sheet-close" type="button" onClick={() => setMobileFiltersOpen(false)} aria-label="Close filters">
               <i className="ri-close-line"></i>
-            </div>
+            </button>
           </div>
           <div className="filter-sheet-body">
             <div className="filter-sheet-label">Difficulty</div>
             {['Difficulty', 'Basic', 'Easy', 'Medium', 'Hard'].map(diff => (
-              <div key={diff} className={`filter-sheet-option ${diffFilter === diff ? 'selected' : ''}`} onClick={() => { onDiffChange(diff); }}>
+              <button key={diff} type="button" className={`filter-sheet-option ${diffFilter === diff ? 'selected' : ''}`} onClick={() => { onDiffChange(diff); }}>
                 <span>{diff === 'Difficulty' ? 'All Difficulties' : diff}</span>
                 <i className="ri-check-line filter-check"></i>
-              </div>
+              </button>
             ))}
             <div className="filter-sheet-divider"></div>
             <div className="filter-sheet-label">Status</div>
             {['All Problems', 'Solved', 'Unsolved', 'Starred'].map(status => (
-              <div key={status} className={`filter-sheet-option ${statusFilter === status ? 'selected' : ''}`} onClick={() => { onStatusChange(status); }}>
+              <button key={status} type="button" className={`filter-sheet-option ${statusFilter === status ? 'selected' : ''}`} onClick={() => { onStatusChange(status); }}>
                 <span>{status}</span>
                 <i className="ri-check-line filter-check"></i>
-              </div>
+              </button>
             ))}
             <div className="filter-sheet-divider"></div>
             <div className="filter-sheet-label">
               Topics {selectedTags.length > 0 && (
-                <span style={{ color: '#f87171', marginLeft: 8, cursor: 'pointer', fontWeight: 600 }} onClick={() => { handleTagToggle([]); }}>
+                <button type="button" style={{ color: '#f87171', marginLeft: 8, cursor: 'pointer', fontWeight: 600, background: 'transparent', border: 'none' }} onClick={() => { handleTagToggle([]); }}>
                   Clear ({selectedTags.length})
-                </span>
+                </button>
               )}
             </div>
             <div className="search-wrapper" style={{ marginBottom: 8, height: 40 }}>
@@ -130,51 +138,67 @@ export default React.memo(function FilterBar({
             </div>
             <div className="filter-sheet-topics">
               {allTags.filter(t => t.toLowerCase().includes(topicSearch.toLowerCase())).map(tag => (
-                <div key={tag} className={`topic-pill-item ${selectedTags.includes(tag) ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleTagToggle(tag); }}>
+                <button key={tag} type="button" className={`topic-pill-item ${selectedTags.includes(tag) ? 'selected' : ''}`} onClick={(e) => { e.stopPropagation(); handleTagToggle(tag); }}>
                   {tag}
                   {selectedTags.includes(tag) && <i className="ri-close-line"></i>}
-                </div>
+                </button>
               ))}
             </div>
           </div>
         </div>
 
         <div className="filters-actions-desktop">
-          <div className={`filter-pill ${diffOpen ? 'active' : ''}`} onClick={() => { setDiffOpen(!diffOpen); setStatusOpen(false); setTopicMenuOpen(false); }}>
+          <button
+            type="button"
+            className={`filter-pill ${diffOpen ? 'active' : ''}`}
+            onClick={() => { setDiffOpen(!diffOpen); setStatusOpen(false); setTopicMenuOpen(false); }}
+            aria-expanded={diffOpen}
+          >
             <span className="filter-text">{diffFilter}</span>
             <i className="ri-arrow-down-s-line chevron-icon"></i>
             <div className="dropdown-menu">
               {['Difficulty', 'Basic', 'Easy', 'Medium', 'Hard'].map(diff => (
-                <div key={diff} className="dropdown-item" onClick={(e) => { e.stopPropagation(); onDiffChange(diff); setDiffOpen(false); }}>{diff}</div>
+                <button key={diff} type="button" className="dropdown-item" onClick={(e) => { e.stopPropagation(); onDiffChange(diff); setDiffOpen(false); }}>{diff}</button>
               ))}
             </div>
-          </div>
-          <div className={`filter-pill ${statusOpen ? 'active' : ''}`} onClick={() => { setStatusOpen(!statusOpen); setDiffOpen(false); setTopicMenuOpen(false); }}>
+          </button>
+          <button
+            type="button"
+            className={`filter-pill ${statusOpen ? 'active' : ''}`}
+            onClick={() => { setStatusOpen(!statusOpen); setDiffOpen(false); setTopicMenuOpen(false); }}
+            aria-expanded={statusOpen}
+          >
             <span className="filter-text">{statusFilter}</span>
             <i className="ri-arrow-down-s-line chevron-icon"></i>
             <div className="dropdown-menu">
               {['All Problems', 'Solved', 'Unsolved', 'Starred'].map(status => (
-                <div key={status} className="dropdown-item" onClick={(e) => { e.stopPropagation(); onStatusChange(status); setStatusOpen(false); }}>{status}</div>
+                <button key={status} type="button" className="dropdown-item" onClick={(e) => { e.stopPropagation(); onStatusChange(status); setStatusOpen(false); }}>{status}</button>
               ))}
             </div>
-          </div>
+          </button>
           <div className="filter-pill-wrapper" style={{ position: 'relative' }} ref={topicMenuRef}>
-            <div className={`icon-btn filter-trigger ${selectedTags.length > 0 || topicMenuOpen ? 'active-filter' : ''}`} onClick={() => { setTopicMenuOpen(!topicMenuOpen); setDiffOpen(false); setStatusOpen(false); }}>
+            <button
+              type="button"
+              className={`icon-btn filter-trigger ${selectedTags.length > 0 || topicMenuOpen ? 'active-filter' : ''}`}
+              onClick={() => { setTopicMenuOpen(!topicMenuOpen); setDiffOpen(false); setStatusOpen(false); }}
+              aria-expanded={topicMenuOpen}
+              aria-label="Filter by topics"
+            >
               <i className="ri-filter-3-line"></i>
               <div className="filter-badge" style={{ display: selectedTags.length > 0 ? 'flex' : 'none' }}>{selectedTags.length}</div>
-            </div>
+            </button>
             <div className={`topic-menu ${topicMenuOpen ? 'active' : ''}`}>
               <div className="topic-header">
                 <div className="topic-search-box">
                   <i className="ri-search-line"></i>
                   <input type="text" placeholder="Search tags..." value={topicSearch} onClick={e => e.stopPropagation()} onChange={(e) => { e.stopPropagation(); setTopicSearch(e.target.value); }} />
                 </div>
-                {selectedTags.length > 0 && <span className="clear-all-btn" onClick={() => { handleTagToggle([]); setTopicSearch(""); }}>Clear</span>}
+                {selectedTags.length > 0 && <button type="button" className="clear-all-btn" onClick={() => { handleTagToggle([]); setTopicSearch(""); }}>Clear</button>}
               </div>
-              {selectedTags.length > 0 && <div className="topics-container" style={{ display: 'flex' }}>{selectedTags.map(tag => (<div key={tag} className="topic-pill-item selected" onClick={(e) => { e.stopPropagation(); handleTagToggle(tag); }}>{tag} <i className="ri-close-line"></i></div>))}</div>}
+              {selectedTags.length > 0 && <div className="topics-container" style={{ display: 'flex' }}>{selectedTags.map(tag => (<button key={tag} type="button" className="topic-pill-item selected" onClick={(e) => { e.stopPropagation(); handleTagToggle(tag); }}>{tag} <i className="ri-close-line"></i></button>))}</div>}
               {selectedTags.length > 0 && <div className="topic-divider" style={{ display: 'block' }}></div>}
               <div className="topics-container">
-                {availableTags.map(tag => (<div key={tag} className="topic-pill-item" onClick={(e) => { e.stopPropagation(); handleTagToggle(tag); }}>{tag}</div>))}
+                {availableTags.map(tag => (<button key={tag} type="button" className="topic-pill-item" onClick={(e) => { e.stopPropagation(); handleTagToggle(tag); }}>{tag}</button>))}
               </div>
             </div>
           </div>

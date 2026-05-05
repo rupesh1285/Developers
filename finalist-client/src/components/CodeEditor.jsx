@@ -113,18 +113,32 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
   return (
     <div className={`tab-pane ${isActive ? 'active' : ''}`} id="tab-notes" style={{ backgroundColor: '#0d1117' }}>
       <div className="ide-header" style={{ backgroundColor: '#0d1117' }}>
-        <div ref={langPillRef} className={`lang-pill ${langMenuOpen ? 'active' : ''}`} onClick={() => setLangMenuOpen(!langMenuOpen)}>            
+        <div
+          ref={langPillRef}
+          className={`lang-pill ${langMenuOpen ? 'active' : ''}`}
+          onClick={() => setLangMenuOpen(!langMenuOpen)}
+          role="button"
+          tabIndex={0}
+          aria-expanded={langMenuOpen}
+          aria-label="Select language"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setLangMenuOpen(!langMenuOpen);
+            }
+          }}
+        >            
           <div className="lang-pill-header">
             <i className="ri-code-s-slash-line"></i>
             <span className="lang-text" data-value={language}>{LANG_MAP[language] || 'JavaScript'}</span>
             <i className="ri-arrow-down-s-line chevron-icon"></i>
           </div>
           <div className="lang-menu">
-            <div className="lang-item" data-value="javascript" onClick={(e) => { e.stopPropagation(); handleLangChange('javascript'); }}>JavaScript</div>
-            <div className="lang-item" data-value="python" onClick={(e) => { e.stopPropagation(); handleLangChange('python'); }}>Python</div>
-            <div className="lang-item" data-value="text/x-csrc" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-csrc'); }}>C</div>
-            <div className="lang-item" data-value="text/x-c++src" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-c++src'); }}>C++</div>
-            <div className="lang-item" data-value="text/x-java" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-java'); }}>Java</div>
+            <button className="lang-item" type="button" data-value="javascript" onClick={(e) => { e.stopPropagation(); handleLangChange('javascript'); }}>JavaScript</button>
+            <button className="lang-item" type="button" data-value="python" onClick={(e) => { e.stopPropagation(); handleLangChange('python'); }}>Python</button>
+            <button className="lang-item" type="button" data-value="text/x-csrc" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-csrc'); }}>C</button>
+            <button className="lang-item" type="button" data-value="text/x-c++src" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-c++src'); }}>C++</button>
+            <button className="lang-item" type="button" data-value="text/x-java" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-java'); }}>Java</button>
           </div>
         </div>
       </div>

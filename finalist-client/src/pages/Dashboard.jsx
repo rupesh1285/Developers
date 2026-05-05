@@ -73,6 +73,7 @@ export default function Dashboard() {
   useEffect(() => {
     const globalTooltip = document.createElement('div');
     globalTooltip.className = 'global-tooltip';
+    globalTooltip.setAttribute('aria-hidden', 'true');
     document.body.appendChild(globalTooltip);
 
     const handleMouseOver = (e) => {
@@ -109,7 +110,7 @@ export default function Dashboard() {
     };
 
     document.addEventListener('mouseover', handleMouseOver);
-    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
     document.addEventListener('mouseout', handleMouseOut);
 
     return () => {
@@ -141,7 +142,7 @@ export default function Dashboard() {
         ticking = true;
       }
     };
-    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => document.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
@@ -368,10 +369,10 @@ export default function Dashboard() {
   // =========================================================================
   return (
     <>
-      <div className="bg-glow"></div>
-      <div className="runes-container" id="runes-container"></div>
+      <div className="bg-glow" aria-hidden="true"></div>
+      <div className="runes-container" id="runes-container" aria-hidden="true"></div>
 
-      <div id="global-preloader" className={!isLoading ? "hidden" : ""}>
+      <div id="global-preloader" className={!isLoading ? "hidden" : ""} role="status" aria-live="polite" aria-hidden={!isLoading}>
         <div className="loader-content">
           <svg className="loader-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M25 20 L75 20 L75 35 L45 35 L45 45 L65 45 L65 60 L45 60 L45 80 L25 80 Z" fill="url(#loader-glow)" />
@@ -389,7 +390,7 @@ export default function Dashboard() {
 
       <TimerProvider userProfile={userProfile} />
 
-      <div className="dashboard">
+      <div className="dashboard" aria-busy={isLoading}>
         <ProblemExplorer 
           problemsData={problemsData}
           solvedIds={solvedIds}
@@ -405,7 +406,7 @@ export default function Dashboard() {
         />
 
         {/* RIGHT WORKSPACE PANEL */}
-        <div className={`right-panel ${!isWorkspaceOpen ? 'collapsed' : ''}`} id="right-panel">
+        <div className={`right-panel ${!isWorkspaceOpen ? 'collapsed' : ''}`} id="right-panel" role="region" aria-label="Workspace">
           {activeProblemId && (
             <Suspense fallback={<div style={{ color: 'var(--text-muted)', padding: '20px' }}>Loading Workspace...</div>}>
               <WorkspacePanel
@@ -425,6 +426,8 @@ export default function Dashboard() {
             id="vertical-divider"
             onMouseDown={handleDragStart}
             style={{ cursor: 'col-resize' }}
+            role="separator"
+            aria-orientation="vertical"
           >
             <button
               className="panel-fold-btn"
@@ -432,6 +435,9 @@ export default function Dashboard() {
               data-tooltip={isAnalyticsOpen ? "Fold" : "Unfold"}
               style={{ display: 'flex' }}
               onClick={toggleAnalytics}
+              aria-label={isAnalyticsOpen ? "Collapse analytics panel" : "Expand analytics panel"}
+              aria-expanded={isAnalyticsOpen}
+              aria-controls="stats-panel"
             >
               <i className="ri-arrow-right-double-line"></i>
             </button>
@@ -442,6 +448,8 @@ export default function Dashboard() {
         <div
           className={`stats-panel ${activeProblemId && !isAnalyticsOpen ? 'hidden' : 'snap-back'} ${isDraggingUI ? 'dragging' : ''}`}
           id="stats-panel"
+          role="complementary"
+          aria-label="Analytics"
           style={{
             width: `${analyticsWidth}px`,
             opacity: 1,

@@ -120,10 +120,19 @@ export default React.memo(function AiTutor({ problem, isActive, cmInstanceRef })
       <div className="ai-chat-box">
         <div className="ai-chat-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
           <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>Tutor Chat</span>
-          <i className="ri-delete-bin-7-line" style={{ cursor: 'pointer', color: '#f87171', fontSize: '16px', transition: '0.2s' }} title="Clear Memory" onClick={() => setShowClearConfirm(true)}></i>
+          <button
+            type="button"
+            className="icon-btn"
+            style={{ cursor: 'pointer', color: '#f87171', fontSize: '16px', transition: '0.2s' }}
+            title="Clear Memory"
+            aria-label="Clear AI memory"
+            onClick={() => setShowClearConfirm(true)}
+          >
+            <i className="ri-delete-bin-7-line" aria-hidden="true"></i>
+          </button>
         </div>
 
-        <div className={`ai-history ${chatHistory.length > 0 ? 'has-chat' : ''}`} ref={aiHistoryRef}>
+        <div className={`ai-history ${chatHistory.length > 0 ? 'has-chat' : ''}`} ref={aiHistoryRef} aria-live="polite" aria-relevant="additions text">
           {chatHistory.length === 0 ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}>
               <i className="ri-robot-2-line" style={{ fontSize: '36px', color: 'var(--accent)', marginBottom: '12px' }}></i>
@@ -158,8 +167,9 @@ export default React.memo(function AiTutor({ problem, isActive, cmInstanceRef })
             onChange={(e) => setAiInput(e.target.value)}
             onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAiSend(); } }}
             disabled={isAiThinking}
+            aria-label="Ask the AI tutor"
           />
-          <button className="ai-send-btn" onClick={handleAiSend} disabled={isAiThinking} style={{ opacity: isAiThinking ? 0.5 : 1, cursor: isAiThinking ? 'wait' : 'pointer' }}>
+          <button className="ai-send-btn" onClick={handleAiSend} disabled={isAiThinking} aria-label="Send message" style={{ opacity: isAiThinking ? 0.5 : 1, cursor: isAiThinking ? 'wait' : 'pointer' }}>
             <i className="ri-send-plane-fill"></i>
           </button>
         </div>

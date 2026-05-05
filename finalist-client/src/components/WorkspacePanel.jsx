@@ -29,17 +29,25 @@ export default React.memo(function WorkspacePanel({ problem, isStarred, onToggle
 
   return (
     <div className="workspace-content">
-      <div className="mobile-close-btn" onClick={onClose}>
-        <i className="ri-close-large-line"></i>
-      </div>
+      <button className="mobile-close-btn" type="button" onClick={onClose} aria-label="Close workspace panel">
+        <i className="ri-close-large-line" aria-hidden="true"></i>
+      </button>
       
       <div className="panel-header" style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: '24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px' }}>
         <div className="panel-title" style={{ fontSize: '24px', lineHeight: '1.3', fontWeight: 800, color: '#fff' }}>{problem.title}</div>
         <div className="panel-actions" style={{ marginTop: '4px', flexShrink: 0 }}>
           <div className={`panel-difficulty ${problem.difficulty.toLowerCase()}`}>{problem.difficulty}</div>
-          <div className="panel-star" id="panel-star-btn" data-id={problem._id} onClick={(e) => onToggleStar(e, String(problem._id))}>
-            <i className={isStarred ? 'ri-star-fill' : 'ri-star-line'}></i>
-          </div>
+          <button
+            className="panel-star"
+            id="panel-star-btn"
+            type="button"
+            data-id={problem._id}
+            onClick={(e) => onToggleStar(e, String(problem._id))}
+            aria-pressed={isStarred}
+            aria-label={isStarred ? "Remove from starred" : "Add to starred"}
+          >
+            <i className={isStarred ? 'ri-star-fill' : 'ri-star-line'} aria-hidden="true"></i>
+          </button>
         </div>
       </div>
 
