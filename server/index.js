@@ -21,6 +21,11 @@ const app = express();
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
 
+// 🌟 THE PULSE ENDPOINT: Keeps Render awake without touching MongoDB
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'alive', time: new Date().toISOString() });
+});
+
 app.get('/', (req, res) => {
     // This line will make it show up in the Render logs!
     console.log(`[${new Date().toISOString()}] ⚡ Ping received! Keeping server awake.`); 
