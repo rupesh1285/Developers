@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finalist — Ace Every Coding Round</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b10;
+    --bg2: #0d1117;
+    --surface: #111820;
+    --surface2: #161e28;
+    --border: #1e2d3d;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --gold: #f59e0b;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'Space Mono', monospace;
+    --head: 'Syne', sans-serif;
+    --body: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* ─── NAV ─── */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(8,11,16,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(30,45,61,0.5);
+  }
+  .nav-logo { font-family: var(--head); font-size: 18px; font-weight: 800; color: var(--accent); }
+  .nav-links { display: flex; gap: 24px; list-style: none; }
+  .nav-links a { font-family: var(--mono); font-size: 11px; color: var(--muted); text-decoration: none; letter-spacing: 1px; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--accent); }
+  @media (max-width: 600px) { .nav-links { display: none; } }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 24px;
+    position: relative;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -60%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .badge-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 32px; animation: fadeUp 0.6s ease both; }
+  .badge { padding: 4px 12px; border-radius: 20px; font-family: var(--mono); font-size: 11px; border: 1px solid; letter-spacing: 0.5px; }
+  .badge-blue   { border-color: var(--accent);  color: var(--accent);  background: rgba(0,212,255,0.07); }
+  .badge-green  { border-color: var(--accent3); color: var(--accent3); background: rgba(16,185,129,0.07); }
+  .badge-gold   { border-color: var(--gold);    color: var(--gold);    background: rgba(245,158,11,0.07); }
+  .badge-purple { border-color: var(--accent2); color: var(--accent2); background: rgba(124,58,237,0.07); }
+
+  .pulse-dot { display: inline-block; width: 8px; height: 8px; background: var(--accent3); border-radius: 50%; animation: pulse 2s ease infinite; margin-right: 6px; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.4)} 50%{box-shadow:0 0 0 6px rgba(16,185,129,0)} }
+
+  .hero-title {
+    font-family: var(--head);
+    font-size: clamp(56px, 10vw, 96px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, #ffffff 0%, var(--accent) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeUp 0.7s 0.1s ease both;
+    margin-bottom: 8px;
+  }
+  .hero-sub { font-family: var(--mono); font-size: clamp(13px,2vw,16px); color: var(--muted); letter-spacing: 2px; text-transform: uppercase; animation: fadeUp 0.7s 0.2s ease both; margin-bottom: 24px; }
+
+  .typewriter {
+    font-family: var(--mono);
+    font-size: clamp(13px,2.5vw,17px);
+    color: var(--accent);
+    border-right: 2px solid var(--accent);
+    white-space: nowrap;
+    overflow: hidden;
+    width: 0;
+    animation: typing 3.2s steps(46) 0.8s forwards, blink 0.8s step-end infinite;
+    margin: 0 auto 40px;
+  }
+  @keyframes typing { to { width: 46ch; } }
+  @keyframes blink  { 50% { border-color: transparent; } }
+
+  .hero-links { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; animation: fadeUp 0.7s 0.5s ease both; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 8px; font-family: var(--mono); font-size: 13px; font-weight: 700; text-decoration: none; letter-spacing: 0.5px; transition: all 0.2s; cursor: pointer; border: none; }
+  .btn-primary { background: var(--accent); color: #080b10; }
+  .btn-primary:hover { background: #33dcff; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,212,255,0.3); }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+  /* ─── SECTIONS ─── */
+  section { padding: 80px 0; }
+  .section-label { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+  .section-title { font-family: var(--head); font-size: clamp(28px,5vw,42px); font-weight: 800; color: #fff; margin-bottom: 48px; line-height: 1.1; }
+  .divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+  /* ─── STATS ─── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 16px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: center; transition: border-color 0.2s, transform 0.2s; }
+  .stat-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+  .stat-num { font-family: var(--head); font-size: 36px; font-weight: 800; color: var(--accent); display: block; }
+  .stat-label { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+
+  /* ─── FEATURES ─── */
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 20px; }
+  .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; position: relative; overflow: hidden; transition: all 0.3s; }
+  .feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); opacity: 0; transition: opacity 0.3s; }
+  .feature-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-icon { font-size: 28px; margin-bottom: 14px; display: block; }
+  .feature-title { font-family: var(--head); font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .feature-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+  /* ─── LIGHTHOUSE ─── */
+  .lighthouse-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 24px; margin-bottom: 32px; }
+  .lh-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 20px; text-align: center; transition: transform 0.2s; }
+  .lh-card:hover { transform: translateY(-4px); }
+  .ring-wrap { position: relative; width: 100px; height: 100px; margin: 0 auto 16px; }
+  .ring-svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 8; }
+  .ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; stroke-dasharray: 251.2; stroke-dashoffset: 251.2; transition: stroke-dashoffset 2s cubic-bezier(0.4,0,0.2,1); }
+  .ring-score { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: var(--head); font-size: 22px; font-weight: 800; color: #fff; }
+  .lh-label { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* ─── TECH STACK ─── */
+  .tech-category { margin-bottom: 32px; }
+  .tech-cat-label { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .tech-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+  .tech-pill { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-family: var(--mono); color: var(--text); transition: all 0.2s; text-decoration: none; }
+  .tech-pill:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+  .tech-pill img { width: 18px; height: 18px; object-fit: contain; }
+
+  /* ─── ARCHITECTURE ─── */
+  .arch-diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; font-family: var(--mono); }
+  .arch-row { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .arch-box { padding: 10px 20px; border-radius: 8px; font-size: 12px; text-align: center; border: 1px solid; min-width: 120px; }
+  .arch-box.client { border-color: var(--accent);  color: var(--accent);  background: rgba(0,212,255,0.08); }
+  .arch-box.server { border-color: var(--accent2); color: var(--accent2); background: rgba(124,58,237,0.08); }
+  .arch-box.db     { border-color: var(--accent3); color: var(--accent3); background: rgba(16,185,129,0.08); }
+  .arch-box.ext    { border-color: var(--gold);    color: var(--gold);    background: rgba(245,158,11,0.08); }
+  .arch-arrow { color: var(--muted); font-size: 18px; }
+  .arch-line { width: 100%; height: 1px; background: var(--border); margin: 16px 0; }
+
+  /* ─── API TABLE ─── */
+  .table-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .endpoints-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; }
+  .endpoints-table th { text-align: left; padding: 10px 16px; color: var(--muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  .endpoints-table td { padding: 12px 16px; border-bottom: 1px solid rgba(30,45,61,0.5); vertical-align: middle; }
+  .endpoints-table tr:hover td { background: var(--surface2); }
+  .method { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+  .method.get    { background: rgba(16,185,129,0.15); color: var(--accent3); }
+  .method.post   { background: rgba(0,212,255,0.15);  color: var(--accent); }
+  .method.put    { background: rgba(245,158,11,0.15); color: var(--gold); }
+  .method.delete { background: rgba(239,68,68,0.15);  color: var(--red); }
+  .endpoint-path { color: var(--text); }
+  .endpoint-desc { color: var(--muted); font-size: 12px; }
+  .more-endpoints { text-align: center; padding: 16px; color: var(--muted); font-family: var(--mono); font-size: 12px; border-top: none; }
+
+  /* ─── ROADMAP ─── */
+  .roadmap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 600px) { .roadmap-grid { grid-template-columns: 1fr; } }
+  .roadmap-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; }
+  .roadmap-card.done { border-color: rgba(16,185,129,0.3); }
+  .roadmap-card.next { border-color: rgba(0,212,255,0.3); }
+  .roadmap-version { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+  .roadmap-card.done .roadmap-version { color: var(--accent3); }
+  .roadmap-card.next .roadmap-version { color: var(--accent); }
+  .roadmap-title { font-family: var(--head); font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 20px; }
+  .roadmap-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+  .roadmap-item .check { flex-shrink: 0; margin-top: 2px; }
+  .roadmap-item.done-item { color: var(--muted); }
+  .roadmap-item.next-item { color: var(--text); }
+
+  /* ─── SETUP ─── */
+  .code-block { background: #0a0f16; border: 1px solid var(--border); border-radius: 12px; padding: 24px 28px; font-family: var(--mono); font-size: 13px; line-height: 2; margin-bottom: 16px; overflow-x: auto; }
+  .code-comment { color: var(--muted); }
+  .code-cmd { color: var(--accent); }
+  .code-str { color: var(--accent3); }
+  .code-key { color: var(--gold); }
+  .step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: var(--accent); color: #080b10; border-radius: 50%; font-family: var(--mono); font-size: 12px; font-weight: 700; flex-shrink: 0; margin-right: 12px; }
+  .step-title { font-family: var(--head); font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; margin-bottom: 12px; }
+
+  /* ─── FOOTER ─── */
+  .footer { padding: 60px 0 40px; text-align: center; border-top: 1px solid var(--border); }
+  .footer-name { font-family: var(--head); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .footer-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 2px; margin-bottom: 24px; }
+  .footer-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 32px; }
+  .footer-link { font-family: var(--mono); font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 1px; transition: color 0.2s; }
+  .footer-link:hover { color: var(--accent); }
+  .footer-copy { font-family: var(--mono); font-size: 11px; color: var(--border); letter-spacing: 1px; }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">Finalist</div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#lighthouse">Performance</a></li>
+    <li><a href="#stack">Stack</a></li>
+    <li><a href="#api">API</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#setup">Setup</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge-row">
+    <span class="badge badge-green"><span class="pulse-dot"></span>Live on Vercel</span>
+    <span class="badge badge-blue">Open Source</span>
+    <span class="badge badge-gold">Lighthouse 95</span>
+    <span class="badge badge-purple">AI Powered</span>
+  </div>
+  <h1 class="hero-title">Finalist</h1>
+  <p class="hero-sub">Competitive Programming Prep Platform</p>
+  <div class="typewriter">Ace every coding round and become the Finalist.</div>
+  <div class="hero-links">
+    <a href="https://finalist-v1.vercel.app" class="btn btn-primary">▶ &nbsp;Live Demo</a>
+    <a href="https://github.com/rupesh1285/Developers" class="btn btn-outline">⌥ &nbsp;View Source</a>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- STATS -->
+<section>
+  <div class="container">
+    <div class="stats-grid reveal">
+      <div class="stat-card"><span class="stat-num" data-count="220">0</span><span class="stat-label">Problems</span></div>
+      <div class="stat-card"><span class="stat-num" data-count="25">0</span><span class="stat-label">API Endpoints</span></div>
+      <div class="stat-card"><span class="stat-num" data-count="20">0</span><span class="stat-label">Active Users</span></div>
+      <div class="stat-card"><span class="stat-num" data-count="6">0</span><span class="stat-label">Route Modules</span></div>
+      <div class="stat-card"><span class="stat-num" data-count="16">0</span><span class="stat-label">Week Heatmap</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <p class="section-label reveal">What's inside</p>
+    <h2 class="section-title reveal">Built different.</h2>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <span class="feature-icon">🧠</span>
+        <div class="feature-title">AI Tutor — Problem Aware</div>
+        <div class="feature-desc">Gemini API receives your full problem statement, difficulty, tags, and your live code from the editor. Hints adapt to your actual solution approach in real time.</div>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">Real-Time Bubble Analytics</div>
+        <div class="feature-desc">Topic mastery visualized as bubbles — fill level = solved/total per category. Updates instantly on every solve and unsolve event. No page reload.</div>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🔥</span>
+        <div class="feature-title">16-Week Activity Heatmap</div>
+        <div class="feature-desc">GitHub-style heatmap tracking your last 16 weeks. Color intensity scales with daily problem volume — the more you grind, the brighter it glows.</div>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">⚡</span>
+        <div class="feature-title">Streak System</div>
+        <div class="feature-desc">Day-based streaks tracking current and maximum. Solve after midnight and your streak stays alive. Miss a day — reset and rebuild stronger.</div>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">💾</span>
+        <div class="feature-title">Persistent Workspaces</div>
+        <div class="feature-desc">Code and AI chat saved per user per problem across sessions. Return and pick up exactly where you left off — powered by 1.5s debounced autosave.</div>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🔐</span>
+        <div class="feature-title">OAuth 2.0 + JWT Auth</div>
+        <div class="feature-desc">Google and GitHub OAuth via authorization code flow. Your own JWT issued post-verification — sessions fully independent of third-party tokens.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- LIGHTHOUSE -->
+<section id="lighthouse">
+  <div class="container">
+    <p class="section-label reveal">Performance</p>
+    <h2 class="section-title reveal">Lighthouse Report</h2>
+    <div class="lighthouse-grid" id="lh-grid">
+      <div class="lh-card reveal">
+        <div class="ring-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100" width="100" height="100" aria-hidden="true">
+            <circle class="ring-bg" cx="50" cy="50" r="40"/>
+            <circle class="ring-fill" cx="50" cy="50" r="40" stroke="#10b981" data-score="95"/>
+          </svg>
+          <span class="ring-score" aria-label="Performance score 95">95</span>
+        </div>
+        <div class="lh-label">Performance</div>
+      </div>
+      <div class="lh-card reveal">
+        <div class="ring-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100" width="100" height="100" aria-hidden="true">
+            <circle class="ring-bg" cx="50" cy="50" r="40"/>
+            <circle class="ring-fill" cx="50" cy="50" r="40" stroke="#00d4ff" data-score="100"/>
+          </svg>
+          <span class="ring-score" aria-label="SEO score 100">100</span>
+        </div>
+        <div class="lh-label">SEO</div>
+      </div>
+      <div class="lh-card reveal">
+        <div class="ring-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100" width="100" height="100" aria-hidden="true">
+            <circle class="ring-bg" cx="50" cy="50" r="40"/>
+            <circle class="ring-fill" cx="50" cy="50" r="40" stroke="#7c3aed" data-score="100"/>
+          </svg>
+          <span class="ring-score" aria-label="Best Practices score 100">100</span>
+        </div>
+        <div class="lh-label">Best Practices</div>
+      </div>
+      <div class="lh-card reveal">
+        <div class="ring-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100" width="100" height="100" aria-hidden="true">
+            <circle class="ring-bg" cx="50" cy="50" r="40"/>
+            <circle class="ring-fill" cx="50" cy="50" r="40" stroke="#f59e0b" data-score="100"/>
+          </svg>
+          <span class="ring-score" aria-label="Accessibility score 100">100</span>
+        </div>
+        <div class="lh-label">Accessibility</div>
+      </div>
+    </div>
+    <div class="reveal" style="display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:13px;">
+      <span style="color:var(--accent3)">⚡ Sub-1s FCP</span>
+      <span style="color:var(--muted)">·</span>
+      <span style="color:var(--accent3)">⚡ Sub-1s LCP</span>
+      <span style="color:var(--muted)">·</span>
+      <span style="color:var(--muted)">Lazy loading · Bundle splitting · Asset compression</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TECH STACK with official SVG icons via Simple Icons CDN -->
+<section id="stack">
+  <div class="container">
+    <p class="section-label reveal">Technologies</p>
+    <h2 class="section-title reveal">Tech Stack</h2>
+
+    <div class="tech-category reveal">
+      <div class="tech-cat-label">Frontend</div>
+      <div class="tech-pills">
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/react/61DAFB" alt="React">React.js</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/tailwindcss/06B6D4" alt="Tailwind">Tailwind CSS</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/typescript/3178C6" alt="TypeScript">TypeScript</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/framer/0055FF" alt="Framer">Framer Motion</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/html5/E34F26" alt="HTML5">HTML5 / CSS3</span>
+      </div>
+    </div>
+
+    <div class="tech-category reveal">
+      <div class="tech-cat-label">Backend</div>
+      <div class="tech-pills">
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/nodedotjs/339933" alt="Node.js">Node.js</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/express/ffffff" alt="Express">Express.js</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/jsonwebtokens/FB015B" alt="JWT">JWT</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/auth0/EB5424" alt="OAuth">OAuth 2.0</span>
+      </div>
+    </div>
+
+    <div class="tech-category reveal">
+      <div class="tech-cat-label">Database & DevOps</div>
+      <div class="tech-pills">
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/mongodb/47A248" alt="MongoDB">MongoDB Atlas</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/githubactions/2088FF" alt="GitHub Actions">GitHub Actions</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/vercel/ffffff" alt="Vercel">Vercel</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/render/46E3B7" alt="Render">Render</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/git/F05032" alt="Git">Git</span>
+      </div>
+    </div>
+
+    <div class="tech-category reveal">
+      <div class="tech-cat-label">AI / External</div>
+      <div class="tech-pills">
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/googlegemini/8E75B2" alt="Gemini">Gemini API</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/google/4285F4" alt="Google">Google OAuth</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/github/ffffff" alt="GitHub">GitHub OAuth</span>
+        <span class="tech-pill"><img src="https://cdn.simpleicons.org/postman/FF6C37" alt="Postman">Postman</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ARCHITECTURE -->
+<section>
+  <div class="container">
+    <p class="section-label reveal">System Design</p>
+    <h2 class="section-title reveal">Architecture</h2>
+    <div class="arch-diagram reveal">
+      <div class="arch-row">
+        <div class="arch-box client">React Client<br><small>Vercel</small></div>
+        <span class="arch-arrow">⟷</span>
+        <div class="arch-box server">Express API<br><small>Render</small></div>
+        <span class="arch-arrow">⟷</span>
+        <div class="arch-box db">MongoDB Atlas<br><small>Database</small></div>
+      </div>
+      <div class="arch-line"></div>
+      <div class="arch-row">
+        <div class="arch-box ext">Gemini API<br><small>AI Tutor</small></div>
+        <span class="arch-arrow">↑</span>
+        <div class="arch-box ext">Google OAuth<br><small>Auth</small></div>
+        <span class="arch-arrow">↑</span>
+        <div class="arch-box ext">GitHub OAuth<br><small>Auth</small></div>
+        <span class="arch-arrow">↑</span>
+        <div class="arch-box client">GitHub Actions<br><small>CI/CD</small></div>
+      </div>
+      <div class="arch-line"></div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);">
+        Decoupled architecture · Independent deployments · Automated pipeline on every git push
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- API -->
+<section id="api">
+  <div class="container">
+    <p class="section-label reveal">Backend</p>
+    <h2 class="section-title reveal">API Endpoints</h2>
+    <p class="reveal" style="color:var(--muted);font-size:14px;margin-bottom:24px;font-family:var(--mono);">25+ endpoints across 6 route modules. A selection:</p>
+    <div class="table-wrap reveal">
+      <table class="endpoints-table">
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="method post">POST</span></td><td class="endpoint-path">/api/auth/register</td><td class="endpoint-desc">Register new user with hashed password</td></tr>
+          <tr><td><span class="method post">POST</span></td><td class="endpoint-path">/api/auth/login</td><td class="endpoint-desc">Login, returns signed JWT</td></tr>
+          <tr><td><span class="method get">GET</span></td><td class="endpoint-path">/api/auth/google</td><td class="endpoint-desc">Initiate Google OAuth 2.0 flow</td></tr>
+          <tr><td><span class="method get">GET</span></td><td class="endpoint-path">/api/problems</td><td class="endpoint-desc">Fetch all problems with filters</td></tr>
+          <tr><td><span class="method put">PUT</span></td><td class="endpoint-path">/api/problems/:id/solve</td><td class="endpoint-desc">Mark solved, update streak + heatmap</td></tr>
+          <tr><td><span class="method get">GET</span></td><td class="endpoint-path">/api/analytics/heatmap</td><td class="endpoint-desc">16-week activity data for current user</td></tr>
+          <tr><td><span class="method post">POST</span></td><td class="endpoint-path">/api/ai/hint</td><td class="endpoint-desc">Send problem + live code to Gemini</td></tr>
+          <tr><td><span class="method put">PUT</span></td><td class="endpoint-path">/api/workspace/:problemId</td><td class="endpoint-desc">Autosave user code (1.5s debounce)</td></tr>
+        </tbody>
+      </table>
+      <div class="more-endpoints">+ 17 more endpoints across auth, streak, analytics, and workspace modules</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="container">
+    <p class="section-label reveal">What's next</p>
+    <h2 class="section-title reveal">Roadmap</h2>
+    <div class="roadmap-grid">
+      <div class="roadmap-card done reveal">
+        <div class="roadmap-version">✅ V1 — Complete</div>
+        <div class="roadmap-title">Foundation</div>
+        <div class="roadmap-item done-item"><span class="check">✓</span>220+ curated problems</div>
+        <div class="roadmap-item done-item"><span class="check">✓</span>Gemini AI tutor with live code context</div>
+        <div class="roadmap-item done-item"><span class="check">✓</span>OAuth 2.0 (Google + GitHub)</div>
+        <div class="roadmap-item done-item"><span class="check">✓</span>16-week GitHub-style heatmap</div>
+        <div class="roadmap-item done-item"><span class="check">✓</span>Real-time bubble topic analytics</div>
+        <div class="roadmap-item done-item"><span class="check">✓</span>Day-based streak system</div>
+        <div class="roadmap-item done-item"><span class="check">✓</span>CI/CD via GitHub Actions</div>
+        <div class="roadmap-item done-item"><span class="check">✓</span>Lighthouse 95 · Sub-1s FCP + LCP</div>
+      </div>
+      <div class="roadmap-card next reveal">
+        <div class="roadmap-version">🚀 V2 — Starting Now</div>
+        <div class="roadmap-title">Level Up</div>
+        <div class="roadmap-item next-item"><span class="check">◦</span>Code runner (5+ languages)</div>
+        <div class="roadmap-item next-item"><span class="check">◦</span>Achievement system (XP + badges)</div>
+        <div class="roadmap-item next-item"><span class="check">◦</span>Streak milestones + rewards</div>
+        <div class="roadmap-item next-item"><span class="check">◦</span>Problem count achievements</div>
+        <div class="roadmap-item next-item"><span class="check">◦</span>Smoother UI + animations</div>
+        <div class="roadmap-item next-item"><span class="check">◦</span>Better visibility + discoverability</div>
+        <div class="roadmap-item next-item"><span class="check">◦</span>More problems across all tiers</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SETUP -->
+<section id="setup">
+  <div class="container">
+    <p class="section-label reveal">Get started</p>
+    <h2 class="section-title reveal">Local Setup</h2>
+
+    <div class="step-title reveal"><span class="step-num">1</span>Clone the repo</div>
+    <div class="code-block reveal">
+      <span class="code-cmd">git clone</span> <span class="code-str">https://github.com/rupesh1285/Developers.git</span><br>
+      <span class="code-cmd">cd</span> Developers
+    </div>
+
+    <div class="step-title reveal"><span class="step-num">2</span>Install dependencies</div>
+    <div class="code-block reveal">
+      <span class="code-comment"># Frontend</span><br>
+      <span class="code-cmd">cd</span> client &amp;&amp; <span class="code-cmd">npm install</span><br><br>
+      <span class="code-comment"># Backend</span><br>
+      <span class="code-cmd">cd</span> ../server &amp;&amp; <span class="code-cmd">npm install</span>
+    </div>
+
+    <div class="step-title reveal"><span class="step-num">3</span>Configure environment variables</div>
+    <div class="code-block reveal">
+      <span class="code-comment"># /server/.env</span><br>
+      <span class="code-key">MONGO_URI</span>=your_mongodb_atlas_uri<br>
+      <span class="code-key">JWT_SECRET</span>=your_jwt_secret<br>
+      <span class="code-key">GOOGLE_CLIENT_ID</span>=your_google_client_id<br>
+      <span class="code-key">GOOGLE_CLIENT_SECRET</span>=your_google_client_secret<br>
+      <span class="code-key">GITHUB_CLIENT_ID</span>=your_github_client_id<br>
+      <span class="code-key">GEMINI_API_KEY</span>=your_gemini_api_key
+    </div>
+
+    <div class="step-title reveal"><span class="step-num">4</span>Run the app</div>
+    <div class="code-block reveal">
+      <span class="code-comment"># Terminal 1 — Backend</span><br>
+      <span class="code-cmd">cd</span> server &amp;&amp; <span class="code-cmd">npm run dev</span><br><br>
+      <span class="code-comment"># Terminal 2 — Frontend</span><br>
+      <span class="code-cmd">cd</span> client &amp;&amp; <span class="code-cmd">npm run dev</span>
+    </div>
+
+    <div class="reveal" style="margin-top:8px;padding:16px 20px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;font-family:var(--mono);font-size:13px;color:var(--accent3);">
+      ✓ &nbsp;Frontend: http://localhost:5173 &nbsp;·&nbsp; Backend: http://localhost:5000
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-name">RupeshAgarwal</div>
+    <div class="footer-sub">IIIT Sonepat · Full-Stack Developer · Open to Opportunities</div>
+    <div class="footer-links">
+      <a href="https://github.com/rupesh1285" class="footer-link">GitHub</a>
+      <a href="https://linkedin.com/in/rupesh-agarwal-64164228a" class="footer-link">LinkedIn</a>
+      <a href="https://finalist-v1.vercel.app" class="footer-link">Live Demo</a>
+      <a href="mailto:rupeshagarwal728@gmail.com" class="footer-link">Email</a>
+    </div>
+    <div class="footer-copy">© 2026 Finalist · Built with obsession, shipped with pride.</div>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 60);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Counter animation
+  function animateCounter(el) {
+    const target = parseInt(el.dataset.count);
+    const step = target / (1800 / 16);
+    let current = 0;
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) { current = target; clearInterval(timer); }
+      el.textContent = Math.floor(current) + '+';
+    }, 16);
+  }
+  const counterObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { animateCounter(e.target); counterObs.unobserve(e.target); } });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach(el => counterObs.observe(el));
+
+  // Lighthouse rings
+  const ringObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.ring-fill').forEach(ring => {
+          const offset = 251.2 - (parseInt(ring.dataset.score) / 100) * 251.2;
+          setTimeout(() => { ring.style.strokeDashoffset = offset; }, 200);
+        });
+        ringObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  const lhGrid = document.getElementById('lh-grid');
+  if (lhGrid) ringObs.observe(lhGrid);
+</script>
+</body>
+</html>
