@@ -5,8 +5,6 @@ import TimerProvider from '../components/TimerProvider';
 import ProblemExplorer from '../components/ProblemExplorer';
 import "../dashboard.css";
 
-const WorkspacePanel = lazy(() => import('../components/WorkspacePanel'));
-
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -22,8 +20,7 @@ export default function Dashboard() {
 
   // --- UI STATE ---
   const [isLoading, setIsLoading] = useState(true);
-  const [activeProblemId, setActiveProblemId] = useState(localStorage.getItem("finalist_active_problem") || null);
-  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(!!localStorage.getItem("finalist_active_problem"));
+  const [activeProblemId, setActiveProblemId] = useState(null);
 
   // 🌟 THE FIX 2: Combine lightweight list data with the heavy fetched description
   const activeProblem = useMemo(() => {
@@ -326,43 +323,14 @@ export default function Dashboard() {
   };
 
   // 🌟 THE FIX 3: State Reference blocks stale closures, guaranteeing perfect toggle behavior
-  const stateRef = useRef({ activeProblemId, isWorkspaceOpen, fullProblemCache });
+  const stateRef = useRef({ activeProblemId, fullProblemCache });
   useEffect(() => {
-      stateRef.current = { activeProblemId, isWorkspaceOpen, fullProblemCache };
-  }, [activeProblemId, isWorkspaceOpen, fullProblemCache]);
+      stateRef.current = { activeProblemId, fullProblemCache };
+  }, [activeProblemId, fullProblemCache]);
 
   const handleProblemClick = useCallback((id) => {
-    const { activeProblemId, isWorkspaceOpen, fullProblemCache } = stateRef.current;
-    
-    if (activeProblemId === String(id) && isWorkspaceOpen) {
-      // CLOSE LOGIC
-      setIsWorkspaceOpen(false);
-      setIsAnalyticsOpen(true);
-      localStorage.setItem('finalist_analytics_state', 'visible');
-      
-      setTimeout(() => {
-        setActiveProblemId(null);
-        localStorage.removeItem("finalist_active_problem");
-      }, 450); 
-    } else {
-      // OPEN LOGIC
-      setActiveProblemId(String(id));
-      localStorage.setItem("finalist_active_problem", String(id));
-      
-      // 🌟 FETCH FULL PROBLEM DATA LAZILY
-      if (!fullProblemCache[id]) {
-          fetch(`${import.meta.env.VITE_API_URL}/api/problems/${id}`)
-              .then(res => res.json())
-              .then(fullData => {
-                  setFullProblemCache(prev => ({...prev, [id]: fullData}));
-              }).catch(console.error);
-      }
-
-      if (!isWorkspaceOpen) {
-         setIsWorkspaceOpen(true);
-      }
-    }
-  }, []);
+    navigate(`/problems/${id}`);
+  }, [navigate]);
 
   // =========================================================================
   // RENDER
@@ -402,22 +370,8 @@ export default function Dashboard() {
           handleToggleStar={handleToggleStar}
           selectedTags={selectedTags}
           handleTagToggle={handleTagToggle}
-          isWorkspaceOpen={isWorkspaceOpen} 
+          isWorkspaceOpen={false} 
         />
-
-        {/* RIGHT WORKSPACE PANEL */}
-        <div className={`right-panel ${!isWorkspaceOpen ? 'collapsed' : ''}`} id="right-panel" role="region" aria-label="Workspace">
-          {activeProblemId && (
-            <Suspense fallback={<div style={{ color: 'var(--text-muted)', padding: '20px' }}>Loading Workspace...</div>}>
-              <WorkspacePanel
-                problem={activeProblem} 
-                isStarred={starredIds.includes(activeProblemId)}
-                onToggleStar={handleToggleStar}
-                onClose={() => handleProblemClick(activeProblemId)}
-              />
-            </Suspense>
-          )}
-        </div>
 
         {/* VERTICAL DIVIDER */}
         {activeProblemId && (

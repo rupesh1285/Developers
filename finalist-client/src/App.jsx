@@ -4,6 +4,7 @@ import Signup from './Signup';
 import Signin from './Signin';
 // 🌟 FIX: Imported with the exact name you are using in the Route!
 import DashboardNew from './pages/Dashboard';
+import ProblemWorkspace from './pages/ProblemWorkspace';
 
 // 🌟 THE UPGRADED BOUNCER (Protects Dashboard & Kicks to Landing)
 const RequireAuth = ({ children }) => {
@@ -63,6 +64,16 @@ export default function App() {
             </RequireAuth>
           } 
         /> 
+
+        {/* 🌟 NEW: Dedicated Problem Workspace Route */}
+        <Route 
+          path="/problems/:id" 
+          element={
+            <RequireAuth>
+              <ProblemWorkspace />
+            </RequireAuth>
+          } 
+        />
         
         {/* Catch-all: If they type a random URL, send them to the landing page */}
         <Route path="*" element={<Navigate to="/" replace />} />
