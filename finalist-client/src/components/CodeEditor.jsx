@@ -4,6 +4,11 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
   const [language, setLanguage] = useState(localStorage.getItem(`finalist_lang_${problem?._id}`) || 'javascript');
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   
+  // Code runner states
+  const [isRunning, setIsRunning] = useState(false);
+  const [output, setOutput] = useState(null);
+  const [runError, setRunError] = useState(null);
+  const [executionTime, setExecutionTime] = useState(null);
   const editorRef = useRef(null);
   const codeCacheRef = useRef({}); 
   const langPillRef = useRef(null); 
@@ -110,9 +115,64 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     setLangMenuOpen(false);
   };
 
+  const handleRunCode = async () => {
+    if (!cmInstanceRef.current) return;
+    
+    // Normalize language string for backend
+    let backendLang = language;
+    if (language === 'text/x-c++src') backendLang = 'cpp';
+    else if (language === 'text/x-csrc') backendLang = 'c';
+    
+    if (backendLang !== 'cpp') {
+        setRunError(`Language '${LANG_MAP[language]}' is not supported yet. Please select C++ for Phase 1.`);
+        setOutput(null);
+        setExecutionTime(null);
+        return;
+    }
+
+    setIsRunning(true);
+    setRunError(null);
+    setOutput(null);
+    setExecutionTime(null);
+
+    try {
+        const token = localStorage.getItem('token');
+        const currentCode = cmInstanceRef.current.getValue();
+        
+        // VITE_API_URL or fallback to localhost:5000
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        
+        const response = await fetch(`${apiUrl}/api/run`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                language: backendLang,
+                code: currentCode
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            setOutput(data.output);
+            setExecutionTime(data.executionTime);
+        } else {
+            setRunError(data.error);
+            setOutput(data.output);
+        }
+    } catch (err) {
+        setRunError("Network error or server is down: " + err.message);
+    } finally {
+        setIsRunning(false);
+    }
+  };
+
   return (
-    <div className={`tab-pane ${isActive ? 'active' : ''}`} id="tab-notes" style={{ backgroundColor: '#0d1117' }}>
-      <div className="ide-header" style={{ backgroundColor: '#0d1117' }}>
+    <div className={`tab-pane ${isActive ? 'active' : ''}`} id="tab-notes" style={{ backgroundColor: '#0d1117', display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="ide-header" style={{ backgroundColor: '#0d1117', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div
           ref={langPillRef}
           className={`lang-pill ${langMenuOpen ? 'active' : ''}`}
@@ -141,9 +201,68 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
             <button className="lang-item" type="button" data-value="text/x-java" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-java'); }}>Java</button>
           </div>
         </div>
+        
+        {/* RUN BUTTON */}
+        <button 
+          onClick={handleRunCode} 
+          disabled={isRunning}
+          style={{
+            backgroundColor: isRunning ? '#3a3f4b' : '#2ea043',
+            color: '#fff',
+            border: 'none',
+            padding: '6px 16px',
+            borderRadius: '6px',
+            fontWeight: '600',
+            cursor: isRunning ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginRight: '12px'
+          }}
+        >
+          <i className={isRunning ? "ri-loader-4-line ri-spin" : "ri-play-fill"}></i>
+          {isRunning ? 'Running...' : 'Run Code'}
+        </button>
       </div>
       
-      <textarea ref={editorRef} id={`cm-editor-${problem._id}`} style={{ opacity: 0, backgroundColor: '#0d1117', color: '#f8f8f2' }}></textarea>
+      <div style={{ flexGrow: 1, overflow: 'hidden' }}>
+        <textarea ref={editorRef} id={`cm-editor-${problem._id}`} style={{ opacity: 0, backgroundColor: '#0d1117', color: '#f8f8f2' }}></textarea>
+      </div>
+
+      {/* CONSOLE PANEL */}
+      <div className="console-panel" style={{
+        backgroundColor: '#161b22',
+        borderTop: '1px solid #30363d',
+        padding: '16px',
+        minHeight: '150px',
+        maxHeight: '300px',
+        overflowY: 'auto',
+        color: '#c9d1d9',
+        fontFamily: 'monospace',
+        fontSize: '13px'
+      }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#8b949e' }}>Output Console</div>
+        
+        {isRunning && <div style={{ color: '#8b949e' }}>Executing code in Docker container...</div>}
+        
+        {!isRunning && !output && !runError && (
+          <div style={{ color: '#484f58' }}>Run your code to see the output here.</div>
+        )}
+
+        {output && (
+          <pre style={{ whiteSpace: 'pre-wrap', color: '#56d364', margin: '0 0 10px 0' }}>{output}</pre>
+        )}
+
+        {runError && (
+          <pre style={{ whiteSpace: 'pre-wrap', color: '#f85149', margin: '0 0 10px 0' }}>{runError}</pre>
+        )}
+
+        {executionTime !== null && (
+          <div style={{ color: '#8b949e', fontSize: '12px', marginTop: '10px' }}>
+            Execution Time: {executionTime}ms
+          </div>
+        )}
+      </div>
     </div>
   );
 });

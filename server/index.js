@@ -10,6 +10,7 @@ const cors = require("cors"); // 🌟 ADDED: CORS for security
 const progressRoutes = require("./routes/progressRoutes");
 const problemRoutes = require("./routes/problemRoutes");
 const authRoutes = require("./routes/authRoutes");
+const runRoutes = require("./routes/runRoutes");
 const protect = require("./middleware/authMiddleware");
 
 const User = require("./models/User"); 
@@ -150,6 +151,7 @@ app.get("/api/auth/github/callback", passport.authenticate("github", { session: 
 app.use("/api/auth", authRoutes);
 app.use("/api/problems", problemRoutes);
 app.use("/api/progress", progressRoutes);
+app.use("/api/run", runRoutes);
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
