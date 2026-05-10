@@ -258,7 +258,7 @@ export default function ProblemWorkspace() {
   // ── DERIVED ───────────────────────────────────────────────────────────────
   const isLeftCollapsed  = leftWidthPct === 0;
   const isRightCollapsed = leftWidthPct === 100;
-  const actualLeftWidth  = isLeftCollapsed ? '40px' : isRightCollapsed ? 'calc(100% - 40px)' : `${leftWidthPct}%`;
+  const actualLeftWidth  = isLeftCollapsed ? '32px' : isRightCollapsed ? 'calc(100% - 32px)' : `${leftWidthPct}%`;
 
   // ── EARLY RETURNS ────────────────────────────────────────────────────────
   if (isLoading && !problem) {
@@ -307,8 +307,8 @@ export default function ProblemWorkspace() {
           {/* ── LEFT PANE ── */}
           <div style={{ width: actualLeftWidth, display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', transition: isDragging ? 'none' : 'width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)', overflow: 'hidden', flexShrink: 0 }}>
             {isLeftCollapsed ? (
-              <div className="ws-strip" onClick={() => setLeftWidthPct(45)}>
-                <i className="ri-book-read-line" style={{ fontSize: '15px' }}></i>
+              <div className="ws-strip" style={{ width: '32px' }} onClick={() => setLeftWidthPct(30)}>
+                <i className="ri-file-list-3-line" style={{ fontSize: '15px' }}></i>
                 <span style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase' }}>Description</span>
               </div>
             ) : (
@@ -422,7 +422,7 @@ export default function ProblemWorkspace() {
           {/* ── RIGHT PANE ── */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', minWidth: 0, overflow: 'hidden' }}>
             {isRightCollapsed ? (
-              <div className="ws-strip right" onClick={() => setLeftWidthPct(45)}>
+              <div className="ws-strip right" style={{ width: '32px' }} onClick={() => setLeftWidthPct(45)}>
                 <i className="ri-code-line" style={{ fontSize: '15px' }}></i>
                 <span style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase' }}>Code Space</span>
               </div>

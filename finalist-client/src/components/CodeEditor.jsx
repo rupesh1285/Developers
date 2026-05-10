@@ -3,8 +3,9 @@ import React, { useState, useEffect, useRef } from 'react';
 const editorStyles = `
   /* Force CodeMirror to respect flex container and hide scrollbars */
   .CodeMirror { min-height: 0 !important; height: 100% !important; border: none !important; }
-  .CodeMirror-scroll { min-height: 0 !important; height: 100% !important; overflow: hidden !important; }
-  .CodeMirror-vscrollbar, .CodeMirror-hscrollbar { display: none !important; }
+  .CodeMirror-scroll { min-height: 0 !important; height: 100% !important; overflow-x: hidden !important; overflow-y: auto !important; }
+  .CodeMirror-vscrollbar { width: 4px !important; }
+  .CodeMirror-hscrollbar { display: none !important; }
   .CodeMirror-lines { padding: 4px 0 !important; }
 
   /* Mark as Solved button */
@@ -69,11 +70,11 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
   const codeCacheRef = useRef({});
   const langPillRef = useRef(null);
 
-  // Derived collapse states — snap precisely at 0/100
+  // Derived collapse states — snap precisely at 0/100, strips now 32px
   const isEditorCollapsed  = editorHeightPct < 1;
   const isConsoleCollapsed = editorHeightPct > 99;
-  const editorFlex  = isEditorCollapsed  ? '0 0 40px' : isConsoleCollapsed ? '1 1 0' : `${editorHeightPct} 1 0`;
-  const consoleFlex = isConsoleCollapsed ? '0 0 40px' : isEditorCollapsed  ? '1 1 0' : `${100 - editorHeightPct} 1 0`;
+  const editorFlex  = isEditorCollapsed  ? '0 0 32px' : isConsoleCollapsed ? '1 1 0' : `${editorHeightPct} 1 0`;
+  const consoleFlex = isConsoleCollapsed ? '0 0 32px' : isEditorCollapsed  ? '1 1 0' : `${100 - editorHeightPct} 1 0`;
 
   const LANG_MAP = {
     "javascript": "JavaScript", "python": "Python",
@@ -101,7 +102,7 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     if (cmInstanceRef.current) { try { cmInstanceRef.current.toTextArea(); } catch (e) {} cmInstanceRef.current = null; }
     const token = localStorage.getItem('token');
     cmInstanceRef.current = window.CodeMirror.fromTextArea(editorRef.current, {
-      mode: language, theme: "dracula", lineNumbers: true, autoCloseBrackets: true, indentUnit: 4
+      mode: language, theme: "dracula", lineNumbers: true, autoCloseBrackets: true, indentUnit: 4, lineWrapping: true
     });
     const initialCode = codeCacheRef.current[language] || BOILERPLATES[language] || BOILERPLATES["javascript"];
     cmInstanceRef.current.setValue(initialCode);
@@ -185,7 +186,7 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
         {/* ── COLLAPSED CODE STRIP ── */}
         {isEditorCollapsed ? (
           <div onClick={() => setEditorHeightPct(65)}
-            style={{ height: '40px', width: '100%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#484f58', cursor: 'pointer', borderBottom: '1px solid #21262d', backgroundColor: '#161b22', transition: 'all 0.2s', zIndex: 20 }}
+            style={{ height: '32px', width: '100%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#484f58', cursor: 'pointer', borderBottom: '1px solid #21262d', backgroundColor: '#161b22', transition: 'all 0.2s', zIndex: 20 }}
             onMouseEnter={e => { e.currentTarget.style.color = '#8b949e'; e.currentTarget.style.backgroundColor = '#1c2128'; }}
             onMouseLeave={e => { e.currentTarget.style.color = '#484f58'; e.currentTarget.style.backgroundColor = '#161b22'; }}>
             <i className="ri-code-s-slash-line" style={{ fontSize: '14px' }}></i>
@@ -241,7 +242,7 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
         {/* ── HORIZONTAL RESIZER ── */}
         <div
           onMouseDown={(e) => { e.preventDefault(); setIsConsoleResizing(true); }}
-          style={{ height: '6px', flexShrink: 0, cursor: 'row-resize', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+          style={{ height: '10px', flexShrink: 0, cursor: 'row-resize', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', margin: '-2px 0',
             background: isConsoleResizing
               ? 'linear-gradient(to right, transparent, rgba(88,166,255,0.3) 30%, rgba(88,166,255,0.3) 70%, transparent)'
               : 'linear-gradient(to right, transparent, rgba(88,166,255,0.07) 30%, rgba(88,166,255,0.07) 70%, transparent)',
