@@ -195,6 +195,7 @@ export default function Dashboard() {
         setStarredIds(starred);
         // Persist to localStorage so ProblemWorkspace can read correct initial state
         localStorage.setItem('finalist_starred', JSON.stringify(starred));
+        localStorage.setItem('finalist_solved', JSON.stringify(solved));
       }).catch(() => {});
 
     fetch(`${API_BASE}/api/progress/analytics`, { headers: authHeaders })
@@ -203,11 +204,14 @@ export default function Dashboard() {
 
   }, [navigate]);
 
-  // Sync star state when toggled from ProblemWorkspace (which dispatches a StorageEvent)
+  // Sync star/solved state when toggled from ProblemWorkspace (which dispatches a StorageEvent)
   useEffect(() => {
     const handleStorageSync = (e) => {
       if (e.key === 'finalist_starred') {
         try { setStarredIds(JSON.parse(e.newValue || '[]')); } catch (_) {}
+      }
+      if (e.key === 'finalist_solved') {
+        try { setSolvedIds(JSON.parse(e.newValue || '[]')); } catch (_) {}
       }
     };
     window.addEventListener('storage', handleStorageSync);
@@ -221,18 +225,19 @@ export default function Dashboard() {
     e.stopPropagation();
     const token = localStorage.getItem('token');
     const isCurrentlySolved = solvedIds.includes(String(id));
-
-    setSolvedIds(prev => isCurrentlySolved ? prev.filter(i => i !== String(id)) : [...prev, String(id)]);
-
     const problem = problemsData.find(p => String(p._id) === String(id));
-    const tags = problem?.tags || [];
-    const todayStr = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    const problemTags = problem?.tags || [];
+    const nextSolved = isCurrentlySolved ? solvedIds.filter(i => i !== String(id)) : [...solvedIds, String(id)];
+    
+    setSolvedIds(nextSolved);
+    localStorage.setItem('finalist_solved', JSON.stringify(nextSolved));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'finalist_solved', newValue: JSON.stringify(nextSolved) }));
 
     setAnalyticsData(prev => {
+      if (!prev) return prev;
+      const todayStr = new Date().toISOString().split('T')[0];
       const newTopics = prev.topics.map(t => {
-        if (tags.includes(t.name)) {
-          return { ...t, solved: Math.max(0, t.solved + (isCurrentlySolved ? -1 : 1)) };
-        }
+        if (problemTags.includes(t.name)) return { ...t, value: Math.max(0, t.value + (isCurrentlySolved ? -1 : 1)) };
         return t;
       });
 
@@ -249,22 +254,7 @@ export default function Dashboard() {
         return d;
       });
 
-      const currentStreak = prev.streak.current;
-      const isTodayInHeatmap = newHeatmap.some(d => d.date === todayStr && d.count > 0);
-      let newStreak = currentStreak;
-
-      if (!isCurrentlySolved && isTodayInHeatmap && currentStreak === 0) {
-        newStreak = 1; 
-      } else if (isCurrentlySolved && !isTodayInHeatmap) {
-        newStreak = Math.max(0, currentStreak - 1); 
-      }
-
-      return { 
-        ...prev, 
-        topics: newTopics, 
-        heatmap: newHeatmap,
-        streak: { ...prev.streak, current: newStreak, max: Math.max(prev.streak.max, newStreak) }
-      };
+      return { ...prev, topics: newTopics, heatmap: newHeatmap };
     });
 
     try {
@@ -272,7 +262,7 @@ export default function Dashboard() {
       const authHeaders = { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset };
       fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, { method: "POST", headers: authHeaders });
     } catch (err) {
-      setSolvedIds(prev => isCurrentlySolved ? [...prev, String(id)] : prev.filter(i => i !== String(id)));
+      // Quiet fail or handle error
     }
   };
 
@@ -280,7 +270,12 @@ export default function Dashboard() {
     e.stopPropagation();
     const token = localStorage.getItem('token');
     const isCurrentlyStarred = starredIds.includes(String(id));
-    setStarredIds(prev => isCurrentlyStarred ? prev.filter(i => i !== String(id)) : [...prev, String(id)]);
+    const nextStarred = isCurrentlyStarred ? starredIds.filter(i => i !== String(id)) : [...starredIds, String(id)];
+
+    setStarredIds(nextStarred);
+    localStorage.setItem('finalist_starred', JSON.stringify(nextStarred));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'finalist_starred', newValue: JSON.stringify(nextStarred) }));
+
     try { fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-star/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } }); } catch (err) { }
   };
 

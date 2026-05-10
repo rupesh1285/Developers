@@ -1,34 +1,85 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef }) {
+const editorStyles = `
+  /* Force CodeMirror to respect flex container and hide scrollbars */
+  .CodeMirror { min-height: 0 !important; height: 100% !important; border: none !important; }
+  .CodeMirror-scroll { min-height: 0 !important; height: 100% !important; overflow: hidden !important; }
+  .CodeMirror-vscrollbar, .CodeMirror-hscrollbar { display: none !important; }
+  .CodeMirror-lines { padding: 4px 0 !important; }
+
+  /* Mark as Solved button */
+  .ws-solve-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 6px; border: 1px solid;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .ws-solve-btn.solved {
+    background: rgba(63,185,80,0.12); border-color: #3fb950; color: #3fb950;
+  }
+  .ws-solve-btn.solved:hover { background: rgba(63,185,80,0.22); }
+  .ws-solve-btn.unsolved {
+    background: transparent; border-color: rgba(255,255,255,0.12); color: #8b949e;
+  }
+  .ws-solve-btn.unsolved:hover { border-color: #3fb950; color: #3fb950; background: rgba(63,185,80,0.08); }
+
+  /* Premium Run button - Blue/Purple gradient */
+  .ws-run-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 14px; border-radius: 6px; border: none;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    color: #fff; transition: all 0.2s; letter-spacing: 0.3px;
+    box-shadow: 0 0 0 rgba(59, 130, 246, 0);
+  }
+  .ws-run-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+    transform: translateY(-1px);
+  }
+  .ws-run-btn:disabled { background: #21262d; color: #484f58; cursor: not-allowed; box-shadow: none; transform: none; }
+
+  /* IDE header */
+  .ws-ide-header {
+    display: flex; align-items: center; gap: 10px; padding: 0 14px;
+    height: 32px; flex-shrink: 0;
+    background: #161b22; border-bottom: 1px solid #21262d;
+  }
+  .ws-ide-header .header-title {
+    display: flex; align-items: center; gap: 6px;
+    color: #484f58; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    padding-right: 10px; border-right: 1px solid #21262d;
+  }
+  .ws-ide-header .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+`;
+
+export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef, isSolved, onToggleSolved }) {
   const [language, setLanguage] = useState(localStorage.getItem(`finalist_lang_${problem?._id}`) || 'javascript');
   const [langMenuOpen, setLangMenuOpen] = useState(false);
-
-  // Code runner states
   const [isRunning, setIsRunning] = useState(false);
   const [output, setOutput] = useState(null);
   const [runError, setRunError] = useState(null);
   const [executionTime, setExecutionTime] = useState(null);
 
-  // Vertical split between editor and console
+  // Vertical resizer between editor and console
   const [editorHeightPct, setEditorHeightPct] = useState(65);
-  const [isConsoleCollapsed, setIsConsoleCollapsed] = useState(false);
-  const [isEditorCollapsed, setIsEditorCollapsed] = useState(false);
   const [isConsoleResizing, setIsConsoleResizing] = useState(false);
   const rightPaneRef = useRef(null);
-
   const editorRef = useRef(null);
   const codeCacheRef = useRef({});
   const langPillRef = useRef(null);
 
-  const LANG_MAP = {
-    "javascript": "JavaScript",
-    "python": "Python",
-    "text/x-csrc": "C",
-    "text/x-c++src": "C++",
-    "text/x-java": "Java"
-  };
+  // Derived collapse states — no min-height fights, just show strip earlier
+  // Derived collapse states — snap at 25% for easy user interaction
+  const isEditorCollapsed  = editorHeightPct <= 25;
+  const isConsoleCollapsed = editorHeightPct >= 75;
+  const editorFlex  = isEditorCollapsed  ? '0 0 40px' : isConsoleCollapsed ? '1 1 0' : `${editorHeightPct} 1 0`;
+  const consoleFlex = isConsoleCollapsed ? '0 0 40px' : isEditorCollapsed  ? '1 1 0' : `${100 - editorHeightPct} 1 0`;
 
+  const LANG_MAP = {
+    "javascript": "JavaScript", "python": "Python",
+    "text/x-csrc": "C", "text/x-c++src": "C++", "text/x-java": "Java"
+  };
   const BOILERPLATES = {
     "javascript": `// Write logic for ${problem?.title}\nfunction solve() {\n    \n}`,
     "python": `# Write logic for ${problem?.title}\ndef solve():\n    pass\n`,
@@ -41,92 +92,57 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     if (!problem) return;
     const savedCode = localStorage.getItem(`finalist_code_${problem._id}`);
     let cache = {};
-    try {
-      cache = JSON.parse(savedCode || '{}');
-      if (typeof cache !== 'object' || !cache) cache = { "javascript": savedCode };
-    } catch (e) { cache = { "javascript": savedCode }; }
+    try { cache = JSON.parse(savedCode || '{}'); if (typeof cache !== 'object' || !cache) cache = { javascript: savedCode }; }
+    catch (e) { cache = { javascript: savedCode }; }
     codeCacheRef.current = cache;
   }, [problem]);
 
   useEffect(() => {
-    if (!editorRef.current) return;
-    if (!window.CodeMirror) return;
-
-    if (cmInstanceRef.current) {
-      cmInstanceRef.current.toTextArea();
-      cmInstanceRef.current = null;
-    }
-
+    if (!editorRef.current || !window.CodeMirror) return;
+    if (cmInstanceRef.current) { try { cmInstanceRef.current.toTextArea(); } catch (e) {} cmInstanceRef.current = null; }
     const token = localStorage.getItem('token');
-    const savedLang = language;
-
     cmInstanceRef.current = window.CodeMirror.fromTextArea(editorRef.current, {
-      mode: savedLang,
-      theme: "dracula",
-      lineNumbers: true,
-      autoCloseBrackets: true,
-      indentUnit: 4
+      mode: language, theme: "dracula", lineNumbers: true, autoCloseBrackets: true, indentUnit: 4
     });
-
-    const initialCode = codeCacheRef.current[savedLang] || BOILERPLATES[savedLang] || BOILERPLATES["javascript"];
+    const initialCode = codeCacheRef.current[language] || BOILERPLATES[language] || BOILERPLATES["javascript"];
     cmInstanceRef.current.setValue(initialCode);
     cmInstanceRef.current.clearHistory();
-
     let saveTimeout;
     cmInstanceRef.current.on("change", () => {
-      const currentLang = language;
-      codeCacheRef.current[currentLang] = cmInstanceRef.current.getValue();
+      codeCacheRef.current[language] = cmInstanceRef.current.getValue();
       const jsonCache = JSON.stringify(codeCacheRef.current);
       localStorage.setItem(`finalist_code_${problem?._id}`, jsonCache);
-
       clearTimeout(saveTimeout);
       saveTimeout = setTimeout(async () => {
-        try {
-          await fetch(`${import.meta.env.VITE_API_URL}/api/workspace/code/${problem?._id}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-            body: JSON.stringify({ code: jsonCache })
-          });
-        } catch (e) { }
+        try { await fetch(`${import.meta.env.VITE_API_URL}/api/workspace/code/${problem?._id}`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token }, body: JSON.stringify({ code: jsonCache }) }); } catch (e) {}
       }, 1500);
     });
-
-    return () => {
-      if (cmInstanceRef.current) {
-        try { cmInstanceRef.current.toTextArea(); } catch (e) { }
-        cmInstanceRef.current = null;
-      }
-    };
+    return () => { if (cmInstanceRef.current) { try { cmInstanceRef.current.toTextArea(); } catch (e) {} cmInstanceRef.current = null; } };
   }, [language, problem, cmInstanceRef]);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (langPillRef.current && !langPillRef.current.contains(e.target)) {
-        setLangMenuOpen(false);
-      }
-    };
+    const handleClickOutside = (e) => { if (langPillRef.current && !langPillRef.current.contains(e.target)) setLangMenuOpen(false); };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Vertical resizer between editor and console
+  // Vertical console resizer
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isConsoleResizing || !rightPaneRef.current) return;
       const rect = rightPaneRef.current.getBoundingClientRect();
-      let newPct = ((e.clientY - rect.top) / rect.height) * 100;
-      if (newPct < 5) { newPct = 0; setIsEditorCollapsed(true); setIsConsoleCollapsed(false); }
-      else if (newPct > 95) { newPct = 100; setIsConsoleCollapsed(true); setIsEditorCollapsed(false); }
-      else { setIsEditorCollapsed(false); setIsConsoleCollapsed(false); }
-      setEditorHeightPct(newPct);
+      // Subtract the 32px header height
+      const relY = e.clientY - rect.top - 32;
+      const availH = rect.height - 32;
+      let pct = (relY / availH) * 100;
+      if (pct < 25) pct = 0;
+      else if (pct > 75) pct = 100;
+      setEditorHeightPct(pct);
     };
     const handleMouseUp = () => { if (isConsoleResizing) setIsConsoleResizing(false); };
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
+    return () => { document.removeEventListener('mousemove', handleMouseMove); document.removeEventListener('mouseup', handleMouseUp); };
   }, [isConsoleResizing]);
 
   const handleLangChange = (newLang) => {
@@ -144,136 +160,132 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     if (language === 'text/x-c++src') backendLang = 'cpp';
     else if (language === 'text/x-csrc') backendLang = 'c';
     if (backendLang !== 'cpp') {
-      setRunError(`Language '${LANG_MAP[language]}' is not supported yet. Please select C++ for Phase 1.`);
-      setOutput(null); setExecutionTime(null);
-      return;
+      setRunError(`'${LANG_MAP[language]}' not supported yet. Use C++ for Phase 1.`);
+      setOutput(null); setExecutionTime(null); return;
     }
     setIsRunning(true); setRunError(null); setOutput(null); setExecutionTime(null);
     try {
       const token = localStorage.getItem('token');
-      const currentCode = cmInstanceRef.current.getValue();
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ language: backendLang, code: currentCode })
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/run`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ language: backendLang, code: cmInstanceRef.current.getValue() })
       });
       const data = await response.json();
       if (data.success) { setOutput(data.output); setExecutionTime(data.executionTime); }
       else { setRunError(data.error); setOutput(data.output); }
-    } catch (err) {
-      setRunError("Network error or server is down: " + err.message);
-    } finally {
-      setIsRunning(false);
-    }
+    } catch (err) { setRunError("Network error: " + err.message); }
+    finally { setIsRunning(false); }
   };
 
-  // Use flex-grow instead of fixed % heights so collapse works reliably
-  // editorHeightPct drives flex-grow: e.g. 65 editor / 35 console
-  const editorFlex = isEditorCollapsed ? '0 0 40px' : isConsoleCollapsed ? '1 1 auto' : `${editorHeightPct} 1 0`;
-  const consoleFlex = isConsoleCollapsed ? '0 0 40px' : isEditorCollapsed ? '1 1 auto' : `${100 - editorHeightPct} 1 0`;
-
   return (
-    <div
-      ref={rightPaneRef}
-      className={`tab-pane ${isActive ? 'active' : ''}`}
-      style={{ backgroundColor: '#0d1117', display: 'flex', flexDirection: 'column', height: '100%', userSelect: isConsoleResizing ? 'none' : 'auto' }}
-    >
-      {/* IDE HEADER */}
-      <div className="ide-header" style={{ backgroundColor: '#0d1117', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <div
-          ref={langPillRef}
-          className={`v2-pill ${langMenuOpen ? 'active' : ''}`}
-          onClick={() => setLangMenuOpen(!langMenuOpen)}
-          role="button" tabIndex={0} aria-expanded={langMenuOpen} aria-label="Select language"
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLangMenuOpen(!langMenuOpen); } }}
-        >
-          <i className="ri-code-s-slash-line v2-pill-icon"></i>
-          <span className="v2-pill-text" data-value={language}>{LANG_MAP[language] || 'JavaScript'}</span>
-          <i className="ri-arrow-down-s-line v2-pill-icon"></i>
-          <div className="v2-dropdown">
-            <button className="v2-dropdown-item" type="button" onClick={(e) => { e.stopPropagation(); handleLangChange('javascript'); }}>JavaScript</button>
-            <button className="v2-dropdown-item" type="button" onClick={(e) => { e.stopPropagation(); handleLangChange('python'); }}>Python</button>
-            <button className="v2-dropdown-item" type="button" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-csrc'); }}>C</button>
-            <button className="v2-dropdown-item" type="button" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-c++src'); }}>C++</button>
-            <button className="v2-dropdown-item" type="button" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-java'); }}>Java</button>
-          </div>
-        </div>
+    <>
+      <style>{editorStyles}</style>
+      <div ref={rightPaneRef} className={`tab-pane ${isActive ? 'active' : ''}`}
+        style={{ backgroundColor: '#0d1117', display: 'flex', flexDirection: 'column', height: '100%', userSelect: isConsoleResizing ? 'none' : 'auto', overflow: 'hidden' }}>
 
-        <button
-          onClick={handleRunCode} disabled={isRunning}
-          style={{ backgroundColor: isRunning ? '#3a3f4b' : '#238636', color: '#fff', border: 'none', padding: '6px 18px', borderRadius: '6px', fontWeight: '600', cursor: isRunning ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', marginRight: '12px', fontSize: '13px', transition: 'background-color 0.2s' }}
-        >
-          <i className={isRunning ? "ri-loader-4-line ri-spin" : "ri-play-fill"}></i>
-          {isRunning ? 'Running...' : 'Run Code'}
-        </button>
-      </div>
-
-      {/* CODE EDITOR — flex-grow so it fills remaining space */}
-      <div style={{ flex: editorFlex, overflow: 'hidden', transition: isConsoleResizing ? 'none' : 'flex 0.25s ease', minHeight: 0, position: 'relative' }}>
+        {/* ── COLLAPSED CODE STRIP ── */}
         {isEditorCollapsed ? (
-          <div
-            onClick={() => { setIsEditorCollapsed(false); setIsConsoleCollapsed(false); setEditorHeightPct(65); }}
-            style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#484f58', cursor: 'pointer', backgroundColor: '#0d1117', borderBottom: '1px solid #21262d', transition: 'color 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.color = '#8b949e'}
-            onMouseLeave={e => e.currentTarget.style.color = '#484f58'}
-          >
-            <i className="ri-code-s-slash-line" style={{ fontSize: '15px' }}></i>
-            <span style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase' }}>Code Editor</span>
-          </div>
-        ) : (
-          <textarea ref={editorRef} id={`cm-editor-${problem._id}`} style={{ opacity: 0, backgroundColor: '#0d1117', color: '#f8f8f2' }}></textarea>
-        )}
-      </div>
-
-      {/* HORIZONTAL RESIZER — matches vertical resizer style */}
-      <div
-        onMouseDown={(e) => { e.preventDefault(); setIsConsoleResizing(true); }}
-        style={{
-          height: '6px', cursor: 'row-resize', flexShrink: 0, zIndex: 10,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: isConsoleResizing
-            ? 'linear-gradient(to right, transparent 0%, rgba(88,166,255,0.25) 40%, rgba(88,166,255,0.25) 60%, transparent 100%)'
-            : 'linear-gradient(to right, transparent 0%, rgba(88,166,255,0.08) 40%, rgba(88,166,255,0.08) 60%, transparent 100%)',
-          transition: 'background 0.2s',
-          position: 'relative',
-        }}
-        onMouseEnter={e => { if (!isConsoleResizing) e.currentTarget.style.background = 'linear-gradient(to right, transparent 0%, rgba(88,166,255,0.2) 40%, rgba(88,166,255,0.2) 60%, transparent 100%)'; }}
-        onMouseLeave={e => { if (!isConsoleResizing) e.currentTarget.style.background = 'linear-gradient(to right, transparent 0%, rgba(88,166,255,0.08) 40%, rgba(88,166,255,0.08) 60%, transparent 100%)'; }}
-      >
-        <div style={{ height: '2px', width: isConsoleResizing ? '60px' : '40px', backgroundColor: isConsoleResizing ? 'rgba(88,166,255,0.6)' : 'rgba(255,255,255,0.12)', borderRadius: '2px', transition: 'all 0.2s', boxShadow: isConsoleResizing ? '0 0 8px rgba(88,166,255,0.4)' : 'none' }}></div>
-      </div>
-
-      {/* CONSOLE PANEL */}
-      <div style={{ flex: consoleFlex, overflow: 'hidden', transition: isConsoleResizing ? 'none' : 'flex 0.25s ease', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', minHeight: 0 }}>
-        {isConsoleCollapsed ? (
-          <div
-            onClick={() => { setIsConsoleCollapsed(false); setIsEditorCollapsed(false); setEditorHeightPct(65); }}
-            style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#484f58', cursor: 'pointer', backgroundColor: '#0d1117', borderTop: '1px solid #21262d', transition: 'color 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.color = '#8b949e'}
-            onMouseLeave={e => e.currentTarget.style.color = '#484f58'}
-          >
-            <i className="ri-terminal-line" style={{ fontSize: '15px' }}></i>
-            <span style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase' }}>Output Console</span>
+          <div onClick={() => setEditorHeightPct(65)}
+            style={{ height: '40px', width: '100%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#484f58', cursor: 'pointer', borderBottom: '1px solid #21262d', backgroundColor: '#161b22', transition: 'all 0.2s', zIndex: 20 }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#8b949e'; e.currentTarget.style.backgroundColor = '#1c2128'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#484f58'; e.currentTarget.style.backgroundColor = '#161b22'; }}>
+            <i className="ri-code-s-slash-line" style={{ fontSize: '14px' }}></i>
+            <span style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>Code Space</span>
           </div>
         ) : (
           <>
-            <div style={{ padding: '10px 16px 6px', borderBottom: '1px solid #21262d', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-              <i className="ri-terminal-line" style={{ color: '#8b949e', fontSize: '14px' }}></i>
-              <span style={{ fontWeight: '600', fontSize: '12px', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Output Console</span>
-              {executionTime !== null && (
-                <span style={{ marginLeft: 'auto', color: '#3fb950', fontSize: '11px', fontFamily: 'monospace' }}>✓ {executionTime}ms</span>
-              )}
+            {/* ── IDE HEADER (ONLY SHOWN IF NOT COLLAPSED) ── */}
+            <div className="ws-ide-header">
+              <div className="header-title">
+                <i className="ri-code-s-slash-line" style={{ fontSize: '13px', color: '#58a6ff' }}></i>
+                Code Space
+              </div>
+
+              {/* Language picker */}
+              <div ref={langPillRef} className={`v2-pill ${langMenuOpen ? 'active' : ''}`}
+                style={{ height: '22px', padding: '0 8px' }}
+                onClick={() => setLangMenuOpen(!langMenuOpen)} role="button" tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLangMenuOpen(!langMenuOpen); } }}>
+                <span className="v2-pill-text" style={{ fontSize: '11px' }}>{LANG_MAP[language] || 'JavaScript'}</span>
+                <i className="ri-arrow-down-s-line v2-pill-icon" style={{ fontSize: '12px' }}></i>
+                <div className="v2-dropdown" style={{ top: '26px' }}>
+                  {Object.entries(LANG_MAP).map(([val, label]) => (
+                    <button key={val} className="v2-dropdown-item" type="button"
+                      style={{ fontSize: '11px', padding: '6px 12px' }}
+                      onClick={(e) => { e.stopPropagation(); handleLangChange(val); }}>{label}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="header-right">
+                <button className={`ws-solve-btn ${isSolved ? 'solved' : 'unsolved'}`}
+                  style={{ padding: '4px 12px', fontSize: '11px' }} onClick={onToggleSolved}>
+                  <i className={isSolved ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'} style={{ fontSize: '13px' }}></i>
+                  {isSolved ? 'Solved' : 'Mark Solved'}
+                </button>
+                <button className="ws-run-btn" onClick={handleRunCode} disabled={isRunning}>
+                  <i className={isRunning ? 'ri-loader-4-line ri-spin' : 'ri-play-fill'}></i>
+                  {isRunning ? 'Running…' : 'Run Code'}
+                </button>
+              </div>
             </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px', fontFamily: '"Fira Code", monospace', fontSize: '13px', lineHeight: '1.6' }}>
-              {isRunning && <div style={{ color: '#8b949e', display: 'flex', alignItems: 'center', gap: '8px' }}><i className="ri-loader-4-line ri-spin"></i> Executing in Docker container...</div>}
-              {!isRunning && !output && !runError && <div style={{ color: '#484f58' }}>Run your code to see output here.</div>}
-              {output && <pre style={{ whiteSpace: 'pre-wrap', color: '#3fb950', margin: 0 }}>{output}</pre>}
-              {runError && <pre style={{ whiteSpace: 'pre-wrap', color: '#f85149', margin: 0 }}>{runError}</pre>}
+
+            {/* ── CODE EDITOR AREA (ONLY SHOWN IF NOT COLLAPSED) ── */}
+            <div style={{ flex: editorFlex, overflow: 'hidden', minHeight: 0, transition: isConsoleResizing ? 'none' : 'flex 0.2s ease', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                <textarea ref={editorRef} id={`cm-editor-${problem._id}`} style={{ opacity: 0 }}></textarea>
+              </div>
             </div>
           </>
         )}
+
+        {/* ── HORIZONTAL RESIZER ── */}
+        <div
+          onMouseDown={(e) => { e.preventDefault(); setIsConsoleResizing(true); }}
+          style={{ height: '6px', flexShrink: 0, cursor: 'row-resize', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+            background: isConsoleResizing
+              ? 'linear-gradient(to right, transparent, rgba(88,166,255,0.3) 30%, rgba(88,166,255,0.3) 70%, transparent)'
+              : 'linear-gradient(to right, transparent, rgba(88,166,255,0.07) 30%, rgba(88,166,255,0.07) 70%, transparent)',
+            transition: 'background 0.2s' }}
+          onMouseEnter={e => { if (!isConsoleResizing) e.currentTarget.style.background = 'linear-gradient(to right, transparent, rgba(88,166,255,0.2) 30%, rgba(88,166,255,0.2) 70%, transparent)'; }}
+          onMouseLeave={e => { if (!isConsoleResizing) e.currentTarget.style.background = 'linear-gradient(to right, transparent, rgba(88,166,255,0.07) 30%, rgba(88,166,255,0.07) 70%, transparent)'; }}
+        >
+          <div style={{ height: '2px', width: isConsoleResizing ? '64px' : '40px', borderRadius: '2px', transition: 'all 0.2s',
+            background: isConsoleResizing ? 'rgba(88,166,255,0.7)' : 'rgba(255,255,255,0.12)',
+            boxShadow: isConsoleResizing ? '0 0 8px rgba(88,166,255,0.5)' : 'none' }}></div>
+        </div>
+
+        {/* ── CONSOLE ── */}
+        <div style={{ flex: consoleFlex, overflow: 'hidden', minHeight: 0, transition: isConsoleResizing ? 'none' : 'flex 0.2s ease', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117' }}>
+          {isConsoleCollapsed ? (
+            <div onClick={() => setEditorHeightPct(65)}
+              style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#484f58', cursor: 'pointer', borderTop: '1px solid #21262d', transition: 'color 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.color = '#8b949e'}
+              onMouseLeave={e => e.currentTarget.style.color = '#484f58'}>
+              <i className="ri-terminal-line" style={{ fontSize: '14px' }}></i>
+              <span style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>Output Console</span>
+            </div>
+          ) : (
+            <>
+              <div style={{ padding: '4px 14px', borderBottom: '1px solid #21262d', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, height: '32px' }}>
+                <i className="ri-terminal-line" style={{ color: '#58a6ff', fontSize: '12px' }}></i>
+                <span style={{ fontWeight: 700, fontSize: '9px', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '1px' }}>Output Console</span>
+                {executionTime !== null && (
+                  <span style={{ marginLeft: 'auto', color: '#3fb950', fontSize: '10px', fontFamily: 'monospace', background: 'rgba(63,185,80,0.08)', padding: '0px 6px', borderRadius: '10px', border: '1px solid rgba(63,185,80,0.2)' }}>
+                    ✓ {executionTime}ms
+                  </span>
+                )}
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', fontFamily: '"Fira Code", monospace', fontSize: '13px', lineHeight: '1.6' }}>
+                {isRunning && <div style={{ color: '#8b949e', display: 'flex', alignItems: 'center', gap: '8px' }}><i className="ri-loader-4-line ri-spin"></i> Executing in Docker...</div>}
+                {!isRunning && !output && !runError && <div style={{ color: '#484f58' }}>Run your code to see output here.</div>}
+                {output && <pre style={{ whiteSpace: 'pre-wrap', color: '#3fb950', margin: 0 }}>{output}</pre>}
+                {runError && <pre style={{ whiteSpace: 'pre-wrap', color: '#f85149', margin: 0 }}>{runError}</pre>}
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 });

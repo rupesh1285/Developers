@@ -65,6 +65,7 @@ const wsStyles = `
     border-right: 1px solid #21262d;
     transition: color 0.2s, background 0.2s;
     padding: 24px 0;
+    text-align: center;
   }
   .ws-strip:hover { color: #8b949e; background: rgba(22,27,34,0.9); }
   .ws-strip.right { border-right: none; border-left: 1px solid #21262d; }
@@ -95,8 +96,9 @@ export default function ProblemWorkspace() {
   const [leftWidthPct, setLeftWidthPct] = useState(45);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Star
+  // Star & Solved states (synced with localStorage/API)
   const [isStarred, setIsStarred] = useState(false);
+  const [isSolved, setIsSolved] = useState(false);
 
   // Topic pill animation state
   const [showTopics, setShowTopics] = useState(false);
@@ -106,7 +108,7 @@ export default function ProblemWorkspace() {
   const cmInstanceRef = useRef(null);
   const workspaceRef = useRef(null);
 
-  // Fetch problem
+  // Fetch problem & sync states
   useEffect(() => {
     const fetchProblem = async () => {
       const cached = sessionStorage.getItem(`problem_${slug}`);
@@ -115,9 +117,13 @@ export default function ProblemWorkspace() {
           const parsed = JSON.parse(cached);
           setProblem(parsed);
           setIsLoading(false);
-          // Sync star state
+          
+          // Sync star/solved from localStorage
           const starredIds = JSON.parse(localStorage.getItem('finalist_starred') || '[]');
-          setIsStarred(starredIds.includes(String(parsed._id)));
+          const solvedIds = JSON.parse(localStorage.getItem('finalist_solved') || '[]');
+          const pid = String(parsed._id);
+          setIsStarred(starredIds.includes(pid));
+          setIsSolved(solvedIds.includes(pid));
         } catch (_) {}
       }
       try {
@@ -126,8 +132,12 @@ export default function ProblemWorkspace() {
         if (data && data.title) {
           setProblem(data);
           sessionStorage.setItem(`problem_${slug}`, JSON.stringify(data));
+          
           const starredIds = JSON.parse(localStorage.getItem('finalist_starred') || '[]');
-          setIsStarred(starredIds.includes(String(data._id)));
+          const solvedIds = JSON.parse(localStorage.getItem('finalist_solved') || '[]');
+          const pid = String(data._id);
+          setIsStarred(starredIds.includes(pid));
+          setIsSolved(solvedIds.includes(pid));
         }
       } catch (err) {
         console.error('Failed to fetch problem', err);
@@ -137,6 +147,22 @@ export default function ProblemWorkspace() {
     };
     fetchProblem();
   }, [slug]);
+
+  // Sync state when toggled from Dashboard/Other tabs
+  useEffect(() => {
+    const handleSync = (e) => {
+      if (!problem) return;
+      const id = String(problem._id);
+      if (e.key === 'finalist_starred') {
+        try { setIsStarred(JSON.parse(e.newValue || '[]').includes(id)); } catch(_) {}
+      }
+      if (e.key === 'finalist_solved') {
+        try { setIsSolved(JSON.parse(e.newValue || '[]').includes(id)); } catch(_) {}
+      }
+    };
+    window.addEventListener('storage', handleSync);
+    return () => window.removeEventListener('storage', handleSync);
+  }, [problem]);
 
   // Resizer drag
   useEffect(() => {
@@ -168,18 +194,16 @@ export default function ProblemWorkspace() {
     const id = String(problem._id);
     const newIsStarred = !isStarred;
 
-    // Optimistic UI update
     setIsStarred(newIsStarred);
 
-    // Update localStorage so Dashboard reads the right state
+    // Sync localStorage
     const prev = JSON.parse(localStorage.getItem('finalist_starred') || '[]');
-    const next = newIsStarred ? [...prev.filter(x => x !== id), id] : prev.filter(x => x !== id);
+    const next = newIsStarred ? [...new Set([...prev, id])] : prev.filter(x => x !== id);
     localStorage.setItem('finalist_starred', JSON.stringify(next));
 
-    // Notify Dashboard (same tab) via custom StorageEvent
+    // Notify other components/tabs
     window.dispatchEvent(new StorageEvent('storage', { key: 'finalist_starred', newValue: JSON.stringify(next) }));
 
-    // Persist to backend
     try {
       const token = localStorage.getItem('token');
       await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-star/${id}`, {
@@ -187,8 +211,33 @@ export default function ProblemWorkspace() {
         headers: { 'Authorization': 'Bearer ' + token }
       });
     } catch (err) {
-      // Rollback on failure
-      setIsStarred(!newIsStarred);
+      // Quiet fail - will sync on next load anyway
+    }
+  };
+
+  const handleToggleSolved = async () => {
+    if (!problem) return;
+    const id = String(problem._id);
+    const newIsSolved = !isSolved;
+
+    setIsSolved(newIsSolved);
+
+    // Sync localStorage
+    const prev = JSON.parse(localStorage.getItem('finalist_solved') || '[]');
+    const next = newIsSolved ? [...new Set([...prev, id])] : prev.filter(x => x !== id);
+    localStorage.setItem('finalist_solved', JSON.stringify(next));
+
+    // Notify other components/tabs
+    window.dispatchEvent(new StorageEvent('storage', { key: 'finalist_solved', newValue: JSON.stringify(next) }));
+
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } catch (err) {
+      // Quiet fail
     }
   };
 
@@ -239,14 +288,14 @@ export default function ProblemWorkspace() {
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#0d1117', color: '#c9d1d9', overflow: 'hidden' }}>
 
         {/* SLIM TOP BAR */}
-        <div style={{ height: '40px', backgroundColor: '#161b22', borderBottom: '1px solid #21262d', display: 'flex', alignItems: 'center', padding: '0 20px', flexShrink: 0, gap: '12px' }}>
+        <div style={{ height: '32px', backgroundColor: '#161b22', borderBottom: '1px solid #21262d', display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0, gap: '12px' }}>
           <button
             onClick={() => navigate('/problems')}
-            style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px', fontWeight: '500', transition: 'color 0.2s' }}
+            style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: '600', transition: 'color 0.2s', textTransform: 'uppercase', letterSpacing: '0.5px' }}
             onMouseEnter={e => e.currentTarget.style.color = '#c9d1d9'}
             onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}
           >
-            <i className="ri-arrow-left-s-line"></i> Dashboard
+            <i className="ri-arrow-left-s-line" style={{ fontSize: '14px' }}></i> Dashboard
           </button>
         </div>
 
@@ -375,10 +424,16 @@ export default function ProblemWorkspace() {
             {isRightCollapsed ? (
               <div className="ws-strip right" onClick={() => setLeftWidthPct(45)}>
                 <i className="ri-code-line" style={{ fontSize: '15px' }}></i>
-                <span style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase' }}>Code Editor</span>
+                <span style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase' }}>Code Space</span>
               </div>
             ) : (
-              <CodeEditor problem={problem} isActive={true} cmInstanceRef={cmInstanceRef} />
+              <CodeEditor 
+                problem={problem} 
+                isActive={true} 
+                cmInstanceRef={cmInstanceRef} 
+                isSolved={isSolved}
+                onToggleSolved={handleToggleSolved}
+              />
             )}
           </div>
         </div>
