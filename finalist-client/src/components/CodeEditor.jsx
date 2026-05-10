@@ -69,10 +69,9 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
   const codeCacheRef = useRef({});
   const langPillRef = useRef(null);
 
-  // Derived collapse states — no min-height fights, just show strip earlier
-  // Derived collapse states — snap at 25% for easy user interaction
-  const isEditorCollapsed  = editorHeightPct <= 25;
-  const isConsoleCollapsed = editorHeightPct >= 75;
+  // Derived collapse states — snap precisely at 0/100
+  const isEditorCollapsed  = editorHeightPct < 1;
+  const isConsoleCollapsed = editorHeightPct > 99;
   const editorFlex  = isEditorCollapsed  ? '0 0 40px' : isConsoleCollapsed ? '1 1 0' : `${editorHeightPct} 1 0`;
   const consoleFlex = isConsoleCollapsed ? '0 0 40px' : isEditorCollapsed  ? '1 1 0' : `${100 - editorHeightPct} 1 0`;
 
@@ -135,8 +134,8 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
       const relY = e.clientY - rect.top - 32;
       const availH = rect.height - 32;
       let pct = (relY / availH) * 100;
-      if (pct < 25) pct = 0;
-      else if (pct > 75) pct = 100;
+      if (pct < 2) pct = 0;
+      else if (pct > 98) pct = 100;
       setEditorHeightPct(pct);
     };
     const handleMouseUp = () => { if (isConsoleResizing) setIsConsoleResizing(false); };
@@ -190,7 +189,7 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
             onMouseEnter={e => { e.currentTarget.style.color = '#8b949e'; e.currentTarget.style.backgroundColor = '#1c2128'; }}
             onMouseLeave={e => { e.currentTarget.style.color = '#484f58'; e.currentTarget.style.backgroundColor = '#161b22'; }}>
             <i className="ri-code-s-slash-line" style={{ fontSize: '14px' }}></i>
-            <span style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>Code Space</span>
+            <span style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700, textAlign: 'center' }}>Code Space</span>
           </div>
         ) : (
           <>
