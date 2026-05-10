@@ -342,8 +342,11 @@ export default function Dashboard() {
       stateRef.current = { activeProblemId, fullProblemCache };
   }, [activeProblemId, fullProblemCache]);
 
-  const handleProblemClick = useCallback((id) => {
-    navigate(`/problems/${id}`);
+  const handleProblemClick = useCallback((problem) => {
+    const slug = problem.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    // Cache the basic problem info so the workspace page loads instantly
+    sessionStorage.setItem(`problem_${slug}`, JSON.stringify(problem));
+    navigate(`/problems/${slug}`);
   }, [navigate]);
 
   // =========================================================================

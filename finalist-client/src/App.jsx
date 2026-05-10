@@ -65,9 +65,9 @@ export default function App() {
           } 
         /> 
 
-        {/* 🌟 NEW: Dedicated Problem Workspace Route */}
+        {/* 🌟 NEW: Dedicated Problem Workspace Route - uses slug (e.g. /problems/two-sum) */}
         <Route 
-          path="/problems/:id" 
+          path="/problems/:slug" 
           element={
             <RequireAuth>
               <ProblemWorkspace />
