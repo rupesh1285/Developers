@@ -189,8 +189,12 @@ export default function Dashboard() {
     fetch(`${API_BASE}/api/progress`, { headers: authHeaders })
       .then(res => res.json())
       .then(progress => {
-        setSolvedIds(progress.filter(p => p.solved).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem)));
-        setStarredIds(progress.filter(p => p.starred).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem)));
+        const solved = progress.filter(p => p.solved).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem));
+        const starred = progress.filter(p => p.starred).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem));
+        setSolvedIds(solved);
+        setStarredIds(starred);
+        // Persist to localStorage so ProblemWorkspace can read correct initial state
+        localStorage.setItem('finalist_starred', JSON.stringify(starred));
       }).catch(() => {});
 
     fetch(`${API_BASE}/api/progress/analytics`, { headers: authHeaders })
@@ -198,6 +202,17 @@ export default function Dashboard() {
       .then(data => setAnalyticsData(data)).catch(() => {});
 
   }, [navigate]);
+
+  // Sync star state when toggled from ProblemWorkspace (which dispatches a StorageEvent)
+  useEffect(() => {
+    const handleStorageSync = (e) => {
+      if (e.key === 'finalist_starred') {
+        try { setStarredIds(JSON.parse(e.newValue || '[]')); } catch (_) {}
+      }
+    };
+    window.addEventListener('storage', handleStorageSync);
+    return () => window.removeEventListener('storage', handleStorageSync);
+  }, []);
 
   // =========================================================================
   // 5. ENGINE: INTERACTION & DRAGGER

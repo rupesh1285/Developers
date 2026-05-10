@@ -168,8 +168,10 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     }
   };
 
-  const editorHeight = isEditorCollapsed ? '40px' : isConsoleCollapsed ? 'calc(100% - 40px)' : `${editorHeightPct}%`;
-  const consoleHeight = isConsoleCollapsed ? '40px' : isEditorCollapsed ? 'calc(100% - 40px)' : `${100 - editorHeightPct}%`;
+  // Use flex-grow instead of fixed % heights so collapse works reliably
+  // editorHeightPct drives flex-grow: e.g. 65 editor / 35 console
+  const editorFlex = isEditorCollapsed ? '0 0 40px' : isConsoleCollapsed ? '1 1 auto' : `${editorHeightPct} 1 0`;
+  const consoleFlex = isConsoleCollapsed ? '0 0 40px' : isEditorCollapsed ? '1 1 auto' : `${100 - editorHeightPct} 1 0`;
 
   return (
     <div
@@ -207,40 +209,52 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
         </button>
       </div>
 
-      {/* CODE EDITOR */}
-      <div style={{ height: editorHeight, overflow: 'hidden', flexShrink: 0, transition: isConsoleResizing ? 'none' : 'height 0.25s ease', position: 'relative' }}>
+      {/* CODE EDITOR — flex-grow so it fills remaining space */}
+      <div style={{ flex: editorFlex, overflow: 'hidden', transition: isConsoleResizing ? 'none' : 'flex 0.25s ease', minHeight: 0, position: 'relative' }}>
         {isEditorCollapsed ? (
           <div
-            style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#8b949e', cursor: 'pointer', backgroundColor: '#0d1117', borderBottom: '1px solid #21262d' }}
             onClick={() => { setIsEditorCollapsed(false); setIsConsoleCollapsed(false); setEditorHeightPct(65); }}
+            style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#484f58', cursor: 'pointer', backgroundColor: '#0d1117', borderBottom: '1px solid #21262d', transition: 'color 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#8b949e'}
+            onMouseLeave={e => e.currentTarget.style.color = '#484f58'}
           >
-            <i className="ri-code-s-slash-line"></i>
-            <span style={{ fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>Code Editor</span>
+            <i className="ri-code-s-slash-line" style={{ fontSize: '15px' }}></i>
+            <span style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase' }}>Code Editor</span>
           </div>
         ) : (
           <textarea ref={editorRef} id={`cm-editor-${problem._id}`} style={{ opacity: 0, backgroundColor: '#0d1117', color: '#f8f8f2' }}></textarea>
         )}
       </div>
 
-      {/* HORIZONTAL RESIZER */}
+      {/* HORIZONTAL RESIZER — matches vertical resizer style */}
       <div
         onMouseDown={(e) => { e.preventDefault(); setIsConsoleResizing(true); }}
-        onMouseEnter={(e) => { if (!isConsoleResizing) e.currentTarget.style.backgroundColor = '#58a6ff'; }}
-        onMouseLeave={(e) => { if (!isConsoleResizing) e.currentTarget.style.backgroundColor = '#21262d'; }}
-        style={{ height: '6px', backgroundColor: isConsoleResizing ? '#3b82f6' : '#21262d', cursor: 'row-resize', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background-color 0.15s', zIndex: 10 }}
+        style={{
+          height: '6px', cursor: 'row-resize', flexShrink: 0, zIndex: 10,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: isConsoleResizing
+            ? 'linear-gradient(to right, transparent 0%, rgba(88,166,255,0.25) 40%, rgba(88,166,255,0.25) 60%, transparent 100%)'
+            : 'linear-gradient(to right, transparent 0%, rgba(88,166,255,0.08) 40%, rgba(88,166,255,0.08) 60%, transparent 100%)',
+          transition: 'background 0.2s',
+          position: 'relative',
+        }}
+        onMouseEnter={e => { if (!isConsoleResizing) e.currentTarget.style.background = 'linear-gradient(to right, transparent 0%, rgba(88,166,255,0.2) 40%, rgba(88,166,255,0.2) 60%, transparent 100%)'; }}
+        onMouseLeave={e => { if (!isConsoleResizing) e.currentTarget.style.background = 'linear-gradient(to right, transparent 0%, rgba(88,166,255,0.08) 40%, rgba(88,166,255,0.08) 60%, transparent 100%)'; }}
       >
-        <div style={{ width: '32px', height: '2px', backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: '2px' }}></div>
+        <div style={{ height: '2px', width: isConsoleResizing ? '60px' : '40px', backgroundColor: isConsoleResizing ? 'rgba(88,166,255,0.6)' : 'rgba(255,255,255,0.12)', borderRadius: '2px', transition: 'all 0.2s', boxShadow: isConsoleResizing ? '0 0 8px rgba(88,166,255,0.4)' : 'none' }}></div>
       </div>
 
       {/* CONSOLE PANEL */}
-      <div style={{ height: consoleHeight, overflow: 'hidden', transition: isConsoleResizing ? 'none' : 'height 0.25s ease', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117' }}>
+      <div style={{ flex: consoleFlex, overflow: 'hidden', transition: isConsoleResizing ? 'none' : 'flex 0.25s ease', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', minHeight: 0 }}>
         {isConsoleCollapsed ? (
           <div
-            style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#8b949e', cursor: 'pointer', backgroundColor: '#0d1117', borderTop: '1px solid #21262d' }}
             onClick={() => { setIsConsoleCollapsed(false); setIsEditorCollapsed(false); setEditorHeightPct(65); }}
+            style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#484f58', cursor: 'pointer', backgroundColor: '#0d1117', borderTop: '1px solid #21262d', transition: 'color 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#8b949e'}
+            onMouseLeave={e => e.currentTarget.style.color = '#484f58'}
           >
-            <i className="ri-terminal-line"></i>
-            <span style={{ fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>Output Console</span>
+            <i className="ri-terminal-line" style={{ fontSize: '15px' }}></i>
+            <span style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase' }}>Output Console</span>
           </div>
         ) : (
           <>
@@ -248,16 +262,12 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
               <i className="ri-terminal-line" style={{ color: '#8b949e', fontSize: '14px' }}></i>
               <span style={{ fontWeight: '600', fontSize: '12px', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Output Console</span>
               {executionTime !== null && (
-                <span style={{ marginLeft: 'auto', color: '#3fb950', fontSize: '11px', fontFamily: 'monospace' }}>
-                  ✓ {executionTime}ms
-                </span>
+                <span style={{ marginLeft: 'auto', color: '#3fb950', fontSize: '11px', fontFamily: 'monospace' }}>✓ {executionTime}ms</span>
               )}
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px', fontFamily: '"Fira Code", monospace', fontSize: '13px', lineHeight: '1.6' }}>
               {isRunning && <div style={{ color: '#8b949e', display: 'flex', alignItems: 'center', gap: '8px' }}><i className="ri-loader-4-line ri-spin"></i> Executing in Docker container...</div>}
-              {!isRunning && !output && !runError && (
-                <div style={{ color: '#484f58' }}>Run your code to see output here.</div>
-              )}
+              {!isRunning && !output && !runError && <div style={{ color: '#484f58' }}>Run your code to see output here.</div>}
               {output && <pre style={{ whiteSpace: 'pre-wrap', color: '#3fb950', margin: 0 }}>{output}</pre>}
               {runError && <pre style={{ whiteSpace: 'pre-wrap', color: '#f85149', margin: 0 }}>{runError}</pre>}
             </div>

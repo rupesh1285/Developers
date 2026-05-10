@@ -4,39 +4,130 @@ import CodeEditor from '../components/CodeEditor';
 import AiTutor from '../components/AiTutor';
 import '../dashboard.css';
 
+// ── Inline styles for the workspace-specific elements ────────────────────────
+const wsStyles = `
+  /* Premium scrollbar for description */
+  .ws-desc-scroll::-webkit-scrollbar { width: 5px; }
+  .ws-desc-scroll::-webkit-scrollbar-track { background: transparent; }
+  .ws-desc-scroll::-webkit-scrollbar-thumb { background: rgba(88,166,255,0.25); border-radius: 10px; }
+  .ws-desc-scroll::-webkit-scrollbar-thumb:hover { background: rgba(88,166,255,0.5); }
+
+  /* Premium resizer */
+  .ws-resizer {
+    width: 6px; cursor: col-resize; flex-shrink: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(to bottom, transparent 0%, rgba(88,166,255,0.1) 40%, rgba(88,166,255,0.1) 60%, transparent 100%);
+    transition: background 0.2s;
+    position: relative;
+  }
+  .ws-resizer::before {
+    content: '';
+    position: absolute;
+    width: 2px; height: 40px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .ws-resizer:hover::before, .ws-resizer.dragging::before {
+    height: 60px;
+    background: rgba(88, 166, 255, 0.6);
+    box-shadow: 0 0 8px rgba(88, 166, 255, 0.4);
+  }
+  .ws-resizer:hover, .ws-resizer.dragging {
+    background: linear-gradient(to bottom, transparent 0%, rgba(88,166,255,0.2) 30%, rgba(88,166,255,0.2) 70%, transparent 100%);
+  }
+
+  /* Topic pill animation */
+  @keyframes topicFadeIn  { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes topicFadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+  .topic-tag-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    animation: topicFadeIn 0.3s ease forwards;
+  }
+  .topic-tag-row.fading {
+    animation: topicFadeOut 0.6s ease forwards;
+  }
+
+  /* Star button */
+  .ws-star { background: none; border: none; cursor: pointer; font-size: 22px; padding: 2px; transition: all 0.2s; flex-shrink: 0; margin-left: 10px; }
+  .ws-star:hover { transform: scale(1.2); }
+  .ws-star.starred { color: #e3b341; filter: drop-shadow(0 0 6px rgba(227,179,65,0.5)); }
+  .ws-star.unstarred { color: #484f58; }
+  .ws-star.unstarred:hover { color: #8b949e; }
+
+  /* Collapsed pane strip */
+  .ws-strip {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    gap: 10px; color: #484f58; cursor: pointer;
+    writing-mode: vertical-rl;
+    background: rgba(13,17,23,0.8);
+    border-right: 1px solid #21262d;
+    transition: color 0.2s, background 0.2s;
+    padding: 24px 0;
+  }
+  .ws-strip:hover { color: #8b949e; background: rgba(22,27,34,0.9); }
+  .ws-strip.right { border-right: none; border-left: 1px solid #21262d; }
+
+  /* Slim tab underline */
+  .ws-tab {
+    padding: 10px 16px; background: transparent; border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer; font-weight: 600; font-size: 13px;
+    display: flex; align-items: center; gap: 6px;
+    transition: color 0.2s, border-color 0.2s;
+    color: #8b949e;
+  }
+  .ws-tab.active { color: #c9d1d9; border-bottom-color: #58a6ff; }
+  .ws-tab:hover:not(.active) { color: #c9d1d9; }
+`;
+
 export default function ProblemWorkspace() {
   const { slug } = useParams();
   const navigate = useNavigate();
 
-  // ── ALL HOOKS AT THE TOP (Rules of Hooks) ────────────────────────────────
+  // ── ALL HOOKS AT TOP ─────────────────────────────────────────────────────
   const [problem, setProblem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('desc');
+
+  // Resizer
   const [leftWidthPct, setLeftWidthPct] = useState(45);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Star
+  const [isStarred, setIsStarred] = useState(false);
+
+  // Topic pill animation state
+  const [showTopics, setShowTopics] = useState(false);
+  const [topicsFading, setTopicsFading] = useState(false);
+  const topicTimerRef = useRef(null);
+
   const cmInstanceRef = useRef(null);
   const workspaceRef = useRef(null);
 
-  // Fetch problem (with sessionStorage cache for instant load)
+  // Fetch problem
   useEffect(() => {
     const fetchProblem = async () => {
-      // 1. Instantly seed from cache (populated when clicking from dashboard)
       const cached = sessionStorage.getItem(`problem_${slug}`);
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
           setProblem(parsed);
           setIsLoading(false);
+          // Sync star state
+          const starredIds = JSON.parse(localStorage.getItem('finalist_starred') || '[]');
+          setIsStarred(starredIds.includes(String(parsed._id)));
         } catch (_) {}
       }
-
-      // 2. Fetch full data (description, examples) from API in background
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/problems/${slug}`);
         const data = await res.json();
         if (data && data.title) {
           setProblem(data);
           sessionStorage.setItem(`problem_${slug}`, JSON.stringify(data));
+          const starredIds = JSON.parse(localStorage.getItem('finalist_starred') || '[]');
+          setIsStarred(starredIds.includes(String(data._id)));
         }
       } catch (err) {
         console.error('Failed to fetch problem', err);
@@ -47,7 +138,7 @@ export default function ProblemWorkspace() {
     fetchProblem();
   }, [slug]);
 
-  // Drag-to-resize listener
+  // Resizer drag
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDragging || !workspaceRef.current) return;
@@ -66,22 +157,66 @@ export default function ProblemWorkspace() {
     };
   }, [isDragging]);
 
-  // ── DERIVED VALUES ────────────────────────────────────────────────────────
-  const isLeftCollapsed  = leftWidthPct === 0;
-  const isRightCollapsed = leftWidthPct === 100;
-  const actualLeftWidth  = isLeftCollapsed
-    ? '40px'
-    : isRightCollapsed
-      ? 'calc(100% - 40px)'
-      : `${leftWidthPct}%`;
+  // Cleanup topic timer on unmount
+  useEffect(() => { return () => clearTimeout(topicTimerRef.current); }, []);
 
+  // ── HANDLERS ─────────────────────────────────────────────────────────────
   const handleMouseDown = (e) => { e.preventDefault(); setIsDragging(true); };
 
-  // ── EARLY RETURNS (after all hooks) ──────────────────────────────────────
-  if (isLoading) {
+  const handleStarToggle = async () => {
+    if (!problem) return;
+    const id = String(problem._id);
+    const newIsStarred = !isStarred;
+
+    // Optimistic UI update
+    setIsStarred(newIsStarred);
+
+    // Update localStorage so Dashboard reads the right state
+    const prev = JSON.parse(localStorage.getItem('finalist_starred') || '[]');
+    const next = newIsStarred ? [...prev.filter(x => x !== id), id] : prev.filter(x => x !== id);
+    localStorage.setItem('finalist_starred', JSON.stringify(next));
+
+    // Notify Dashboard (same tab) via custom StorageEvent
+    window.dispatchEvent(new StorageEvent('storage', { key: 'finalist_starred', newValue: JSON.stringify(next) }));
+
+    // Persist to backend
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-star/${id}`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } catch (err) {
+      // Rollback on failure
+      setIsStarred(!newIsStarred);
+    }
+  };
+
+  const handleTopicPillClick = () => {
+    clearTimeout(topicTimerRef.current);
+    setTopicsFading(false);
+    setShowTopics(true);
+    // After 2s, fade out and then hide
+    topicTimerRef.current = setTimeout(() => {
+      setTopicsFading(true);
+      topicTimerRef.current = setTimeout(() => {
+        setShowTopics(false);
+        setTopicsFading(false);
+      }, 600);
+    }, 2000);
+  };
+
+  // ── DERIVED ───────────────────────────────────────────────────────────────
+  const isLeftCollapsed  = leftWidthPct === 0;
+  const isRightCollapsed = leftWidthPct === 100;
+  const actualLeftWidth  = isLeftCollapsed ? '40px' : isRightCollapsed ? 'calc(100% - 40px)' : `${leftWidthPct}%`;
+
+  // ── EARLY RETURNS ────────────────────────────────────────────────────────
+  if (isLoading && !problem) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#0d1117', color: '#fff' }}>
-        <h2>Loading Problem...</h2>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#0d1117', color: '#fff', flexDirection: 'column', gap: '16px' }}>
+        <i className="ri-loader-4-line ri-spin" style={{ fontSize: '32px', color: '#58a6ff' }}></i>
+        <span style={{ color: '#8b949e' }}>Loading problem...</span>
       </div>
     );
   }
@@ -90,7 +225,7 @@ export default function ProblemWorkspace() {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#0d1117', color: '#fff', flexDirection: 'column' }}>
         <h2>Problem not found</h2>
-        <button onClick={() => navigate('/problems')} style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#2ea043', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer' }}>
+        <button onClick={() => navigate('/problems')} style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#238636', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer' }}>
           Back to Dashboard
         </button>
       </div>
@@ -99,176 +234,155 @@ export default function ProblemWorkspace() {
 
   // ── MAIN RENDER ───────────────────────────────────────────────────────────
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#010409', color: '#c9d1d9', overflow: 'hidden' }}>
+    <>
+      <style>{wsStyles}</style>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#0d1117', color: '#c9d1d9', overflow: 'hidden' }}>
 
-      {/* SLIM TOP BAR */}
-      <div style={{ height: '40px', backgroundColor: '#161b22', borderBottom: '1px solid #30363d', display: 'flex', alignItems: 'center', padding: '0 20px', flexShrink: 0 }}>
-        <button
-          onClick={() => navigate('/problems')}
-          style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px', fontWeight: '500' }}
+        {/* SLIM TOP BAR */}
+        <div style={{ height: '40px', backgroundColor: '#161b22', borderBottom: '1px solid #21262d', display: 'flex', alignItems: 'center', padding: '0 20px', flexShrink: 0, gap: '12px' }}>
+          <button
+            onClick={() => navigate('/problems')}
+            style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px', fontWeight: '500', transition: 'color 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#c9d1d9'}
+            onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}
+          >
+            <i className="ri-arrow-left-s-line"></i> Dashboard
+          </button>
+        </div>
+
+        {/* WORKSPACE */}
+        <div
+          ref={workspaceRef}
+          style={{ display: 'flex', flexGrow: 1, overflow: 'hidden', userSelect: isDragging ? 'none' : 'auto', cursor: isDragging ? 'col-resize' : 'auto' }}
         >
-          <i className="ri-arrow-left-s-line"></i> Dashboard
-        </button>
-      </div>
-
-      {/* WORKSPACE AREA */}
-      <div
-        ref={workspaceRef}
-        style={{
-          display: 'flex',
-          flexGrow: 1,
-          overflow: 'hidden',
-          userSelect: isDragging ? 'none' : 'auto',
-          cursor: isDragging ? 'col-resize' : 'auto',
-        }}
-      >
-        {/* ── LEFT PANE ── */}
-        <div style={{
-          width: actualLeftWidth,
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: '#0d1117',
-          transition: isDragging ? 'none' : 'width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
-          overflow: 'hidden',
-          flexShrink: 0,
-        }}>
-          {isLeftCollapsed ? (
-            <div
-              style={{ height: '100%', writingMode: 'vertical-rl', transform: 'rotate(180deg)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#8b949e', cursor: 'pointer', backgroundColor: '#161b22', borderRight: '1px solid #30363d' }}
-              onClick={() => setLeftWidthPct(45)}
-            >
-              <i className="ri-book-read-line" style={{ fontSize: '16px' }}></i>
-              <span style={{ fontSize: '13px', letterSpacing: '1px' }}>Description</span>
-            </div>
-          ) : (
-            <>
-              {/* PROBLEM HEADER */}
-              <div style={{ padding: '20px 24px 14px', borderBottom: '1px solid #21262d', flexShrink: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                  <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0, color: '#fff', lineHeight: '1.3' }}>
-                    {problem.problemNumber}. {problem.title}
-                  </h1>
-                  <button style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', fontSize: '20px', flexShrink: 0, marginLeft: '10px' }}>
-                    <i className="ri-star-line"></i>
-                  </button>
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-                  <span className={`panel-difficulty ${problem.difficulty?.toLowerCase()}`}>{problem.difficulty}</span>
-                  {problem.tags && problem.tags.map(tag => (
-                    <span key={tag} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '2px 10px', borderRadius: '12px', fontSize: '11px', color: '#8b949e' }}>{tag}</span>
-                  ))}
-                </div>
+          {/* ── LEFT PANE ── */}
+          <div style={{ width: actualLeftWidth, display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', transition: isDragging ? 'none' : 'width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)', overflow: 'hidden', flexShrink: 0 }}>
+            {isLeftCollapsed ? (
+              <div className="ws-strip" onClick={() => setLeftWidthPct(45)}>
+                <i className="ri-book-read-line" style={{ fontSize: '15px' }}></i>
+                <span style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase' }}>Description</span>
               </div>
+            ) : (
+              <>
+                {/* PROBLEM HEADER */}
+                <div style={{ padding: '20px 24px 14px', borderBottom: '1px solid #21262d', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                    <h1 style={{ fontSize: '19px', fontWeight: '700', margin: 0, color: '#fff', lineHeight: '1.3' }}>
+                      {problem.problemNumber}. {problem.title}
+                    </h1>
+                    <button
+                      className={`ws-star ${isStarred ? 'starred' : 'unstarred'}`}
+                      onClick={handleStarToggle}
+                      title={isStarred ? 'Remove from starred' : 'Add to starred'}
+                    >
+                      <i className={isStarred ? 'ri-star-fill' : 'ri-star-line'}></i>
+                    </button>
+                  </div>
 
-              {/* TABS */}
-              <div style={{ display: 'flex', borderBottom: '1px solid #21262d', backgroundColor: '#0d1117', padding: '0 20px', flexShrink: 0 }}>
-                <button
-                  onClick={() => setActiveTab('desc')}
-                  style={{ padding: '10px 16px', background: 'transparent', border: 'none', borderBottom: activeTab === 'desc' ? '2px solid #58a6ff' : '2px solid transparent', color: activeTab === 'desc' ? '#c9d1d9' : '#8b949e', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <i className="ri-book-read-line"></i> Description
-                </button>
-                <button
-                  onClick={() => setActiveTab('ai')}
-                  style={{ padding: '10px 16px', background: 'transparent', border: 'none', borderBottom: activeTab === 'ai' ? '2px solid #58a6ff' : '2px solid transparent', color: activeTab === 'ai' ? '#c9d1d9' : '#8b949e', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <i className="ri-sparkling-fill" style={{ color: '#d2a8ff' }}></i> AI Tutor
-                </button>
-              </div>
+                  {/* DIFFICULTY + TOPIC PILL */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                    <span className={`panel-difficulty ${problem.difficulty?.toLowerCase()}`}>{problem.difficulty}</span>
 
-              {/* TAB CONTENT */}
-              <div style={{ flexGrow: 1, overflowY: 'auto', padding: '24px' }}>
-                {activeTab === 'desc' ? (
-                  <div>
-                    <p style={{ color: '#c9d1d9', lineHeight: '1.7', fontSize: '14px', margin: '0 0 24px' }}
-                       dangerouslySetInnerHTML={{ __html: (problem.description || 'Loading description...').replace(/\n/g, '<br/>') }}
-                    />
+                    {problem.tags && problem.tags.length > 0 && !showTopics && (
+                      <button
+                        onClick={handleTopicPillClick}
+                        style={{ background: 'rgba(88,166,255,0.08)', border: '1px solid rgba(88,166,255,0.2)', padding: '3px 12px', borderRadius: '20px', fontSize: '12px', color: '#58a6ff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', transition: 'all 0.2s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(88,166,255,0.15)'; e.currentTarget.style.borderColor = 'rgba(88,166,255,0.4)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(88,166,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(88,166,255,0.2)'; }}
+                      >
+                        <i className="ri-price-tag-3-line"></i> Topics
+                      </button>
+                    )}
 
-                    {problem.examples && problem.examples.length > 0 && (
-                      <div style={{ marginBottom: '28px' }}>
-                        <h3 style={{ color: '#fff', fontSize: '14px', fontWeight: '600', marginBottom: '14px' }}>Examples</h3>
-                        {problem.examples.map((ex, idx) => (
-                          <div key={idx} style={{ marginBottom: '16px' }}>
-                            <p style={{ color: '#8b949e', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Example {idx + 1}:</p>
-                            <div style={{ backgroundColor: 'rgba(22, 27, 34, 0.7)', padding: '14px 16px', borderRadius: '8px', border: '1px solid #21262d', fontFamily: '"Fira Code", monospace', fontSize: '13px', lineHeight: '1.7' }}>
-                              <div><strong style={{ color: '#8b949e', fontWeight: '500' }}>Input: </strong><span style={{ color: '#c9d1d9' }}>{(ex.input || '').trim()}</span></div>
-                              <div><strong style={{ color: '#8b949e', fontWeight: '500' }}>Output: </strong><span style={{ color: '#c9d1d9' }}>{(ex.output || '').trim()}</span></div>
-                              {ex.explanation && <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed #30363d' }}><strong style={{ color: '#8b949e', fontWeight: '500' }}>Explanation: </strong><span style={{ color: '#c9d1d9' }}>{ex.explanation.trim()}</span></div>}
-                            </div>
-                          </div>
+                    {showTopics && (
+                      <div className={`topic-tag-row ${topicsFading ? 'fading' : ''}`}>
+                        {problem.tags.map(tag => (
+                          <span key={tag} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '2px 10px', borderRadius: '12px', fontSize: '11px', color: '#8b949e' }}>{tag}</span>
                         ))}
                       </div>
                     )}
+                  </div>
+                </div>
 
-                    {(problem.timeComplexity || problem.spaceComplexity) && (
-                      <div>
-                        <h3 style={{ color: '#fff', fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Complexity</h3>
-                        <div style={{ display: 'flex', gap: '12px' }}>
-                          <div style={{ flex: 1, backgroundColor: 'rgba(22, 27, 34, 0.7)', padding: '12px', borderRadius: '8px', border: '1px solid #21262d', textAlign: 'center' }}>
-                            <div style={{ color: '#8b949e', fontSize: '11px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Time</div>
-                            <div style={{ fontFamily: 'monospace', color: '#d2a8ff', fontSize: '14px' }}>{problem.timeComplexity || 'O(n)'}</div>
-                          </div>
-                          <div style={{ flex: 1, backgroundColor: 'rgba(22, 27, 34, 0.7)', padding: '12px', borderRadius: '8px', border: '1px solid #21262d', textAlign: 'center' }}>
-                            <div style={{ color: '#8b949e', fontSize: '11px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Space</div>
-                            <div style={{ fontFamily: 'monospace', color: '#ff7b72', fontSize: '14px' }}>{problem.spaceComplexity || 'O(1)'}</div>
+                {/* TABS */}
+                <div style={{ display: 'flex', borderBottom: '1px solid #21262d', backgroundColor: '#0d1117', padding: '0 20px', flexShrink: 0 }}>
+                  <button className={`ws-tab ${activeTab === 'desc' ? 'active' : ''}`} onClick={() => setActiveTab('desc')}>
+                    <i className="ri-book-read-line"></i> Description
+                  </button>
+                  <button className={`ws-tab ${activeTab === 'ai' ? 'active' : ''}`} onClick={() => setActiveTab('ai')}>
+                    <i className="ri-sparkling-fill" style={{ color: activeTab === 'ai' ? '#d2a8ff' : 'inherit' }}></i> AI Tutor
+                  </button>
+                </div>
+
+                {/* TAB CONTENT */}
+                <div className="ws-desc-scroll" style={{ flexGrow: 1, overflowY: 'auto', padding: '24px' }}>
+                  {activeTab === 'desc' ? (
+                    <div>
+                      <p style={{ color: '#c9d1d9', lineHeight: '1.8', fontSize: '14px', margin: '0 0 24px' }}
+                         dangerouslySetInnerHTML={{ __html: (problem.description || 'Loading description...').replace(/\n/g, '<br/>') }}
+                      />
+
+                      {problem.examples && problem.examples.length > 0 && (
+                        <div style={{ marginBottom: '28px' }}>
+                          <h3 style={{ color: '#fff', fontSize: '13px', fontWeight: '700', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#8b949e' }}>Examples</h3>
+                          {problem.examples.map((ex, idx) => (
+                            <div key={idx} style={{ marginBottom: '16px' }}>
+                              <p style={{ color: '#8b949e', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Example {idx + 1}:</p>
+                              <div style={{ backgroundColor: 'rgba(22,27,34,0.6)', padding: '14px 16px', borderRadius: '8px', border: '1px solid #21262d', fontFamily: '"Fira Code", monospace', fontSize: '13px', lineHeight: '1.7' }}>
+                                <div><strong style={{ color: '#8b949e', fontWeight: '500' }}>Input: </strong><span style={{ color: '#c9d1d9' }}>{(ex.input || '').trim()}</span></div>
+                                <div><strong style={{ color: '#8b949e', fontWeight: '500' }}>Output: </strong><span style={{ color: '#c9d1d9' }}>{(ex.output || '').trim()}</span></div>
+                                {ex.explanation && <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed #30363d' }}><strong style={{ color: '#8b949e', fontWeight: '500' }}>Explanation: </strong><span style={{ color: '#c9d1d9' }}>{ex.explanation.trim()}</span></div>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {(problem.timeComplexity || problem.spaceComplexity) && (
+                        <div style={{ marginBottom: '40px' }}>
+                          <h3 style={{ color: '#8b949e', fontSize: '13px', fontWeight: '700', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Complexity</h3>
+                          <div style={{ display: 'flex', gap: '12px' }}>
+                            <div style={{ flex: 1, backgroundColor: 'rgba(22,27,34,0.6)', padding: '12px', borderRadius: '8px', border: '1px solid #21262d', textAlign: 'center' }}>
+                              <div style={{ color: '#8b949e', fontSize: '11px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Time</div>
+                              <div style={{ fontFamily: 'monospace', color: '#d2a8ff', fontSize: '14px' }}>{problem.timeComplexity || 'O(n)'}</div>
+                            </div>
+                            <div style={{ flex: 1, backgroundColor: 'rgba(22,27,34,0.6)', padding: '12px', borderRadius: '8px', border: '1px solid #21262d', textAlign: 'center' }}>
+                              <div style={{ color: '#8b949e', fontSize: '11px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Space</div>
+                              <div style={{ fontFamily: 'monospace', color: '#ff7b72', fontSize: '14px' }}>{problem.spaceComplexity || 'O(1)'}</div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                    <AiTutor problem={problem} isActive={true} cmInstanceRef={cmInstanceRef} />
-                  </div>
-                )}
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      <AiTutor problem={problem} isActive={true} cmInstanceRef={cmInstanceRef} />
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* ── PREMIUM RESIZER ── */}
+          <div
+            className={`ws-resizer ${isDragging ? 'dragging' : ''}`}
+            onMouseDown={handleMouseDown}
+          />
+
+          {/* ── RIGHT PANE ── */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', minWidth: 0, overflow: 'hidden' }}>
+            {isRightCollapsed ? (
+              <div className="ws-strip right" onClick={() => setLeftWidthPct(45)}>
+                <i className="ri-code-line" style={{ fontSize: '15px' }}></i>
+                <span style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase' }}>Code Editor</span>
               </div>
-            </>
-          )}
+            ) : (
+              <CodeEditor problem={problem} isActive={true} cmInstanceRef={cmInstanceRef} />
+            )}
+          </div>
         </div>
-
-        {/* ── RESIZER ── */}
-        <div
-          onMouseDown={handleMouseDown}
-          onMouseEnter={(e) => { if (!isDragging) e.currentTarget.style.backgroundColor = '#58a6ff'; }}
-          onMouseLeave={(e) => { if (!isDragging) e.currentTarget.style.backgroundColor = '#21262d'; }}
-          style={{
-            width: '6px',
-            backgroundColor: isDragging ? '#3b82f6' : '#21262d',
-            cursor: 'col-resize',
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'background-color 0.15s',
-            zIndex: 10,
-          }}
-        >
-          <div style={{ width: '2px', height: '32px', backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: '2px' }}></div>
-        </div>
-
-        {/* ── RIGHT PANE ── */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: '#0d1117',
-          minWidth: 0,
-          overflow: 'hidden',
-        }}>
-          {isRightCollapsed ? (
-            <div
-              style={{ height: '100%', writingMode: 'vertical-rl', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#8b949e', cursor: 'pointer', backgroundColor: '#161b22', borderLeft: '1px solid #30363d' }}
-              onClick={() => setLeftWidthPct(45)}
-            >
-              <i className="ri-code-line" style={{ fontSize: '16px' }}></i>
-              <span style={{ fontSize: '13px', letterSpacing: '1px' }}>Code Editor</span>
-            </div>
-          ) : (
-            <CodeEditor problem={problem} isActive={true} cmInstanceRef={cmInstanceRef} />
-          )}
-        </div>
-
       </div>
-    </div>
+    </>
   );
 }
