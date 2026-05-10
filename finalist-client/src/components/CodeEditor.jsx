@@ -175,7 +175,7 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
       <div className="ide-header" style={{ backgroundColor: '#0d1117', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div
           ref={langPillRef}
-          className={`lang-pill ${langMenuOpen ? 'active' : ''}`}
+          className={`v2-pill ${langMenuOpen ? 'active' : ''}`}
           onClick={() => setLangMenuOpen(!langMenuOpen)}
           role="button"
           tabIndex={0}
@@ -188,17 +188,16 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
             }
           }}
         >            
-          <div className="lang-pill-header">
-            <i className="ri-code-s-slash-line"></i>
-            <span className="lang-text" data-value={language}>{LANG_MAP[language] || 'JavaScript'}</span>
-            <i className="ri-arrow-down-s-line chevron-icon"></i>
-          </div>
-          <div className="lang-menu">
-            <button className="lang-item" type="button" data-value="javascript" onClick={(e) => { e.stopPropagation(); handleLangChange('javascript'); }}>JavaScript</button>
-            <button className="lang-item" type="button" data-value="python" onClick={(e) => { e.stopPropagation(); handleLangChange('python'); }}>Python</button>
-            <button className="lang-item" type="button" data-value="text/x-csrc" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-csrc'); }}>C</button>
-            <button className="lang-item" type="button" data-value="text/x-c++src" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-c++src'); }}>C++</button>
-            <button className="lang-item" type="button" data-value="text/x-java" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-java'); }}>Java</button>
+          <i className="ri-code-s-slash-line v2-pill-icon"></i>
+          <span className="v2-pill-text" data-value={language}>{LANG_MAP[language] || 'JavaScript'}</span>
+          <i className="ri-arrow-down-s-line v2-pill-icon"></i>
+          
+          <div className="v2-dropdown">
+            <button className="v2-dropdown-item" type="button" data-value="javascript" onClick={(e) => { e.stopPropagation(); handleLangChange('javascript'); }}>JavaScript</button>
+            <button className="v2-dropdown-item" type="button" data-value="python" onClick={(e) => { e.stopPropagation(); handleLangChange('python'); }}>Python</button>
+            <button className="v2-dropdown-item" type="button" data-value="text/x-csrc" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-csrc'); }}>C</button>
+            <button className="v2-dropdown-item" type="button" data-value="text/x-c++src" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-c++src'); }}>C++</button>
+            <button className="v2-dropdown-item" type="button" data-value="text/x-java" onClick={(e) => { e.stopPropagation(); handleLangChange('text/x-java'); }}>Java</button>
           </div>
         </div>
         

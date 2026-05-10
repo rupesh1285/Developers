@@ -147,35 +147,33 @@ export default React.memo(function FilterBar({
           </div>
         </div>
 
-        <div className="filters-actions-desktop">
-          <button
-            type="button"
-            className={`filter-pill ${diffOpen ? 'active' : ''}`}
+        <div className="v2-filter-group">
+          <div
+            className={`v2-pill ${diffOpen ? 'active' : ''}`}
             onClick={() => { setDiffOpen(!diffOpen); setStatusOpen(false); setTopicMenuOpen(false); }}
             aria-expanded={diffOpen}
           >
-            <span className="filter-text">{diffFilter}</span>
-            <i className="ri-arrow-down-s-line chevron-icon"></i>
-            <div className="dropdown-menu">
+            <span className="v2-pill-text">{diffFilter}</span>
+            <i className="ri-arrow-down-s-line v2-pill-icon"></i>
+            <div className="v2-dropdown">
               {['Difficulty', 'Basic', 'Easy', 'Medium', 'Hard'].map(diff => (
-                <button key={diff} type="button" className="dropdown-item" onClick={(e) => { e.stopPropagation(); onDiffChange(diff); setDiffOpen(false); }}>{diff}</button>
+                <button key={diff} type="button" className="v2-dropdown-item" onClick={(e) => { e.stopPropagation(); onDiffChange(diff); setDiffOpen(false); }}>{diff}</button>
               ))}
             </div>
-          </button>
-          <button
-            type="button"
-            className={`filter-pill ${statusOpen ? 'active' : ''}`}
+          </div>
+          <div
+            className={`v2-pill ${statusOpen ? 'active' : ''}`}
             onClick={() => { setStatusOpen(!statusOpen); setDiffOpen(false); setTopicMenuOpen(false); }}
             aria-expanded={statusOpen}
           >
-            <span className="filter-text">{statusFilter}</span>
-            <i className="ri-arrow-down-s-line chevron-icon"></i>
-            <div className="dropdown-menu">
+            <span className="v2-pill-text">{statusFilter}</span>
+            <i className="ri-arrow-down-s-line v2-pill-icon"></i>
+            <div className="v2-dropdown">
               {['All Problems', 'Solved', 'Unsolved', 'Starred'].map(status => (
-                <button key={status} type="button" className="dropdown-item" onClick={(e) => { e.stopPropagation(); onStatusChange(status); setStatusOpen(false); }}>{status}</button>
+                <button key={status} type="button" className="v2-dropdown-item" onClick={(e) => { e.stopPropagation(); onStatusChange(status); setStatusOpen(false); }}>{status}</button>
               ))}
             </div>
-          </button>
+          </div>
           <div className="filter-pill-wrapper" style={{ position: 'relative' }} ref={topicMenuRef}>
             <button
               type="button"
