@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [solvedIds, setSolvedIds] = useState([]);
   const [starredIds, setStarredIds] = useState([]);
   const [analyticsData, setAnalyticsData] = useState({ streak: { current: 0, max: 0, timeSpentHrs: 0 }, heatmap: [], topics: [] });
-  const [userProfile, setUserProfile] = useState({ name: 'Developer', email: 'developer@finalist.com', avatar: '' });
+  const [userProfile, setUserProfile] = useState(null);
 
   // 🌟 THE FIX 1: Lazy Cache for heavy problem descriptions
   const [fullProblemCache, setFullProblemCache] = useState({});
@@ -169,8 +169,22 @@ export default function Dashboard() {
       }).catch(err => { if (!cachedProblems) setIsLoading(false); });
 
     fetch(`${API_BASE}/api/auth/profile`, { headers: authHeaders })
-      .then(res => res.json())
-      .then(data => setUserProfile(data)).catch(() => {});
+      .then(async res => {
+        if (res.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/', { replace: true });
+          throw new Error('Unauthorized');
+        }
+        if (!res.ok) throw new Error('Server sleeping');
+        return res.json();
+      })
+      .then(data => setUserProfile(data))
+      .catch((err) => {
+        if (err.message !== 'Unauthorized') {
+          // If it's a network error (Render asleep), show a loading state instead of a fake account
+          setUserProfile({ name: 'Waking Server...', email: 'Loading...', avatar: '' });
+        }
+      });
 
     fetch(`${API_BASE}/api/progress`, { headers: authHeaders })
       .then(res => res.json())
@@ -356,7 +370,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <TimerProvider userProfile={userProfile} />
+      <TimerProvider userProfile={userProfile || { name: 'Loading...', email: '', avatar: '' }} />
 
       <div className="dashboard" aria-busy={isLoading}>
         <ProblemExplorer 
