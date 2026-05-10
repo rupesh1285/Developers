@@ -715,110 +715,110 @@ body {
   color: rgba(255, 255, 255, 0.4);
 }
 
-.filters-actions {
+/* ==========================================
+   V2 REDESIGNED DROPDOWNS & PILLS
+========================================== */
+.v2-filter-group {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.filter-pill {
+.v2-pill {
   position: relative;
-  height: 40px;
+  height: 38px;
   padding: 0 16px;
   display: flex;
   align-items: center;
   gap: 8px;
-
   cursor: pointer;
-  transition: all 0.3s ease;
-  background: rgba(16, 18, 26, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  /* Match the micro-radius */
-  box-shadow: none;
-
-}
-
-.filter-pill:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.filter-pill.active {
-  background: rgba(16, 18, 26, 0.95);
-  border-color: #d946ef;
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(217, 70, 239, 0.15), 0 0 15px rgba(217, 70, 239, 0.2);
-}
-
-.filter-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
+  background: rgba(30, 35, 45, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  color: #e5e7eb !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
   user-select: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
 }
 
-.filter-pill:hover .filter-text,
-.filter-pill.active .filter-text {
-  color: #fff;
+.v2-pill:hover {
+  background: rgba(45, 50, 65, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-.chevron-icon {
+.v2-pill.active {
+  background: rgba(59, 130, 246, 0.15) !important;
+  border-color: #3b82f6 !important;
+  color: #60a5fa !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2) !important;
+}
+
+.v2-pill-text {
+  pointer-events: none;
+  font-size: 14px;
+}
+
+.v2-pill-icon {
   font-size: 16px;
-  color: var(--text-muted);
-  transition: transform 0.3s;
+  transition: transform 0.2s ease;
+  pointer-events: none;
+  opacity: 0.7;
 }
 
-.filter-pill.active .chevron-icon {
+.v2-pill.active .v2-pill-icon {
   transform: rotate(180deg);
-  color: #d946ef;
+  opacity: 1;
 }
 
-/* Tag Filter (Dropdowns) */
-.dropdown-menu {
+/* The Dropdown Container */
+.v2-dropdown {
   position: absolute;
-  top: calc(100% + 12px);
+  top: calc(100% + 8px);
   left: 0;
   min-width: 160px;
-  background: rgba(12, 14, 20, 0.85);
-  backdrop-filter: blur(20px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  padding: 8px;
-  z-index: 100;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(110, 160, 234, 0.1);
-  display: flex;
+  background: #1e232d !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  padding: 6px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
   opacity: 0;
   visibility: hidden;
-
-  /* 🌟 THE SPEED FIX: Reduced the travel distance and made it lightning fast (0.08s) */
-  transform: translateY(-5px) scale(0.98);
-  transition: all 0.08s ease;
-
-  transform-origin: top left;
-  flex-direction: column;
+  transform: translateY(-10px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  z-index: 9999 !important;
 }
 
-.filter-pill.active .dropdown-menu {
+.v2-pill.active .v2-dropdown {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0) scale(1);
+  transform: translateY(0);
 }
 
-.dropdown-item {
-  padding: 10px 14px;
-  border-radius: 8px;
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+/* The Dropdown Options */
+.v2-dropdown-item {
+  width: 100% !important;
+  padding: 10px 14px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: #cbd5e1 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: block !important;
 }
 
-.dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  transform: translateX(4px);
+.v2-dropdown-item:hover {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #fff !important;
+  transform: translateX(4px) !important;
 }
 
 /* Topic Filter Menus */
@@ -1025,24 +1025,27 @@ body {
 }
 
 .topic-pill-item {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  color: var(--text-muted);
+  background: rgba(30, 35, 45, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  padding: 6px 14px !important;
+  border-radius: 20px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #e5e7eb !important;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
+  transition: all 0.2s ease !important;
   user-select: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
 }
 
 .topic-pill-item:hover {
-  border-color: rgba(110, 160, 234, 0.5);
-  background: rgba(110, 160, 234, 0.1);
-  color: #fff;
+  border-color: #3b82f6 !important;
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #fff !important;
+  transform: translateY(-1px) !important;
 }
 
 .topic-pill-item:active {
@@ -1051,10 +1054,10 @@ body {
 }
 
 .topic-pill-item.selected {
-  background: rgba(217, 70, 239, 0.15);
-  border-color: #d946ef;
-  color: #fff;
-  box-shadow: 0 0 10px rgba(217, 70, 239, 0.2);
+  background: rgba(217, 70, 239, 0.2) !important;
+  border-color: #d946ef !important;
+  color: #fff !important;
+  box-shadow: 0 0 12px rgba(217, 70, 239, 0.3) !important;
 
   /* 🌟 THE ANIMATION FIX 2: Trigger the rubber-band snap effect when it mounts */
   animation: squeezeSnap 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;

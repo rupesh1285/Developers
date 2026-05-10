@@ -47,7 +47,18 @@ router.get("/", async (req, res) => {
 ========================================================== */
 router.get("/:id", async (req, res) => {
     try {
-        const problem = await Problem.findById(req.params.id);
+        let problem;
+        const idParam = req.params.id;
+
+        // Check if it is a valid 24-character hex ObjectId
+        if (idParam.match(/^[0-9a-fA-F]{24}$/)) {
+            problem = await Problem.findById(idParam);
+        } else {
+            // It's a slug! (e.g. "two-sum" -> "Two Sum")
+            // We escape any special chars just in case, but usually it's just words
+            const regexTitle = idParam.replace(/-/g, '\\s*');
+            problem = await Problem.findOne({ title: { $regex: new RegExp(`^${regexTitle}$`, 'i') } });
+        }
 
         if (!problem) {
             return res.status(404).json({ message: "Problem not found" });

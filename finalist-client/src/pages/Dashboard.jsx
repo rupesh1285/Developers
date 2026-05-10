@@ -5,8 +5,6 @@ import TimerProvider from '../components/TimerProvider';
 import ProblemExplorer from '../components/ProblemExplorer';
 import "../dashboard.css";
 
-const WorkspacePanel = lazy(() => import('../components/WorkspacePanel'));
-
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -15,15 +13,14 @@ export default function Dashboard() {
   const [solvedIds, setSolvedIds] = useState([]);
   const [starredIds, setStarredIds] = useState([]);
   const [analyticsData, setAnalyticsData] = useState({ streak: { current: 0, max: 0, timeSpentHrs: 0 }, heatmap: [], topics: [] });
-  const [userProfile, setUserProfile] = useState({ name: 'Developer', email: 'developer@finalist.com', avatar: '' });
+  const [userProfile, setUserProfile] = useState(null);
 
   // 🌟 THE FIX 1: Lazy Cache for heavy problem descriptions
   const [fullProblemCache, setFullProblemCache] = useState({});
 
   // --- UI STATE ---
   const [isLoading, setIsLoading] = useState(true);
-  const [activeProblemId, setActiveProblemId] = useState(localStorage.getItem("finalist_active_problem") || null);
-  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(!!localStorage.getItem("finalist_active_problem"));
+  const [activeProblemId, setActiveProblemId] = useState(null);
 
   // 🌟 THE FIX 2: Combine lightweight list data with the heavy fetched description
   const activeProblem = useMemo(() => {
@@ -172,14 +169,33 @@ export default function Dashboard() {
       }).catch(err => { if (!cachedProblems) setIsLoading(false); });
 
     fetch(`${API_BASE}/api/auth/profile`, { headers: authHeaders })
-      .then(res => res.json())
-      .then(data => setUserProfile(data)).catch(() => {});
+      .then(async res => {
+        if (res.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/', { replace: true });
+          throw new Error('Unauthorized');
+        }
+        if (!res.ok) throw new Error('Server sleeping');
+        return res.json();
+      })
+      .then(data => setUserProfile(data))
+      .catch((err) => {
+        if (err.message !== 'Unauthorized') {
+          // If it's a network error (Render asleep), show a loading state instead of a fake account
+          setUserProfile({ name: 'Waking Server...', email: 'Loading...', avatar: '' });
+        }
+      });
 
     fetch(`${API_BASE}/api/progress`, { headers: authHeaders })
       .then(res => res.json())
       .then(progress => {
-        setSolvedIds(progress.filter(p => p.solved).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem)));
-        setStarredIds(progress.filter(p => p.starred).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem)));
+        const solved = progress.filter(p => p.solved).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem));
+        const starred = progress.filter(p => p.starred).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem));
+        setSolvedIds(solved);
+        setStarredIds(starred);
+        // Persist to localStorage so ProblemWorkspace can read correct initial state
+        localStorage.setItem('finalist_starred', JSON.stringify(starred));
+        localStorage.setItem('finalist_solved', JSON.stringify(solved));
       }).catch(() => {});
 
     fetch(`${API_BASE}/api/progress/analytics`, { headers: authHeaders })
@@ -188,6 +204,20 @@ export default function Dashboard() {
 
   }, [navigate]);
 
+  // Sync star/solved state when toggled from ProblemWorkspace (which dispatches a StorageEvent)
+  useEffect(() => {
+    const handleStorageSync = (e) => {
+      if (e.key === 'finalist_starred') {
+        try { setStarredIds(JSON.parse(e.newValue || '[]')); } catch (_) {}
+      }
+      if (e.key === 'finalist_solved') {
+        try { setSolvedIds(JSON.parse(e.newValue || '[]')); } catch (_) {}
+      }
+    };
+    window.addEventListener('storage', handleStorageSync);
+    return () => window.removeEventListener('storage', handleStorageSync);
+  }, []);
+
   // =========================================================================
   // 5. ENGINE: INTERACTION & DRAGGER
   // =========================================================================
@@ -195,18 +225,19 @@ export default function Dashboard() {
     e.stopPropagation();
     const token = localStorage.getItem('token');
     const isCurrentlySolved = solvedIds.includes(String(id));
-
-    setSolvedIds(prev => isCurrentlySolved ? prev.filter(i => i !== String(id)) : [...prev, String(id)]);
-
     const problem = problemsData.find(p => String(p._id) === String(id));
-    const tags = problem?.tags || [];
-    const todayStr = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    const problemTags = problem?.tags || [];
+    const nextSolved = isCurrentlySolved ? solvedIds.filter(i => i !== String(id)) : [...solvedIds, String(id)];
+    
+    setSolvedIds(nextSolved);
+    localStorage.setItem('finalist_solved', JSON.stringify(nextSolved));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'finalist_solved', newValue: JSON.stringify(nextSolved) }));
 
     setAnalyticsData(prev => {
+      if (!prev) return prev;
+      const todayStr = new Date().toISOString().split('T')[0];
       const newTopics = prev.topics.map(t => {
-        if (tags.includes(t.name)) {
-          return { ...t, solved: Math.max(0, t.solved + (isCurrentlySolved ? -1 : 1)) };
-        }
+        if (problemTags.includes(t.name)) return { ...t, value: Math.max(0, t.value + (isCurrentlySolved ? -1 : 1)) };
         return t;
       });
 
@@ -223,22 +254,7 @@ export default function Dashboard() {
         return d;
       });
 
-      const currentStreak = prev.streak.current;
-      const isTodayInHeatmap = newHeatmap.some(d => d.date === todayStr && d.count > 0);
-      let newStreak = currentStreak;
-
-      if (!isCurrentlySolved && isTodayInHeatmap && currentStreak === 0) {
-        newStreak = 1; 
-      } else if (isCurrentlySolved && !isTodayInHeatmap) {
-        newStreak = Math.max(0, currentStreak - 1); 
-      }
-
-      return { 
-        ...prev, 
-        topics: newTopics, 
-        heatmap: newHeatmap,
-        streak: { ...prev.streak, current: newStreak, max: Math.max(prev.streak.max, newStreak) }
-      };
+      return { ...prev, topics: newTopics, heatmap: newHeatmap };
     });
 
     try {
@@ -246,7 +262,7 @@ export default function Dashboard() {
       const authHeaders = { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset };
       fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, { method: "POST", headers: authHeaders });
     } catch (err) {
-      setSolvedIds(prev => isCurrentlySolved ? [...prev, String(id)] : prev.filter(i => i !== String(id)));
+      // Quiet fail or handle error
     }
   };
 
@@ -254,7 +270,12 @@ export default function Dashboard() {
     e.stopPropagation();
     const token = localStorage.getItem('token');
     const isCurrentlyStarred = starredIds.includes(String(id));
-    setStarredIds(prev => isCurrentlyStarred ? prev.filter(i => i !== String(id)) : [...prev, String(id)]);
+    const nextStarred = isCurrentlyStarred ? starredIds.filter(i => i !== String(id)) : [...starredIds, String(id)];
+
+    setStarredIds(nextStarred);
+    localStorage.setItem('finalist_starred', JSON.stringify(nextStarred));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'finalist_starred', newValue: JSON.stringify(nextStarred) }));
+
     try { fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-star/${id}`, { method: "POST", headers: { "Authorization": "Bearer " + token } }); } catch (err) { }
   };
 
@@ -326,43 +347,17 @@ export default function Dashboard() {
   };
 
   // 🌟 THE FIX 3: State Reference blocks stale closures, guaranteeing perfect toggle behavior
-  const stateRef = useRef({ activeProblemId, isWorkspaceOpen, fullProblemCache });
+  const stateRef = useRef({ activeProblemId, fullProblemCache });
   useEffect(() => {
-      stateRef.current = { activeProblemId, isWorkspaceOpen, fullProblemCache };
-  }, [activeProblemId, isWorkspaceOpen, fullProblemCache]);
+      stateRef.current = { activeProblemId, fullProblemCache };
+  }, [activeProblemId, fullProblemCache]);
 
-  const handleProblemClick = useCallback((id) => {
-    const { activeProblemId, isWorkspaceOpen, fullProblemCache } = stateRef.current;
-    
-    if (activeProblemId === String(id) && isWorkspaceOpen) {
-      // CLOSE LOGIC
-      setIsWorkspaceOpen(false);
-      setIsAnalyticsOpen(true);
-      localStorage.setItem('finalist_analytics_state', 'visible');
-      
-      setTimeout(() => {
-        setActiveProblemId(null);
-        localStorage.removeItem("finalist_active_problem");
-      }, 450); 
-    } else {
-      // OPEN LOGIC
-      setActiveProblemId(String(id));
-      localStorage.setItem("finalist_active_problem", String(id));
-      
-      // 🌟 FETCH FULL PROBLEM DATA LAZILY
-      if (!fullProblemCache[id]) {
-          fetch(`${import.meta.env.VITE_API_URL}/api/problems/${id}`)
-              .then(res => res.json())
-              .then(fullData => {
-                  setFullProblemCache(prev => ({...prev, [id]: fullData}));
-              }).catch(console.error);
-      }
-
-      if (!isWorkspaceOpen) {
-         setIsWorkspaceOpen(true);
-      }
-    }
-  }, []);
+  const handleProblemClick = useCallback((problem) => {
+    const slug = problem.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    // Cache the basic problem info so the workspace page loads instantly
+    sessionStorage.setItem(`problem_${slug}`, JSON.stringify(problem));
+    navigate(`/problems/${slug}`);
+  }, [navigate]);
 
   // =========================================================================
   // RENDER
@@ -388,7 +383,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <TimerProvider userProfile={userProfile} />
+      <TimerProvider userProfile={userProfile || { name: 'Loading...', email: '', avatar: '' }} />
 
       <div className="dashboard" aria-busy={isLoading}>
         <ProblemExplorer 
@@ -402,22 +397,8 @@ export default function Dashboard() {
           handleToggleStar={handleToggleStar}
           selectedTags={selectedTags}
           handleTagToggle={handleTagToggle}
-          isWorkspaceOpen={isWorkspaceOpen} 
+          isWorkspaceOpen={false} 
         />
-
-        {/* RIGHT WORKSPACE PANEL */}
-        <div className={`right-panel ${!isWorkspaceOpen ? 'collapsed' : ''}`} id="right-panel" role="region" aria-label="Workspace">
-          {activeProblemId && (
-            <Suspense fallback={<div style={{ color: 'var(--text-muted)', padding: '20px' }}>Loading Workspace...</div>}>
-              <WorkspacePanel
-                problem={activeProblem} 
-                isStarred={starredIds.includes(activeProblemId)}
-                onToggleStar={handleToggleStar}
-                onClose={() => handleProblemClick(activeProblemId)}
-              />
-            </Suspense>
-          )}
-        </div>
 
         {/* VERTICAL DIVIDER */}
         {activeProblemId && (

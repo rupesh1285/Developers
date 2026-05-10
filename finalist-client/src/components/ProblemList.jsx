@@ -8,7 +8,7 @@ const ProblemRow = memo(({
   const onRowKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      handleProblemClick(String(problem._id));
+      handleProblemClick(problem);
     }
   };
   
@@ -16,7 +16,7 @@ const ProblemRow = memo(({
     <div 
       className={`problem-strip ${zebraClass} ${isActive ? 'active-problem' : ''}`} 
       data-id={problem._id} 
-      onClick={() => handleProblemClick(String(problem._id))}
+      onClick={() => handleProblemClick(problem)}
       role="button"
       tabIndex={0}
       aria-pressed={isActive}
