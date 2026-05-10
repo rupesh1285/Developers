@@ -44,7 +44,7 @@ const editorStyles = `
   .ws-ide-header {
     display: flex; align-items: center; gap: 10px; padding: 0 14px;
     height: 32px; flex-shrink: 0;
-    background: #161b22; border-bottom: 1px solid #21262d;
+    background: rgba(13, 17, 23, 0.8); border-bottom: 1px solid #21262d;
     margin: 0;
   }
   .ws-ide-header .header-title {
@@ -230,9 +230,9 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
         <div style={{ flex: editorFlex, overflow: 'hidden', minHeight: 0, transition: isConsoleResizing ? 'none' : 'flex 0.2s ease', position: 'relative', display: 'flex', flexDirection: 'column' }}>
           {/* THE STRIP (ONLY VISIBLE IF COLLAPSED) */}
           <div onClick={() => setEditorHeightPct(65)}
-            style={{ display: isEditorCollapsed ? 'flex' : 'none', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#484f58', cursor: 'pointer', borderBottom: '1px solid #21262d', transition: 'all 0.2s', backgroundColor: '#161b22', zIndex: 20 }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#8b949e'; e.currentTarget.style.backgroundColor = '#1c2128'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#484f58'; e.currentTarget.style.backgroundColor = '#161b22'; }}>
+            style={{ display: isEditorCollapsed ? 'flex' : 'none', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#484f58', cursor: 'pointer', borderBottom: '1px solid #21262d', transition: 'all 0.2s', backgroundColor: 'rgba(13, 17, 23, 0.8)', zIndex: 20 }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#8b949e'; e.currentTarget.style.backgroundColor = 'rgba(22, 27, 34, 0.9)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#484f58'; e.currentTarget.style.backgroundColor = 'rgba(13, 17, 23, 0.8)'; }}>
             <i className="ri-code-s-slash-line" style={{ fontSize: '14px' }}></i>
             <span style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700, textAlign: 'center' }}>Code Space</span>
           </div>
@@ -263,9 +263,9 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
         <div style={{ flex: consoleFlex, overflow: 'hidden', minHeight: 0, transition: isConsoleResizing ? 'none' : 'flex 0.2s ease', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117' }}>
           {isConsoleCollapsed ? (
             <div onClick={() => setEditorHeightPct(65)}
-              style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#484f58', cursor: 'pointer', borderTop: '1px solid #21262d', transition: 'color 0.2s' }}
-              onMouseEnter={e => e.currentTarget.style.color = '#8b949e'}
-              onMouseLeave={e => e.currentTarget.style.color = '#484f58'}>
+              style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#484f58', cursor: 'pointer', borderTop: '1px solid #21262d', transition: 'all 0.2s', backgroundColor: 'rgba(13, 17, 23, 0.8)' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#8b949e'; e.currentTarget.style.backgroundColor = 'rgba(22, 27, 34, 0.9)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#484f58'; e.currentTarget.style.backgroundColor = 'rgba(13, 17, 23, 0.8)'; }}>
               <i className="ri-terminal-line" style={{ fontSize: '14px' }}></i>
               <span style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>Output Console</span>
             </div>

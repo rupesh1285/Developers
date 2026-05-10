@@ -288,7 +288,7 @@ export default function ProblemWorkspace() {
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#0d1117', color: '#c9d1d9', overflow: 'hidden' }}>
 
         {/* SLIM TOP BAR */}
-        <div style={{ height: '32px', backgroundColor: '#161b22', borderBottom: '1px solid #21262d', display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0, gap: '12px' }}>
+        <div style={{ height: '32px', backgroundColor: 'rgba(13, 17, 23, 0.8)', borderBottom: '1px solid #21262d', display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0, gap: '12px' }}>
           <button
             onClick={() => navigate('/problems')}
             style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: '600', transition: 'color 0.2s', textTransform: 'uppercase', letterSpacing: '0.5px' }}
