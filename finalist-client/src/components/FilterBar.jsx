@@ -59,7 +59,7 @@ export default React.memo(function FilterBar({
   // Click Outside Handler
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!e.target.closest('.filter-pill')) { setDiffOpen(false); setStatusOpen(false); }
+      if (!e.target.closest('.v2-pill')) { setDiffOpen(false); setStatusOpen(false); }
       if (topicMenuRef.current && !topicMenuRef.current.contains(e.target) && !e.target.closest('#topic-btn')) setTopicMenuOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
