@@ -420,7 +420,7 @@ export default function ProblemWorkspace() {
           />
 
           {/* ── RIGHT PANE ── */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', minWidth: 0, overflow: 'hidden', margin: 0, padding: 0 }}>
             {isRightCollapsed ? (
               <div className="ws-strip right" style={{ width: '32px' }} onClick={() => setLeftWidthPct(45)}>
                 <i className="ri-code-line" style={{ fontSize: '15px' }}></i>

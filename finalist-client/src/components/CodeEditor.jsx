@@ -45,6 +45,7 @@ const editorStyles = `
     display: flex; align-items: center; gap: 10px; padding: 0 14px;
     height: 32px; flex-shrink: 0;
     background: #161b22; border-bottom: 1px solid #21262d;
+    margin: 0;
   }
   .ws-ide-header .header-title {
     display: flex; align-items: center; gap: 6px;
@@ -120,6 +121,15 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     return () => { if (cmInstanceRef.current) { try { cmInstanceRef.current.toTextArea(); } catch (e) {} cmInstanceRef.current = null; } };
   }, [language, problem, cmInstanceRef]);
 
+  // Refresh CodeMirror when uncollapsing
+  useEffect(() => {
+    if (!isEditorCollapsed && cmInstanceRef.current) {
+      setTimeout(() => {
+        cmInstanceRef.current.refresh();
+      }, 50);
+    }
+  }, [isEditorCollapsed]);
+
   useEffect(() => {
     const handleClickOutside = (e) => { if (langPillRef.current && !langPillRef.current.contains(e.target)) setLangMenuOpen(false); };
     document.addEventListener('mousedown', handleClickOutside);
@@ -180,8 +190,8 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
   return (
     <>
       <style>{editorStyles}</style>
-      <div ref={rightPaneRef} className={`tab-pane ${isActive ? 'active' : ''}`}
-        style={{ backgroundColor: '#0d1117', display: 'flex', flexDirection: 'column', height: '100%', userSelect: isConsoleResizing ? 'none' : 'auto', overflow: 'hidden' }}>
+      <div ref={rightPaneRef} 
+        style={{ backgroundColor: '#0d1117', display: 'flex', flexDirection: 'column', height: '100%', width: '100%', userSelect: isConsoleResizing ? 'none' : 'auto', overflow: 'hidden', margin: 0, padding: 0 }}>
 
         {/* ── COLLAPSED CODE STRIP ── */}
         {isEditorCollapsed ? (
