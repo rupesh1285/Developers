@@ -193,61 +193,55 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
       <div ref={rightPaneRef} 
         style={{ backgroundColor: '#0d1117', display: 'flex', flexDirection: 'column', height: '100%', width: '100%', userSelect: isConsoleResizing ? 'none' : 'auto', overflow: 'hidden', margin: 0, padding: 0 }}>
 
-        {/* ── COLLAPSED CODE STRIP ── */}
-        {isEditorCollapsed ? (
+        {/* ── IDE HEADER (HIDDEN IF COLLAPSED) ── */}
+        <div className="ws-ide-header" style={{ display: isEditorCollapsed ? 'none' : 'flex' }}>
+          <div className="header-title">
+            <i className="ri-code-s-slash-line" style={{ fontSize: '13px', color: '#58a6ff' }}></i>
+            Code Space
+          </div>
+          <div ref={langPillRef} className={`v2-pill ${langMenuOpen ? 'active' : ''}`}
+            style={{ height: '22px', padding: '0 8px' }}
+            onClick={() => setLangMenuOpen(!langMenuOpen)} role="button" tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLangMenuOpen(!langMenuOpen); } }}>
+            <span className="v2-pill-text" style={{ fontSize: '11px' }}>{LANG_MAP[language] || 'JavaScript'}</span>
+            <i className="ri-arrow-down-s-line v2-pill-icon" style={{ fontSize: '12px' }}></i>
+            <div className="v2-dropdown" style={{ top: '26px' }}>
+              {Object.entries(LANG_MAP).map(([val, label]) => (
+                <button key={val} className="v2-dropdown-item" type="button"
+                  style={{ fontSize: '11px', padding: '6px 12px' }}
+                  onClick={(e) => { e.stopPropagation(); handleLangChange(val); }}>{label}</button>
+              ))}
+            </div>
+          </div>
+          <div className="header-right">
+            <button className={`ws-solve-btn ${isSolved ? 'solved' : 'unsolved'}`}
+              style={{ padding: '4px 12px', fontSize: '11px' }} onClick={onToggleSolved}>
+              <i className={isSolved ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'} style={{ fontSize: '13px' }}></i>
+              {isSolved ? 'Solved' : 'Mark Solved'}
+            </button>
+            <button className="ws-run-btn" onClick={handleRunCode} disabled={isRunning}>
+              <i className={isRunning ? 'ri-loader-4-line ri-spin' : 'ri-play-fill'}></i>
+              {isRunning ? 'Running…' : 'Run Code'}
+            </button>
+          </div>
+        </div>
+
+        {/* ── CODE EDITOR AREA ── */}
+        <div style={{ flex: editorFlex, overflow: 'hidden', minHeight: 0, transition: isConsoleResizing ? 'none' : 'flex 0.2s ease', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+          {/* THE STRIP (ONLY VISIBLE IF COLLAPSED) */}
           <div onClick={() => setEditorHeightPct(65)}
-            style={{ height: '32px', width: '100%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#484f58', cursor: 'pointer', borderBottom: '1px solid #21262d', backgroundColor: '#161b22', transition: 'all 0.2s', zIndex: 20 }}
+            style={{ display: isEditorCollapsed ? 'flex' : 'none', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#484f58', cursor: 'pointer', borderBottom: '1px solid #21262d', transition: 'all 0.2s', backgroundColor: '#161b22', zIndex: 20 }}
             onMouseEnter={e => { e.currentTarget.style.color = '#8b949e'; e.currentTarget.style.backgroundColor = '#1c2128'; }}
             onMouseLeave={e => { e.currentTarget.style.color = '#484f58'; e.currentTarget.style.backgroundColor = '#161b22'; }}>
             <i className="ri-code-s-slash-line" style={{ fontSize: '14px' }}></i>
             <span style={{ fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700, textAlign: 'center' }}>Code Space</span>
           </div>
-        ) : (
-          <>
-            {/* ── IDE HEADER (ONLY SHOWN IF NOT COLLAPSED) ── */}
-            <div className="ws-ide-header">
-              <div className="header-title">
-                <i className="ri-code-s-slash-line" style={{ fontSize: '13px', color: '#58a6ff' }}></i>
-                Code Space
-              </div>
 
-              {/* Language picker */}
-              <div ref={langPillRef} className={`v2-pill ${langMenuOpen ? 'active' : ''}`}
-                style={{ height: '22px', padding: '0 8px' }}
-                onClick={() => setLangMenuOpen(!langMenuOpen)} role="button" tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLangMenuOpen(!langMenuOpen); } }}>
-                <span className="v2-pill-text" style={{ fontSize: '11px' }}>{LANG_MAP[language] || 'JavaScript'}</span>
-                <i className="ri-arrow-down-s-line v2-pill-icon" style={{ fontSize: '12px' }}></i>
-                <div className="v2-dropdown" style={{ top: '26px' }}>
-                  {Object.entries(LANG_MAP).map(([val, label]) => (
-                    <button key={val} className="v2-dropdown-item" type="button"
-                      style={{ fontSize: '11px', padding: '6px 12px' }}
-                      onClick={(e) => { e.stopPropagation(); handleLangChange(val); }}>{label}</button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="header-right">
-                <button className={`ws-solve-btn ${isSolved ? 'solved' : 'unsolved'}`}
-                  style={{ padding: '4px 12px', fontSize: '11px' }} onClick={onToggleSolved}>
-                  <i className={isSolved ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'} style={{ fontSize: '13px' }}></i>
-                  {isSolved ? 'Solved' : 'Mark Solved'}
-                </button>
-                <button className="ws-run-btn" onClick={handleRunCode} disabled={isRunning}>
-                  <i className={isRunning ? 'ri-loader-4-line ri-spin' : 'ri-play-fill'}></i>
-                  {isRunning ? 'Running…' : 'Run Code'}
-                </button>
-              </div>
-            </div>
-
-            {/* ── CODE EDITOR AREA (ONLY SHOWN IF NOT COLLAPSED) ── */}
-            <div style={{ flex: editorFlex, overflow: 'hidden', minHeight: 0, transition: isConsoleResizing ? 'none' : 'flex 0.2s ease', position: 'relative', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-                <textarea ref={editorRef} id={`cm-editor-${problem._id}`} style={{ opacity: 0 }}></textarea>
-              </div>
-            </div>
-          </>
-        )}
+          {/* THE EDITOR (HIDDEN IF COLLAPSED BUT STAYS IN DOM) */}
+          <div style={{ display: isEditorCollapsed ? 'none' : 'flex', flex: 1, position: 'relative', minHeight: 0 }}>
+            <textarea ref={editorRef} id={`cm-editor-${problem._id}`} style={{ opacity: 0 }}></textarea>
+          </div>
+        </div>
 
         {/* ── HORIZONTAL RESIZER ── */}
         <div
