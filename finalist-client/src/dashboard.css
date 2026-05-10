@@ -1025,24 +1025,27 @@ body {
 }
 
 .topic-pill-item {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  color: var(--text-muted);
+  background: rgba(30, 35, 45, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  padding: 6px 14px !important;
+  border-radius: 20px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #e5e7eb !important;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
+  transition: all 0.2s ease !important;
   user-select: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
 }
 
 .topic-pill-item:hover {
-  border-color: rgba(110, 160, 234, 0.5);
-  background: rgba(110, 160, 234, 0.1);
-  color: #fff;
+  border-color: #3b82f6 !important;
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #fff !important;
+  transform: translateY(-1px) !important;
 }
 
 .topic-pill-item:active {
@@ -1051,10 +1054,10 @@ body {
 }
 
 .topic-pill-item.selected {
-  background: rgba(217, 70, 239, 0.15);
-  border-color: #d946ef;
-  color: #fff;
-  box-shadow: 0 0 10px rgba(217, 70, 239, 0.2);
+  background: rgba(217, 70, 239, 0.2) !important;
+  border-color: #d946ef !important;
+  color: #fff !important;
+  box-shadow: 0 0 12px rgba(217, 70, 239, 0.3) !important;
 
   /* 🌟 THE ANIMATION FIX 2: Trigger the rubber-band snap effect when it mounts */
   animation: squeezeSnap 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
