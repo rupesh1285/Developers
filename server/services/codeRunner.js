@@ -12,100 +12,76 @@ if (!fs.existsSync(tempDir)) {
 }
 
 /**
- * Executes C++ code in a Docker container
- * @param {string} code - The C++ source code
- * @param {string} input - Optional stdin input for the code
- * @returns {Promise<{success: boolean, output: string, error: string, executionTime: number}>}
+ * Executes C++ code. Optimized for production (Render/Linux) and local development.
  */
 const runCppCode = (code, input = "") => {
     return new Promise((resolve) => {
         const startTime = Date.now();
-        // Generate a unique ID for this execution
         const jobId = crypto.randomUUID();
         const jobDir = path.join(tempDir, jobId);
         const codeFilePath = path.join(jobDir, 'main.cpp');
+        
+        // Use .exe for Windows local, no extension for Linux/Render
+        const isWin = process.platform === 'win32';
+        const exeFileName = isWin ? 'main.exe' : 'main';
+        const exeFilePath = path.join(jobDir, exeFileName);
 
         try {
-            // 1. Create a unique folder for this job
-            fs.mkdirSync(jobDir, { recursive: true });
-
-            // 2. Write the C++ code to the file
+            if (!fs.existsSync(jobDir)) fs.mkdirSync(jobDir, { recursive: true });
             fs.writeFileSync(codeFilePath, code);
 
-            // 3. Construct the Docker command arguments for execFile
-            // -v mounts the job directory into the container at /home/runner/app
-            // -w sets the working directory
-            // --network none prevents the code from accessing the internet
-            // --memory="256m" limits memory usage
-            // my-cpp-runner is the custom image we will build from our Dockerfile
-            const dockerArgs = [
-                'run', 
-                '--rm', 
-                '-v', `${jobDir}:/home/runner/app`, 
-                '-w', '/home/runner/app', 
-                '--network', 'none', 
-                '--memory=256m', 
-                'my-cpp-runner', 
-                'sh', '-c', 'g++ main.cpp -o main && ./main'
-            ];
+            // Command to compile
+            const compileCmd = 'g++';
+            const compileArgs = ['main.cpp', '-o', exeFileName];
 
-            console.log(`[CodeRunner] Starting docker for job ${jobId}`);
-            console.log(`[CodeRunner] JobDir: ${jobDir}`);
-            console.log(`[CodeRunner] Code:\n${code}\n-----------------`);
+            console.log(`[CodeRunner] Compiling for job ${jobId} on ${process.platform}...`);
 
-            // 4. Execute the command using execFile (safer than exec)
-            execFile('docker', dockerArgs, { timeout: 20000 }, (error, stdout, stderr) => {
-                const executionTime = Date.now() - startTime;
-                
-                // Cleanup: Delete the temporary job directory
-                try {
-                    fs.rmSync(jobDir, { recursive: true, force: true });
-                } catch (cleanupErr) {
-                    console.error("Failed to cleanup job directory:", cleanupErr);
-                }
-
-                if (error) {
-                    // Check if the error was due to a timeout
-                    if (error.killed) {
-                        return resolve({
-                            success: false,
-                            output: "",
-                            error: "Execution Timeout: Code took too long to run.",
-                            executionTime
-                        });
-                    }
-                    
-                    // Compilation or Runtime Error
-                    return resolve({
-                        success: false,
-                        output: stdout,
-                        error: stderr || error.message,
-                        executionTime
+            execFile(compileCmd, compileArgs, { cwd: jobDir, timeout: 15000 }, (compileErr, cStdout, cStderr) => {
+                if (compileErr) {
+                    cleanup(jobDir);
+                    return resolve({ 
+                        success: false, 
+                        output: cStdout, 
+                        error: "Compilation Error:\n" + (cStderr || compileErr.message), 
+                        executionTime: Date.now() - startTime 
                     });
                 }
 
-                // Success
-                resolve({
-                    success: true,
-                    output: stdout,
-                    error: null,
-                    executionTime
+                // Command to run the executable
+                // On Linux/Render, we need ./main
+                const runCmd = isWin ? exeFilePath : `./${exeFileName}`;
+                
+                execFile(runCmd, [], { cwd: jobDir, timeout: 10000 }, (runErr, rStdout, rStderr) => {
+                    const totalTime = Date.now() - startTime;
+                    cleanup(jobDir);
+
+                    if (runErr) {
+                        return resolve({ 
+                            success: false, 
+                            output: rStdout, 
+                            error: "Runtime Error:\n" + (rStderr || runErr.message), 
+                            executionTime: totalTime 
+                        });
+                    }
+
+                    resolve({ 
+                        success: true, 
+                        output: rStdout, 
+                        error: null, 
+                        executionTime: totalTime 
+                    });
                 });
             });
 
         } catch (err) {
-            // Cleanup on setup failure
-            if (fs.existsSync(jobDir)) {
-                fs.rmSync(jobDir, { recursive: true, force: true });
-            }
-            resolve({
-                success: false,
-                output: "",
-                error: "Server Error during setup: " + err.message,
-                executionTime: Date.now() - startTime
-            });
+            cleanup(jobDir);
+            resolve({ success: false, output: "", error: "Runner System Error: " + err.message, executionTime: Date.now() - startTime });
         }
     });
+};
+
+const cleanup = (dir) => {
+    try { if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true }); } catch (e) {}
 };
 
 module.exports = {
