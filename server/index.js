@@ -117,36 +117,6 @@ passport.use(new GitHubStrategy({
 app.use(passport.initialize());
 
 // ==========================================
-// 🚀 GOOGLE OAUTH ROUTES
-// ==========================================
-app.get("/api/auth/google", passport.authenticate("google", { 
-  scope: ["profile", "email"], 
-  session: false 
-}));
-
-app.get("/api/auth/google/callback", passport.authenticate("google", { session: false, failureRedirect: `${FRONTEND_URL}/signin` }), // 🌟 FIX: Dynamic Frontend URL
-  (req, res) => {
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
-    res.redirect(`${FRONTEND_URL}/problems?token=` + token); // 🌟 FIX: Dynamic Frontend URL
-  }
-);
-
-// ==========================================
-// 🚀 GITHUB OAUTH ROUTES
-// ==========================================
-app.get("/api/auth/github", passport.authenticate("github", { 
-  scope: ["user:email"], 
-  session: false 
-}));
-
-app.get("/api/auth/github/callback", passport.authenticate("github", { session: false, failureRedirect: `${FRONTEND_URL}/signin` }), // 🌟 FIX: Dynamic Frontend URL
-  (req, res) => {
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
-    res.redirect(`${FRONTEND_URL}/problems?token=` + token); // 🌟 FIX: Dynamic Frontend URL
-  }
-);
-
-// ==========================================
 
 app.use("/api/auth", authRoutes);
 app.use("/api/problems", problemRoutes);

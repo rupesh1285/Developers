@@ -86,13 +86,13 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
 
 // 2. Google sends user back here
 router.get("/google/callback", 
-    passport.authenticate("google", { session: false, failureRedirect: "http://localhost:5173/signin" }),
+    passport.authenticate("google", { session: false, failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:5173"}/signin` }),
     (req, res) => {
         // Generate JWT token for the OAuth user
         const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
         
-        // 🌟 THE CRITICAL FIX: Redirect to React Frontend (5173) instead of 5000
-        res.redirect(`http://localhost:5173/problems?token=${token}`);
+        // 🌟 THE CRITICAL FIX: Redirect to React Frontend
+        res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/problems?token=${token}`);
     }
 );
 
@@ -102,13 +102,13 @@ router.get("/github", passport.authenticate("github", { scope: ["user:email"] })
 
 // 2. GitHub sends user back here
 router.get("/github/callback", 
-    passport.authenticate("github", { session: false, failureRedirect: "http://localhost:5173/signin" }),
+    passport.authenticate("github", { session: false, failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:5173"}/signin` }),
     (req, res) => {
         // Generate JWT token for the OAuth user
         const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
         
-        // 🌟 THE CRITICAL FIX: Redirect to React Frontend (5173) instead of 5000
-        res.redirect(`http://localhost:5173/problems?token=${token}`);
+        // 🌟 THE CRITICAL FIX: Redirect to React Frontend
+        res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/problems?token=${token}`);
     }
 );
 
