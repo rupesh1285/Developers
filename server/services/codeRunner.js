@@ -52,28 +52,40 @@ const runCppCode = (code, input = "") => {
                     });
                 });
             } else {
-                // LOCAL: Use the 'Docker Container per language' method from the plan
-                const dockerArgs = [
-                    'run', '--rm', 
-                    '-v', `${jobDir}:/home/runner/app`, 
-                    '-w', '/home/runner/app', 
-                    '--network', 'none', '--memory=256m', 
-                    'my-cpp-runner', 
-                    'sh', '-c', 'g++ main.cpp -o main && ./main'
-                ];
-
-                console.log(`[CodeRunner] Local Mode: Spawning temporary Docker container.`);
-                execFile('docker', dockerArgs, { timeout: 15000 }, (err, stdout, stderr) => {
-                    const executionTime = Date.now() - startTime;
-                    cleanup(jobDir);
-
-                    if (err) {
-                        if (err.code === 'ENOENT') {
-                            return resolve({ success: false, output: "", error: "DOCKER ERROR: Docker Desktop is not running locally.", executionTime });
-                        }
-                        return resolve({ success: false, output: stdout, error: err.killed ? "Timeout" : (stderr || err.message), executionTime });
+                // LOCAL: Try direct g++ first for sub-second speed, fallback to Docker
+                const compileCmd = 'g++';
+                const compileArgs = ['main.cpp', '-o', 'main'];
+                
+                console.log(`[CodeRunner] Local Mode: Attempting direct execution for speed...`);
+                execFile(compileCmd, compileArgs, { cwd: jobDir, timeout: 10000 }, (cErr, cOut, cErrOut) => {
+                    if (cErr) {
+                        // If g++ isn't on host, fallback to Docker (the original behavior)
+                        console.log(`[CodeRunner] Local Mode: g++ not on host, falling back to Docker.`);
+                        const dockerArgs = [
+                            'run', '--rm', 
+                            '-v', `${jobDir}:/home/runner/app`, 
+                            '-w', '/home/runner/app', 
+                            '--network', 'none', '--memory=256m', 
+                            'my-cpp-runner', 
+                            'sh', '-c', 'g++ main.cpp -o main && ./main'
+                        ];
+                        execFile('docker', dockerArgs, { timeout: 15000 }, (dErr, dOut, dErrOut) => {
+                            const totalTime = Date.now() - startTime;
+                            cleanup(jobDir);
+                            if (dErr) return resolve({ success: false, output: dOut, error: dErr.killed ? "Timeout" : (dErrOut || dErr.message), executionTime: totalTime });
+                            resolve({ success: true, output: dOut, error: null, executionTime: totalTime });
+                        });
+                        return;
                     }
-                    resolve({ success: true, output: stdout, error: null, executionTime });
+                    
+                    // Direct run (Handle Windows .exe vs Linux binary)
+                    const exePath = process.platform === 'win32' ? 'main.exe' : './main';
+                    execFile(exePath, [], { cwd: jobDir, timeout: 5000 }, (rErr, rOut, rErrOut) => {
+                        const totalTime = Date.now() - startTime;
+                        cleanup(jobDir);
+                        if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
+                        resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
+                    });
                 });
             }
 

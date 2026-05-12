@@ -197,6 +197,19 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     finally { setIsRunning(false); }
   };
 
+  // ── DYNAMIC LOADING TEXT ──
+  const [loadingText, setLoadingText] = useState("Compiling...");
+  useEffect(() => {
+    if (!isRunning) return;
+    const sequence = ["Compiling...", "Compiling...", "Running Code...", "Running Code...", "Fetching Results...", "Finalizing..."];
+    let i = 0;
+    const interval = setInterval(() => {
+      i = (i + 1) % sequence.length;
+      setLoadingText(sequence[i]);
+    }, 600);
+    return () => clearInterval(interval);
+  }, [isRunning]);
+
   const handleResetCode = () => {
     setIsResetModalOpen(true);
   };
@@ -313,7 +326,12 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
                 )}
               </div>
               <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', fontFamily: '"Fira Code", monospace', fontSize: '13px', lineHeight: '1.6' }}>
-                {isRunning && <div style={{ color: '#8b949e', display: 'flex', alignItems: 'center', gap: '8px' }}><i className="ri-loader-4-line ri-spin"></i> Executing in Docker...</div>}
+                {isRunning && (
+                  <div style={{ color: '#8b949e', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <i className="ri-loader-4-line ri-spin" style={{ fontSize: '18px', color: '#58a6ff' }}></i>
+                    <span style={{ fontWeight: 600, letterSpacing: '0.5px' }}>{loadingText}</span>
+                  </div>
+                )}
                 {!isRunning && !output && !runError && <div style={{ color: '#484f58' }}>Run your code to see output here.</div>}
                 {output && <pre style={{ whiteSpace: 'pre-wrap', color: '#3fb950', margin: 0 }}>{output}</pre>}
                 {runError && <pre style={{ whiteSpace: 'pre-wrap', color: '#f85149', margin: 0 }}>{runError}</pre>}
