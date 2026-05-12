@@ -30,7 +30,16 @@ const runCode = (language, code, input = "") => {
         };
 
         const lang = config[language] || config["javascript"];
-        const fileName = lang.className ? `${lang.className}.${lang.ext}` : `main.${lang.ext}`;
+        
+        // ☕ JAVA SPECIAL HANDLING: Extract class name from code
+        let javaClassName = "Solution";
+        if (language === "text/x-java") {
+            const match = code.match(/public\s+class\s+(\w+)/);
+            if (match) javaClassName = match[1];
+        }
+
+        const fileName = language === "text/x-java" ? `${javaClassName}.java` : (lang.className ? `${lang.className}.${lang.ext}` : `main.${lang.ext}`);
+        const className = language === "text/x-java" ? javaClassName : lang.className;
         const codeFilePath = path.join(jobDir, fileName);
 
         try {
@@ -47,7 +56,7 @@ const runCode = (language, code, input = "") => {
                 // ⚡ CACHE CHECK (Compiled languages only)
                 if (lang.compiler && fs.existsSync(binPath)) {
                     console.log(`[CodeRunner] Cache Hit: ${codeHash}`);
-                    const runArgs = language === "text/x-java" ? ["-cp", tempDir, lang.className] : [];
+                    const runArgs = language === "text/x-java" ? ["-cp", tempDir, className] : [];
                     const runCmd = language === "text/x-java" ? "java" : binPath;
                     
                     return execFile(runCmd, runArgs, { timeout: 10000 }, (rErr, rOut, rErrOut) => {
@@ -77,7 +86,7 @@ const runCode = (language, code, input = "") => {
                         }
                         
                         const runCmd = language === "text/x-java" ? "java" : binPath;
-                        const runArgs = language === "text/x-java" ? ["Solution"] : [];
+                        const runArgs = language === "text/x-java" ? [className] : [];
 
                         execFile(runCmd, runArgs, { cwd: jobDir, timeout: 10000 }, (rErr, rOut, rErrOut) => {
                             const totalTime = Date.now() - startTime;
@@ -121,7 +130,7 @@ const runCode = (language, code, input = "") => {
                             console.log(`[CodeRunner] ${hostCompiler} not found. Falling back to Docker...`);
                             const dockerImages = { "text/x-c++src": "gcc:latest", "text/x-csrc": "gcc:latest", "text/x-java": "openjdk:17-jdk-slim" };
                             const dockerCmd = language === "text/x-java" 
-                                ? `javac ${fileName} && java Solution`
+                                ? `javac ${fileName} && java ${className}`
                                 : `g++ ${fileName} -o main -O0 && ./main`;
 
                             const dockerArgs = [
@@ -143,7 +152,7 @@ const runCode = (language, code, input = "") => {
                         }
 
                         const runCmd = language === "text/x-java" ? "java" : outBin;
-                        const runArgs = language === "text/x-java" ? ["Solution"] : [];
+                        const runArgs = language === "text/x-java" ? [className] : [];
 
                         execFile(runCmd, runArgs, { cwd: jobDir, timeout: 5000 }, (rErr, rOut, rErrOut) => {
                             const totalTime = Date.now() - startTime;
