@@ -176,19 +176,14 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
 
   const handleRunCode = async () => {
     if (!cmInstanceRef.current) return;
-    let backendLang = language;
-    if (language === 'text/x-c++src') backendLang = 'cpp';
-    else if (language === 'text/x-csrc') backendLang = 'c';
-    if (backendLang !== 'cpp') {
-      setRunError(`'${LANG_MAP[language]}' not supported yet. Use C++ for Phase 1.`);
-      setOutput(null); setExecutionTime(null); return;
-    }
+    // 🌍 Multi-language support enabled!
+    setIsRunning(true); setRunError(null); setOutput(null); setExecutionTime(null);
     setIsRunning(true); setRunError(null); setOutput(null); setExecutionTime(null);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/run`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ language: backendLang, code: cmInstanceRef.current.getValue() })
+        body: JSON.stringify({ language, code: cmInstanceRef.current.getValue() })
       });
       const data = await response.json();
       if (data.success) { setOutput(data.output); setExecutionTime(data.executionTime); }

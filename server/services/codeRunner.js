@@ -63,8 +63,8 @@ const runCode = (language, code, input = "") => {
                     // COMPILED LANGUAGES (C, C++, Java)
                     let compileArgs = [fileName, "-o", binPath, ...lang.args];
                     if (language === "text/x-c++src") {
-                        // Use the Pre-compiled Header for God-speed
-                        compileArgs.unshift("-include-pch", "/usr/include/c++/11/bits/stdc++.h.pch");
+                        // Use the stable Pre-compiled Header path
+                        compileArgs.unshift("-include-pch", "/usr/include/stdc++.h.pch");
                     }
                     if (language === "text/x-java") {
                         compileArgs = [fileName]; // javac only needs the filename
@@ -96,14 +96,52 @@ const runCode = (language, code, input = "") => {
                     });
                 }
             } else {
-                // 🏠 LOCAL MODE: Direct Host (Fastest for dev)
+                // 🏠 LOCAL MODE: Smart Fallback (Host -> Docker)
+                const runLocal = (cmd, args, fallback) => {
+                    execFile(cmd, args, { cwd: jobDir, timeout: 10000 }, (err, stdout, stderr) => {
+                        if (err && err.code === 'ENOENT') {
+                            console.log(`[CodeRunner] ${cmd} not found on host, falling back to Docker...`);
+                            return fallback();
+                        }
+                        const totalTime = Date.now() - startTime;
+                        cleanup(jobDir);
+                        if (err) return resolve({ success: false, output: stdout, error: "Runtime Error:\n" + (stderr || err.message), executionTime: totalTime });
+                        resolve({ success: true, output: stdout, error: null, executionTime: totalTime });
+                    });
+                };
+
                 if (lang.compiler) {
+                    // Try host compiler (clang++ or g++)
+                    const hostCompiler = language === "text/x-c++src" ? "g++" : (lang.compiler === "clang++" ? "g++" : lang.compiler);
                     const outBin = process.platform === 'win32' ? 'main.exe' : './main';
-                    execFile(lang.compiler, [fileName, "-o", "main", "-O0"], { cwd: jobDir, timeout: 10000 }, (cErr) => {
+                    
+                    execFile(hostCompiler, [fileName, "-o", "main", "-O0"], { cwd: jobDir, timeout: 10000 }, (cErr) => {
+                        if (cErr && cErr.code === 'ENOENT') {
+                            // FALLBACK TO DOCKER
+                            console.log(`[CodeRunner] Host compiler not found. Falling back to Docker...`);
+                            const dockerImages = { "text/x-c++src": "gcc", "text/x-csrc": "gcc", "text/x-java": "openjdk:17-slim" };
+                            const dockerCmd = language === "text/x-java" 
+                                ? `javac ${fileName} && java Solution`
+                                : `g++ ${fileName} -o main -O0 && ./main`;
+
+                            const dockerArgs = [
+                                'run', '--rm', '-v', `${jobDir}:/app`, '-w', '/app',
+                                dockerImages[language], 'sh', '-c', dockerCmd
+                            ];
+
+                            return execFile('docker', dockerArgs, { timeout: 15000 }, (dErr, dOut, dErrOut) => {
+                                const totalTime = Date.now() - startTime;
+                                cleanup(jobDir);
+                                if (dErr) return resolve({ success: false, output: dOut, error: dErrOut || dErr.message, executionTime: totalTime });
+                                resolve({ success: true, output: dOut, error: null, executionTime: totalTime });
+                            });
+                        }
+
                         if (cErr) {
                             cleanup(jobDir);
                             return resolve({ success: false, output: "", error: "Compilation Error: " + cErr.message, executionTime: Date.now() - startTime });
                         }
+
                         execFile(outBin, [], { cwd: jobDir, timeout: 5000 }, (rErr, rOut, rErrOut) => {
                             const totalTime = Date.now() - startTime;
                             cleanup(jobDir);
@@ -112,11 +150,24 @@ const runCode = (language, code, input = "") => {
                         });
                     });
                 } else {
-                    execFile(lang.runner, [fileName], { cwd: jobDir, timeout: 5000 }, (rErr, rOut, rErrOut) => {
+                    // Interpreted (Try python3 then python, then Docker)
+                    const hostCmd = language === "python" ? (process.platform === 'win32' ? "python" : "python3") : lang.runner;
+                    
+                    execFile(hostCmd, [fileName], { cwd: jobDir, timeout: 5000 }, (err, stdout, stderr) => {
+                        if (err && err.code === 'ENOENT') {
+                            const dockerImg = language === "python" ? "python:3-slim" : "node:slim";
+                            const dockerArgs = ['run', '--rm', '-v', `${jobDir}:/app`, '-w', '/app', dockerImg, lang.runner, fileName];
+                            return execFile('docker', dockerArgs, { timeout: 10000 }, (dErr, dOut, dErrOut) => {
+                                const totalTime = Date.now() - startTime;
+                                cleanup(jobDir);
+                                if (dErr) return resolve({ success: false, output: dOut, error: dErrOut || dErr.message, executionTime: totalTime });
+                                resolve({ success: true, output: dOut, error: null, executionTime: totalTime });
+                            });
+                        }
                         const totalTime = Date.now() - startTime;
                         cleanup(jobDir);
-                        if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
-                        resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
+                        if (err) return resolve({ success: false, output: stdout, error: stderr || err.message, executionTime: totalTime });
+                        resolve({ success: true, output: stdout, error: null, executionTime: totalTime });
                     });
                 }
             }
