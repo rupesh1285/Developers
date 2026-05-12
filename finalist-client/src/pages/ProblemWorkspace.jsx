@@ -120,6 +120,7 @@ export default function ProblemWorkspace() {
 
   // ── USER PROFILE ──────────────────────────────────────────────────────────
   const [userProfile, setUserProfile] = useState(null);
+  const [isProfileHovered, setIsProfileHovered] = useState(false);
 
   // Fetch problem & sync states
   useEffect(() => {
@@ -409,7 +410,23 @@ export default function ProblemWorkspace() {
           </div>
 
           {/* RIGHT: Profile Icon */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: 1, position: 'relative' }}>
+             {/* PREMIUM HOVER PILL */}
+             {isProfileHovered && (
+               <div style={{ 
+                 position: 'absolute', top: '100%', right: '0', marginTop: '12px',
+                 backgroundColor: 'rgba(13, 17, 23, 0.9)', backdropFilter: 'blur(10px)',
+                 border: '1px solid rgba(88,166,255,0.3)', borderRadius: '20px',
+                 padding: '6px 14px', whiteSpace: 'nowrap', color: '#fff', fontSize: '11px', fontWeight: '700',
+                 boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(88,166,255,0.2)',
+                 animation: 'fadeIn 0.2s ease', pointerEvents: 'none', zIndex: 100,
+                 display: 'flex', alignItems: 'center', gap: '6px'
+               }}>
+                 <i className="ri-user-heart-line" style={{ color: '#58a6ff' }}></i>
+                 View Profile
+               </div>
+             )}
+
              <div 
                style={{ 
                  width: '28px', 
@@ -422,9 +439,8 @@ export default function ProblemWorkspace() {
                  transition: 'transform 0.2s'
                }}
                onClick={() => navigate('/problems')}
-               onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-               onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-               title="View Profile"
+               onMouseEnter={() => { setIsProfileHovered(true); }}
+               onMouseLeave={() => { setIsProfileHovered(false); }}
              >
                 <img 
                   src={getAvatarSrc(userProfile)} 

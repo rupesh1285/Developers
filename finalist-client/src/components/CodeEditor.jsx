@@ -87,11 +87,15 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     "text/x-csrc": "C", "text/x-c++src": "C++", "text/x-java": "Java"
   };
   const BOILERPLATES = {
-    "javascript": `// Write logic for ${problem?.title}\nfunction solve() {\n    \n}`,
-    "python": `# Write logic for ${problem?.title}\ndef solve():\n    pass\n`,
-    "text/x-csrc": `// Write logic for ${problem?.title}\n#include <stdio.h>\nvoid solve() {\n    \n}\nint main() {solve(); return 0; }`,
-    "text/x-c++src": `// Write logic for ${problem?.title}\n#include <iostream>\nusing namespace std;\nvoid solve() {\n    \n}\nint main() {solve(); return 0; }`,
-    "text/x-java": `// Write logic for ${problem?.title}\nclass Solution {\n    public void solve() {\n        \n    }\n}`
+    "javascript": `/**\n * Problem: ${problem?.title}\n */\n\nfunction solve() {\n    // Write your logic here\n    \n}\n\n// Execute the solution\nsolve();`,
+    
+    "python": `# Problem: ${problem?.title}\n\ndef solve():\n    # Write your logic here\n    pass\n\nif __name__ == "__main__":\n    solve()`,
+    
+    "text/x-csrc": `/**\n * Problem: ${problem?.title}\n */\n#include <stdio.h>\n\nvoid solve() {\n    // Write your logic here\n    \n}\n\nint main() {\n    solve();\n    return 0;\n}`,
+    
+    "text/x-c++src": `#include <iostream>\nusing namespace std;\n\n/**\n * Problem: ${problem?.title}\n */\n\nvoid solve() {\n    // Write your logic here\n    \n}\n\nint main() {\n    solve();\n    return 0;\n}`,
+    
+    "text/x-java": `/**\n * Problem: ${problem?.title}\n */\n\npublic class Solution {\n    public void solve() {\n        // Write your logic here\n        \n    }\n\n    public static void main(String[] args) {\n        Solution sol = new Solution();\n        sol.solve();\n    }\n}`
   };
 
   useEffect(() => {
