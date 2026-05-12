@@ -12,93 +12,113 @@ if (!fs.existsSync(tempDir)) {
 }
 
 /**
- * Executes C++ code. 
- * - Locally: Uses 'docker run' to spawn temporary containers (per the plan).
- * - Production (Render): Runs directly inside the backend's Docker container.
+ * 🌍 OMNI-RUNNER: Executes code for C, C++, Python, Java, and JavaScript.
  */
-const runCppCode = (code, input = "") => {
+const runCode = (language, code, input = "") => {
     return new Promise((resolve) => {
         const startTime = Date.now();
         const jobId = crypto.randomUUID();
         const jobDir = path.join(tempDir, jobId);
-        const codeFilePath = path.join(jobDir, 'main.cpp');
+        
+        // Map CoderMirror language modes to filenames and commands
+        const config = {
+            "text/x-c++src": { ext: "cpp", compiler: "clang++", runner: "./main", args: ["-O0", "-fno-stack-protector"] },
+            "text/x-csrc": { ext: "c", compiler: "clang", runner: "./main", args: ["-O0"] },
+            "python": { ext: "py", runner: "python3", args: [] },
+            "javascript": { ext: "js", runner: "node", args: [] },
+            "text/x-java": { ext: "java", compiler: "javac", runner: "java", className: "Solution" }
+        };
+
+        const lang = config[language] || config["javascript"];
+        const fileName = lang.className ? `${lang.className}.${lang.ext}` : `main.${lang.ext}`;
+        const codeFilePath = path.join(jobDir, fileName);
 
         try {
             if (!fs.existsSync(jobDir)) fs.mkdirSync(jobDir, { recursive: true });
             fs.writeFileSync(codeFilePath, code);
 
-            // Check if we are running in a container already (Production)
-            // Or if we should use the local Docker spawning method
             const isProduction = process.env.NODE_ENV === 'production';
 
             if (isProduction) {
+                // 🚀 PRODUCTION MODE: Optimized for Render (Direct in container)
                 const codeHash = crypto.createHash('sha256').update(code).digest('hex');
                 const binPath = path.join(tempDir, `bin_${codeHash}`);
 
-                if (fs.existsSync(binPath)) {
+                // ⚡ CACHE CHECK (Compiled languages only)
+                if (lang.compiler && fs.existsSync(binPath)) {
                     console.log(`[CodeRunner] Cache Hit: ${codeHash}`);
-                    return execFile(binPath, [], { timeout: 10000 }, (rErr, rOut, rErrOut) => {
+                    const runArgs = language === "text/x-java" ? ["-cp", tempDir, lang.className] : [];
+                    const runCmd = language === "text/x-java" ? "java" : binPath;
+                    
+                    return execFile(runCmd, runArgs, { timeout: 10000 }, (rErr, rOut, rErrOut) => {
                         const totalTime = Date.now() - startTime;
                         cleanup(jobDir);
                         if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
                         resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
                     });
                 }
-                // PRODUCTION: We are already inside a Docker container!
-                // Just run g++ directly. It's safe and isolated.
-                console.log(`[CodeRunner] Production Mode: Compiling with clang++...`);
-                const compileCmd = 'clang++';
-                const compileArgs = ['main.cpp', '-o', binPath, '-O0', '-fno-stack-protector']; 
-                
-                execFile(compileCmd, compileArgs, { cwd: jobDir, timeout: 15000 }, (cErr, cOut, cErrOut) => {
-                    if (cErr) {
-                        cleanup(jobDir);
-                        return resolve({ success: false, output: cOut, error: "Compilation Error:\n" + (cErrOut || cErr.message), executionTime: Date.now() - startTime });
+
+                // EXECUTION LOGIC
+                if (lang.compiler) {
+                    // COMPILED LANGUAGES (C, C++, Java)
+                    let compileArgs = [fileName, "-o", binPath, ...lang.args];
+                    if (language === "text/x-c++src") {
+                        // Use the Pre-compiled Header for God-speed
+                        compileArgs.unshift("-include-pch", "/usr/include/c++/11/bits/stdc++.h.pch");
                     }
-                    
-                    execFile(binPath, [], { timeout: 10000 }, (rErr, rOut, rErrOut) => {
-                        const totalTime = Date.now() - startTime;
-                        cleanup(jobDir);
-                        if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
-                        resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
-                    });
-                });
-            } else {
-                // LOCAL: Try direct g++ first for sub-second speed, fallback to Docker
-                const compileCmd = 'g++';
-                const compileArgs = ['main.cpp', '-o', 'main', '-O0']; // 🌟 -O0 for local speed too
-                
-                console.log(`[CodeRunner] Local Mode: Attempting direct execution for speed...`);
-                execFile(compileCmd, compileArgs, { cwd: jobDir, timeout: 10000 }, (cErr, cOut, cErrOut) => {
-                    if (cErr) {
-                        // If g++ isn't on host, fallback to Docker (the original behavior)
-                        console.log(`[CodeRunner] Local Mode: g++ not on host, falling back to Docker.`);
-                        const dockerArgs = [
-                            'run', '--rm', 
-                            '-v', `${jobDir}:/home/runner/app`, 
-                            '-w', '/home/runner/app', 
-                            '--network', 'none', '--memory=256m', 
-                            'my-cpp-runner', 
-                            'sh', '-c', 'g++ main.cpp -o main -O0 && ./main' // 🌟 Added -O0 inside Docker too
-                        ];
-                        execFile('docker', dockerArgs, { timeout: 15000 }, (dErr, dOut, dErrOut) => {
+                    if (language === "text/x-java") {
+                        compileArgs = [fileName]; // javac only needs the filename
+                    }
+
+                    execFile(lang.compiler, compileArgs, { cwd: jobDir, timeout: 15000 }, (cErr, cOut, cErrOut) => {
+                        if (cErr) {
+                            cleanup(jobDir);
+                            return resolve({ success: false, output: cOut, error: "Compilation Error:\n" + (cErrOut || cErr.message), executionTime: Date.now() - startTime });
+                        }
+                        
+                        const runCmd = language === "text/x-java" ? "java" : binPath;
+                        const runArgs = language === "text/x-java" ? ["Solution"] : [];
+
+                        execFile(runCmd, runArgs, { cwd: jobDir, timeout: 10000 }, (rErr, rOut, rErrOut) => {
                             const totalTime = Date.now() - startTime;
                             cleanup(jobDir);
-                            if (dErr) return resolve({ success: false, output: dOut, error: dErr.killed ? "Timeout" : (dErrOut || dErr.message), executionTime: totalTime });
-                            resolve({ success: true, output: dOut, error: null, executionTime: totalTime });
+                            if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
+                            resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
                         });
-                        return;
-                    }
-                    
-                    // Direct run (Handle Windows .exe vs Linux binary)
-                    const exePath = process.platform === 'win32' ? 'main.exe' : './main';
-                    execFile(exePath, [], { cwd: jobDir, timeout: 5000 }, (rErr, rOut, rErrOut) => {
+                    });
+                } else {
+                    // INTERPRETED LANGUAGES (Python, JS)
+                    execFile(lang.runner, [fileName], { cwd: jobDir, timeout: 10000 }, (rErr, rOut, rErrOut) => {
                         const totalTime = Date.now() - startTime;
                         cleanup(jobDir);
                         if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
                         resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
                     });
-                });
+                }
+            } else {
+                // 🏠 LOCAL MODE: Direct Host (Fastest for dev)
+                if (lang.compiler) {
+                    const outBin = process.platform === 'win32' ? 'main.exe' : './main';
+                    execFile(lang.compiler, [fileName, "-o", "main", "-O0"], { cwd: jobDir, timeout: 10000 }, (cErr) => {
+                        if (cErr) {
+                            cleanup(jobDir);
+                            return resolve({ success: false, output: "", error: "Compilation Error: " + cErr.message, executionTime: Date.now() - startTime });
+                        }
+                        execFile(outBin, [], { cwd: jobDir, timeout: 5000 }, (rErr, rOut, rErrOut) => {
+                            const totalTime = Date.now() - startTime;
+                            cleanup(jobDir);
+                            if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
+                            resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
+                        });
+                    });
+                } else {
+                    execFile(lang.runner, [fileName], { cwd: jobDir, timeout: 5000 }, (rErr, rOut, rErrOut) => {
+                        const totalTime = Date.now() - startTime;
+                        cleanup(jobDir);
+                        if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
+                        resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
+                    });
+                }
             }
 
         } catch (err) {
@@ -113,5 +133,5 @@ const cleanup = (dir) => {
 };
 
 module.exports = {
-    runCppCode
+    runCode
 };

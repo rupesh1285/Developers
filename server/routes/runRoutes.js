@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { runCppCode } = require('../services/codeRunner');
+const { runCode } = require('../services/codeRunner');
 const protect = require('../middleware/authMiddleware');
 
 // POST /api/run
@@ -17,16 +17,19 @@ router.post('/', protect, async (req, res) => {
             });
         }
 
-        // Currently we only support C++ in Phase 1
-        if (language.toLowerCase() !== 'cpp' && language.toLowerCase() !== 'c++') {
+        // Support all 5 languages
+        const supportedLangs = ['cpp', 'c++', 'c', 'python', 'javascript', 'java', 'text/x-c++src', 'text/x-csrc', 'text/x-java'];
+        const normalizedLang = language.toLowerCase();
+        
+        if (!supportedLangs.includes(normalizedLang)) {
             return res.status(400).json({ 
                 success: false, 
-                error: `Language '${language}' is not supported yet. Only C++ is available.` 
+                error: `Language '${language}' is not supported yet.` 
             });
         }
 
-        // Call our Docker execution service
-        const result = await runCppCode(code, input);
+        // Call our multi-language execution service
+        const result = await runCode(language, code, input);
 
         return res.status(200).json(result);
 
