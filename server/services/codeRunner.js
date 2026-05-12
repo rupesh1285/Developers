@@ -111,28 +111,28 @@ const runCode = (language, code, input = "") => {
                 };
 
                 if (lang.compiler) {
-                    // Try host compiler (clang++ or g++)
-                    const hostCompiler = language === "text/x-c++src" ? "g++" : (lang.compiler === "clang++" ? "g++" : lang.compiler);
+                    // Try host compiler (g++ or javac)
+                    const hostCompiler = language === "text/x-java" ? "javac" : "g++";
                     const outBin = process.platform === 'win32' ? 'main.exe' : './main';
                     
                     execFile(hostCompiler, [fileName, "-o", "main", "-O0"], { cwd: jobDir, timeout: 10000 }, (cErr) => {
                         if (cErr && cErr.code === 'ENOENT') {
                             // FALLBACK TO DOCKER
-                            console.log(`[CodeRunner] Host compiler not found. Falling back to Docker...`);
-                            const dockerImages = { "text/x-c++src": "gcc", "text/x-csrc": "gcc", "text/x-java": "openjdk:17-slim" };
+                            console.log(`[CodeRunner] ${hostCompiler} not found. Falling back to Docker...`);
+                            const dockerImages = { "text/x-c++src": "gcc:latest", "text/x-csrc": "gcc:latest", "text/x-java": "openjdk:17" };
                             const dockerCmd = language === "text/x-java" 
                                 ? `javac ${fileName} && java Solution`
                                 : `g++ ${fileName} -o main -O0 && ./main`;
 
                             const dockerArgs = [
                                 'run', '--rm', '-v', `${jobDir}:/app`, '-w', '/app',
-                                dockerImages[language], 'sh', '-c', dockerCmd
+                                dockerImages[language] || "gcc:latest", 'sh', '-c', dockerCmd
                             ];
 
-                            return execFile('docker', dockerArgs, { timeout: 15000 }, (dErr, dOut, dErrOut) => {
+                            return execFile('docker', dockerArgs, { timeout: 60000 }, (dErr, dOut, dErrOut) => {
                                 const totalTime = Date.now() - startTime;
                                 cleanup(jobDir);
-                                if (dErr) return resolve({ success: false, output: dOut, error: dErrOut || dErr.message, executionTime: totalTime });
+                                if (dErr) return resolve({ success: false, output: dOut, error: "Docker Error: " + (dErrOut || dErr.message), executionTime: totalTime });
                                 resolve({ success: true, output: dOut, error: null, executionTime: totalTime });
                             });
                         }
@@ -142,7 +142,10 @@ const runCode = (language, code, input = "") => {
                             return resolve({ success: false, output: "", error: "Compilation Error: " + cErr.message, executionTime: Date.now() - startTime });
                         }
 
-                        execFile(outBin, [], { cwd: jobDir, timeout: 5000 }, (rErr, rOut, rErrOut) => {
+                        const runCmd = language === "text/x-java" ? "java" : outBin;
+                        const runArgs = language === "text/x-java" ? ["Solution"] : [];
+
+                        execFile(runCmd, runArgs, { cwd: jobDir, timeout: 5000 }, (rErr, rOut, rErrOut) => {
                             const totalTime = Date.now() - startTime;
                             cleanup(jobDir);
                             if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
@@ -157,7 +160,7 @@ const runCode = (language, code, input = "") => {
                         if (err && err.code === 'ENOENT') {
                             const dockerImg = language === "python" ? "python:3-slim" : "node:slim";
                             const dockerArgs = ['run', '--rm', '-v', `${jobDir}:/app`, '-w', '/app', dockerImg, lang.runner, fileName];
-                            return execFile('docker', dockerArgs, { timeout: 10000 }, (dErr, dOut, dErrOut) => {
+                            return execFile('docker', dockerArgs, { timeout: 30000 }, (dErr, dOut, dErrOut) => {
                                 const totalTime = Date.now() - startTime;
                                 cleanup(jobDir);
                                 if (dErr) return resolve({ success: false, output: dOut, error: dErrOut || dErr.message, executionTime: totalTime });
