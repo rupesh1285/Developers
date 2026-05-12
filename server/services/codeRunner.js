@@ -32,11 +32,23 @@ const runCppCode = (code, input = "") => {
             const isProduction = process.env.NODE_ENV === 'production';
 
             if (isProduction) {
+                const codeHash = crypto.createHash('sha256').update(code).digest('hex');
+                const binPath = path.join(tempDir, `bin_${codeHash}`);
+
+                if (fs.existsSync(binPath)) {
+                    console.log(`[CodeRunner] Cache Hit: ${codeHash}`);
+                    return execFile(binPath, [], { timeout: 10000 }, (rErr, rOut, rErrOut) => {
+                        const totalTime = Date.now() - startTime;
+                        cleanup(jobDir);
+                        if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
+                        resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
+                    });
+                }
                 // PRODUCTION: We are already inside a Docker container!
                 // Just run g++ directly. It's safe and isolated.
-                console.log(`[CodeRunner] Production Mode: Running directly inside backend container.`);
-                const compileCmd = 'g++';
-                const compileArgs = ['main.cpp', '-o', 'main', '-O0']; // 🌟 -O0 for lightning-fast compilation
+                console.log(`[CodeRunner] Production Mode: Compiling with clang++...`);
+                const compileCmd = 'clang++';
+                const compileArgs = ['main.cpp', '-o', binPath, '-O0', '-fno-stack-protector']; 
                 
                 execFile(compileCmd, compileArgs, { cwd: jobDir, timeout: 15000 }, (cErr, cOut, cErrOut) => {
                     if (cErr) {
@@ -44,7 +56,7 @@ const runCppCode = (code, input = "") => {
                         return resolve({ success: false, output: cOut, error: "Compilation Error:\n" + (cErrOut || cErr.message), executionTime: Date.now() - startTime });
                     }
                     
-                    execFile('./main', [], { cwd: jobDir, timeout: 10000 }, (rErr, rOut, rErrOut) => {
+                    execFile(binPath, [], { timeout: 10000 }, (rErr, rOut, rErrOut) => {
                         const totalTime = Date.now() - startTime;
                         cleanup(jobDir);
                         if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
