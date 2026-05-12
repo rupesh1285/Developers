@@ -26,7 +26,7 @@ const runCode = (language, code, input = "") => {
             "text/x-csrc": { ext: "c", compiler: "clang", runner: "./main", args: ["-O0"] },
             "python": { ext: "py", runner: "python3", args: [] },
             "javascript": { ext: "js", runner: "node", args: [] },
-            "text/x-java": { ext: "java", compiler: "javac", runner: "java", className: "Solution" }
+            "text/x-java": { ext: "java", compiler: "javac", runner: "java", className: "Solution", args: [] }
         };
 
         const lang = config[language] || config["javascript"];
@@ -119,7 +119,7 @@ const runCode = (language, code, input = "") => {
                         if (cErr && cErr.code === 'ENOENT') {
                             // FALLBACK TO DOCKER
                             console.log(`[CodeRunner] ${hostCompiler} not found. Falling back to Docker...`);
-                            const dockerImages = { "text/x-c++src": "gcc:latest", "text/x-csrc": "gcc:latest", "text/x-java": "openjdk:17" };
+                            const dockerImages = { "text/x-c++src": "gcc:latest", "text/x-csrc": "gcc:latest", "text/x-java": "openjdk:17-jdk-slim" };
                             const dockerCmd = language === "text/x-java" 
                                 ? `javac ${fileName} && java Solution`
                                 : `g++ ${fileName} -o main -O0 && ./main`;
