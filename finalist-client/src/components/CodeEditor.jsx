@@ -206,7 +206,7 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     const interval = setInterval(() => {
       i = (i + 1) % sequence.length;
       setLoadingText(sequence[i]);
-    }, 600);
+    }, 1500); // 🌟 Relaxed interval for a premium feel
     return () => clearInterval(interval);
   }, [isRunning]);
 

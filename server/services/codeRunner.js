@@ -36,7 +36,7 @@ const runCppCode = (code, input = "") => {
                 // Just run g++ directly. It's safe and isolated.
                 console.log(`[CodeRunner] Production Mode: Running directly inside backend container.`);
                 const compileCmd = 'g++';
-                const compileArgs = ['main.cpp', '-o', 'main'];
+                const compileArgs = ['main.cpp', '-o', 'main', '-O0']; // 🌟 -O0 for lightning-fast compilation
                 
                 execFile(compileCmd, compileArgs, { cwd: jobDir, timeout: 15000 }, (cErr, cOut, cErrOut) => {
                     if (cErr) {
@@ -54,7 +54,7 @@ const runCppCode = (code, input = "") => {
             } else {
                 // LOCAL: Try direct g++ first for sub-second speed, fallback to Docker
                 const compileCmd = 'g++';
-                const compileArgs = ['main.cpp', '-o', 'main'];
+                const compileArgs = ['main.cpp', '-o', 'main', '-O0']; // 🌟 -O0 for local speed too
                 
                 console.log(`[CodeRunner] Local Mode: Attempting direct execution for speed...`);
                 execFile(compileCmd, compileArgs, { cwd: jobDir, timeout: 10000 }, (cErr, cOut, cErrOut) => {
@@ -67,7 +67,7 @@ const runCppCode = (code, input = "") => {
                             '-w', '/home/runner/app', 
                             '--network', 'none', '--memory=256m', 
                             'my-cpp-runner', 
-                            'sh', '-c', 'g++ main.cpp -o main && ./main'
+                            'sh', '-c', 'g++ main.cpp -o main -O0 && ./main' // 🌟 Added -O0 inside Docker too
                         ];
                         execFile('docker', dockerArgs, { timeout: 15000 }, (dErr, dOut, dErrOut) => {
                             const totalTime = Date.now() - startTime;
