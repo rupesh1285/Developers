@@ -43,15 +43,7 @@ export default function Navbar({ userProfile, elapsedTime, isRunning, toggleTime
       </div>
 
       <div className="navbar-right" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        <div className="nav-timer" id="nav-timer">
-          <button className="timer-btn" id="watch-toggle" onClick={toggleTimer} title="Start/Pause" aria-label={isRunning ? "Pause timer" : "Start timer"}>
-            <i className={isRunning ? "ri-pause-fill" : "ri-play-fill"}></i>
-          </button>
-          <div className="timer-display" id="watch-display">{formatTime(elapsedTime)}</div>
-          <button className="timer-btn reset" id="watch-reset" onClick={resetTimer} title="Reset" aria-label="Reset timer">
-            <i className="ri-refresh-line"></i>
-          </button>
-        </div>
+        {/* Timer relocated to ProblemWorkspace */}
 
         <div className="profile-container" style={{ position: 'relative' }} ref={profileRef}>
           <button

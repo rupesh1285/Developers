@@ -108,6 +108,19 @@ export default function ProblemWorkspace() {
   const cmInstanceRef = useRef(null);
   const workspaceRef = useRef(null);
 
+  // ── TIMER STATE ───────────────────────────────────────────────────────────
+  const [elapsedTime, setElapsedTime] = useState(
+    parseInt(localStorage.getItem('finalist_timer_elapsed')) || 0
+  );
+  const [isTimerRunning, setIsTimerRunning] = useState(
+    localStorage.getItem('finalist_timer_running') === 'true'
+  );
+  const lastTickRef = useRef(Date.now());
+  const timerIntervalRef = useRef(null);
+
+  // ── USER PROFILE ──────────────────────────────────────────────────────────
+  const [userProfile, setUserProfile] = useState(null);
+
   // Fetch problem & sync states
   useEffect(() => {
     const fetchProblem = async () => {
@@ -146,7 +159,61 @@ export default function ProblemWorkspace() {
       }
     };
     fetchProblem();
+
+    // Fetch user profile for the header
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+        headers: { "Authorization": "Bearer " + token }
+      })
+      .then(res => res.json())
+      .then(data => setUserProfile(data))
+      .catch(console.error);
+    }
   }, [slug]);
+
+  // ── TIMER LOGIC ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (isTimerRunning) {
+      lastTickRef.current = Date.now();
+      timerIntervalRef.current = setInterval(() => {
+        const now = Date.now();
+        const delta = now - lastTickRef.current;
+        lastTickRef.current = now;
+        setElapsedTime(prev => {
+          const next = prev + delta;
+          localStorage.setItem('finalist_timer_elapsed', next);
+          return next;
+        });
+      }, 1000);
+    } else {
+      clearInterval(timerIntervalRef.current);
+    }
+    return () => clearInterval(timerIntervalRef.current);
+  }, [isTimerRunning]);
+
+  const toggleTimer = () => {
+    const next = !isTimerRunning;
+    setIsTimerRunning(next);
+    localStorage.setItem('finalist_timer_running', next.toString());
+  };
+
+  const resetTimer = () => {
+    setIsTimerRunning(false);
+    localStorage.setItem('finalist_timer_running', 'false');
+    setElapsedTime(0);
+    localStorage.setItem('finalist_timer_elapsed', '0');
+  };
+
+  const formatTime = (ms) => {
+    let h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
+    return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
+  };
+
+  const getAvatarSrc = (profile) => {
+    if (profile?.avatar && profile.avatar.length > 5) return profile.avatar;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}&background=1a1d27&color=6ea0ea&bold=true&font-size=0.4`;
+  };
 
   // Sync state when toggled from Dashboard/Other tabs
   useEffect(() => {
@@ -287,16 +354,84 @@ export default function ProblemWorkspace() {
       <style>{wsStyles}</style>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#0d1117', color: '#c9d1d9', overflow: 'hidden' }}>
 
-        {/* SLIM TOP BAR */}
-        <div style={{ height: '32px', backgroundColor: 'rgba(13, 17, 23, 0.8)', borderBottom: '1px solid #21262d', display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0, gap: '12px' }}>
-          <button
-            onClick={() => navigate('/problems')}
-            style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: '600', transition: 'color 0.2s', textTransform: 'uppercase', letterSpacing: '0.5px' }}
-            onMouseEnter={e => e.currentTarget.style.color = '#c9d1d9'}
-            onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}
-          >
-            <i className="ri-arrow-left-s-line" style={{ fontSize: '14px' }}></i> Dashboard
-          </button>
+        {/* WIDER TOP BAR */}
+        <div style={{ 
+          height: '44px', 
+          backgroundColor: 'rgba(13, 17, 23, 0.95)', 
+          borderBottom: '1px solid #21262d', 
+          display: 'flex', 
+          alignItems: 'center', 
+          padding: '0 20px', 
+          flexShrink: 0, 
+          position: 'relative',
+          justifyContent: 'space-between'
+        }}>
+          {/* LEFT: Dashboard Link */}
+          <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+            <button
+              onClick={() => navigate('/problems')}
+              style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', transition: 'color 0.2s', textTransform: 'uppercase', letterSpacing: '0.8px' }}
+              onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+              onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}
+            >
+              <i className="ri-arrow-left-s-line" style={{ fontSize: '18px' }}></i> Dashboard
+            </button>
+          </div>
+
+          {/* CENTER: Stopwatch (Exactly in the middle) */}
+          <div style={{ 
+            position: 'absolute', 
+            left: '50%', 
+            top: '50%', 
+            transform: 'translate(-50%, -50%)',
+            display: 'flex', 
+            alignItems: 'center' 
+          }}>
+            <div className="ws-header-timer" style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px', 
+              background: 'rgba(0,0,0,0.5)', 
+              padding: '4px 14px', 
+              borderRadius: '20px', 
+              border: '1px solid rgba(88,166,255,0.2)',
+              boxShadow: '0 0 20px rgba(0,0,0,0.3)'
+            }}>
+              <button onClick={toggleTimer} style={{ background: 'none', border: 'none', color: isTimerRunning ? '#ff7b72' : '#58a6ff', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                <i className={isTimerRunning ? "ri-pause-circle-fill" : "ri-play-circle-fill"} style={{ fontSize: '20px' }}></i>
+              </button>
+              <span style={{ fontFamily: '"Fira Code", monospace', fontSize: '14px', fontWeight: '700', color: '#fff', minWidth: '75px', textAlign: 'center', letterSpacing: '1px' }}>{formatTime(elapsedTime)}</span>
+              <button onClick={resetTimer} style={{ background: 'none', border: 'none', color: '#484f58', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, transition: 'color 0.2s' }} title="Reset Timer" onMouseEnter={e => e.currentTarget.style.color = '#ff7b72'} onMouseLeave={e => e.currentTarget.style.color = '#484f58'}>
+                <i className="ri-refresh-line" style={{ fontSize: '15px' }}></i>
+              </button>
+            </div>
+          </div>
+
+          {/* RIGHT: Profile Icon */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: 1 }}>
+             <div 
+               style={{ 
+                 width: '28px', 
+                 height: '28px', 
+                 borderRadius: '50%', 
+                 overflow: 'hidden', 
+                 border: '2px solid #58a6ff', 
+                 cursor: 'pointer',
+                 boxShadow: '0 0 10px rgba(88,166,255,0.3)',
+                 transition: 'transform 0.2s'
+               }}
+               onClick={() => navigate('/problems')}
+               onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+               onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+               title="View Profile"
+             >
+                <img 
+                  src={getAvatarSrc(userProfile)} 
+                  alt="Profile" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+             </div>
+          </div>
         </div>
 
         {/* WORKSPACE */}

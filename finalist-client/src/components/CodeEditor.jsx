@@ -66,6 +66,7 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
   // Vertical resizer between editor and console
   const [editorHeightPct, setEditorHeightPct] = useState(65);
   const [isConsoleResizing, setIsConsoleResizing] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const rightPaneRef = useRef(null);
   const editorRef = useRef(null);
   const codeCacheRef = useRef({});
@@ -187,6 +188,20 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     finally { setIsRunning(false); }
   };
 
+  const handleResetCode = () => {
+    setIsResetModalOpen(true);
+  };
+
+  const confirmReset = () => {
+    const defaultCode = BOILERPLATES[language] || BOILERPLATES["javascript"];
+    if (cmInstanceRef.current) {
+      cmInstanceRef.current.setValue(defaultCode);
+    }
+    codeCacheRef.current[language] = defaultCode;
+    localStorage.setItem(`finalist_code_${problem?._id}`, JSON.stringify(codeCacheRef.current));
+    setIsResetModalOpen(false);
+  };
+
   return (
     <>
       <style>{editorStyles}</style>
@@ -218,6 +233,14 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
               style={{ padding: '4px 12px', fontSize: '11px' }} onClick={onToggleSolved}>
               <i className={isSolved ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'} style={{ fontSize: '13px' }}></i>
               {isSolved ? 'Solved' : 'Mark Solved'}
+            </button>
+            <button 
+              className="ws-run-btn" 
+              style={{ background: 'transparent', border: '1px solid #21262d', color: '#8b949e', padding: '4px 8px' }} 
+              onClick={handleResetCode}
+              title="Reset to Default Code"
+            >
+              <i className="ri-refresh-line"></i>
             </button>
             <button className="ws-run-btn" onClick={handleRunCode} disabled={isRunning}>
               <i className={isRunning ? 'ri-loader-4-line ri-spin' : 'ri-play-fill'}></i>
@@ -289,6 +312,29 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
             </>
           )}
         </div>
+
+        {/* ── CUSTOM RESET MODAL ── */}
+        {isResetModalOpen && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, animation: 'fadeIn 0.2s ease' }}>
+            <div style={{ backgroundColor: '#0d1117', border: '1px solid #21262d', borderRadius: '16px', padding: '30px', maxWidth: '400px', width: '90%', textAlign: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', animation: 'popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+              <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(248, 81, 73, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', border: '1px solid rgba(248, 81, 73, 0.2)' }}>
+                <i className="ri-refresh-line" style={{ fontSize: '30px', color: '#f85149' }}></i>
+              </div>
+              <h3 style={{ color: '#fff', fontSize: '18px', fontWeight: '700', marginBottom: '12px' }}>Reset Code Space?</h3>
+              <p style={{ color: '#8b949e', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
+                This will erase all your current work for <strong style={{ color: '#58a6ff' }}>{LANG_MAP[language]}</strong> and restore the default boilerplate.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button onClick={() => setIsResetModalOpen(false)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #21262d', backgroundColor: 'transparent', color: '#c9d1d9', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                  Cancel
+                </button>
+                <button onClick={confirmReset} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', backgroundColor: '#f85149', color: '#fff', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(248, 81, 73, 0.3)' }} onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.1)'} onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}>
+                  Yes, Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

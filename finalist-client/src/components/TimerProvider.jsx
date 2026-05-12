@@ -4,38 +4,9 @@ import Navbar from './Navbar';
 
 // TimerProvider renders ONLY Navbar. Its setState calls never reach Dashboard.
 export default function TimerProvider({ userProfile }) {
-  const [elapsedTime, setElapsedTime] = useState(
-    parseInt(localStorage.getItem('finalist_timer_elapsed')) || 0
-  );
-  const [isRunning, setIsRunning] = useState(
-    localStorage.getItem('finalist_timer_running') === 'true'
-  );
-  const lastTickRef = useRef(
-    parseInt(localStorage.getItem('finalist_last_tick')) || Date.now()
-  );
+  // Manual stopwatch logic removed (moved to ProblemWorkspace)
   const intervalRef = useRef(null);
 
-  // Manual stopwatch
-  useEffect(() => {
-    if (isRunning) {
-      lastTickRef.current = Date.now();
-      localStorage.setItem('finalist_last_tick', lastTickRef.current);
-      intervalRef.current = setInterval(() => {
-        const now = Date.now();
-        const delta = now - lastTickRef.current;
-        lastTickRef.current = now;
-        localStorage.setItem('finalist_last_tick', now);
-        setElapsedTime(prev => {
-          const next = prev + delta;
-          localStorage.setItem('finalist_timer_elapsed', next);
-          return next;
-        });
-      }, 1000);
-    } else {
-      clearInterval(intervalRef.current);
-    }
-    return () => clearInterval(intervalRef.current);
-  }, [isRunning]);
 
   // Passive dashboard tracker — writes to localStorage only, no state
   useEffect(() => {
@@ -57,27 +28,8 @@ export default function TimerProvider({ userProfile }) {
     };
   }, []);
 
-  const toggleTimer = () => {
-    if (!isRunning) lastTickRef.current = Date.now();
-    const next = !isRunning;
-    setIsRunning(next);
-    localStorage.setItem('finalist_timer_running', next.toString());
-  };
-
-  const resetTimer = () => {
-    setIsRunning(false);
-    localStorage.setItem('finalist_timer_running', 'false');
-    setElapsedTime(0);
-    localStorage.setItem('finalist_timer_elapsed', '0');
-  };
 
   return (
-    <Navbar
-      userProfile={userProfile}
-      elapsedTime={elapsedTime}
-      isRunning={isRunning}
-      toggleTimer={toggleTimer}
-      resetTimer={resetTimer}
-    />
+    <Navbar userProfile={userProfile} />
   );
 }
