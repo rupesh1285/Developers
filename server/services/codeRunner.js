@@ -53,8 +53,8 @@ const runCode = (language, code, input = "") => {
                 const codeHash = crypto.createHash('sha256').update(code).digest('hex');
                 const binPath = path.join(tempDir, `bin_${codeHash}`);
 
-                // ⚡ CACHE CHECK (Compiled languages only)
-                if (lang.compiler && fs.existsSync(binPath)) {
+                // ⚡ CACHE CHECK (Compiled languages only - Skip Java due to multi-file nature)
+                if (lang.compiler && language !== "text/x-java" && fs.existsSync(binPath)) {
                     console.log(`[CodeRunner] Cache Hit: ${codeHash}`);
                     const runArgs = language === "text/x-java" ? ["-cp", tempDir, className] : [];
                     const runCmd = language === "text/x-java" ? "java" : binPath;
@@ -128,7 +128,7 @@ const runCode = (language, code, input = "") => {
                         if (cErr && cErr.code === 'ENOENT') {
                             // FALLBACK TO DOCKER
                             console.log(`[CodeRunner] ${hostCompiler} not found. Falling back to Docker...`);
-                            const dockerImages = { "text/x-c++src": "gcc:latest", "text/x-csrc": "gcc:latest", "text/x-java": "openjdk:17-jdk-slim" };
+                            const dockerImages = { "text/x-c++src": "gcc:latest", "text/x-csrc": "gcc:latest", "text/x-java": "openjdk:latest" };
                             const dockerCmd = language === "text/x-java" 
                                 ? `javac ${fileName} && java ${className}`
                                 : `g++ ${fileName} -o main -O0 && ./main`;
