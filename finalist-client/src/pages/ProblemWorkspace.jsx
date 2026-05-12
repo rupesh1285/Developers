@@ -357,14 +357,15 @@ export default function ProblemWorkspace() {
         {/* WIDER TOP BAR */}
         <div style={{ 
           height: '44px', 
-          backgroundColor: 'rgba(13, 17, 23, 0.95)', 
-          borderBottom: '1px solid #21262d', 
+          backgroundColor: '#161b22', 
+          borderBottom: '1px solid #30363d', 
           display: 'flex', 
           alignItems: 'center', 
           padding: '0 20px', 
           flexShrink: 0, 
           position: 'relative',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
         }}>
           {/* LEFT: Dashboard Link */}
           <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>

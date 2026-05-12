@@ -78,7 +78,7 @@ export default function Navbar({ userProfile, elapsedTime, isRunning, toggleTime
               type="button"
               className="menu-item danger"
               role="menuitem"
-              onClick={() => { localStorage.clear(); navigate('/'); }}
+              onClick={() => { localStorage.removeItem('token'); navigate('/'); }}
             >
               <i className="ri-logout-box-r-line" aria-hidden="true"></i><span>Sign Out</span>
             </button>

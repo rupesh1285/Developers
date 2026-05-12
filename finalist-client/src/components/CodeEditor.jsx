@@ -56,7 +56,11 @@ const editorStyles = `
 `;
 
 export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef, isSolved, onToggleSolved }) {
-  const [language, setLanguage] = useState(localStorage.getItem(`finalist_lang_${problem?._id}`) || 'javascript');
+  // 🌟 GLOBAL LANG: Default to the global preference, then the problem-specific one
+  const getInitialLang = () => {
+    return localStorage.getItem('finalist_global_lang') || localStorage.getItem(`finalist_lang_${problem?._id}`) || 'javascript';
+  };
+  const [language, setLanguage] = useState(getInitialLang());
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [output, setOutput] = useState(null);
@@ -162,6 +166,7 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     localStorage.setItem(`finalist_code_${problem?._id}`, JSON.stringify(codeCacheRef.current));
     setLanguage(newLang);
     localStorage.setItem(`finalist_lang_${problem?._id}`, newLang);
+    localStorage.setItem('finalist_global_lang', newLang); // 🌟 Update global preference
     setLangMenuOpen(false);
   };
 
