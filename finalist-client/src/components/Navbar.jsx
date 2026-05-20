@@ -46,7 +46,7 @@ export default function Navbar({ userProfile, elapsedTime, isRunning, toggleTime
       <div className="navbar-right" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
         {/* Timer relocated to ProblemWorkspace */}
 
-        <div className="profile-container" style={{ position: 'relative' }} ref={profileRef}>
+        <div className="profile-container" ref={profileRef}>
           <button
             id="profile-btn"
             type="button"
@@ -63,17 +63,46 @@ export default function Navbar({ userProfile, elapsedTime, isRunning, toggleTime
                 alt="Profile"
                 loading="lazy"
                 decoding="async"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
               />
+              <span className="status-dot"></span>
             </div>
             <span className="profile-name">{userProfile.name}</span>
             <i className="ri-arrow-down-s-line chevron"></i>
           </button>
+          
           <div id="profile-menu" className={profileOpen ? "active" : ""} role="menu" aria-label="Profile">
             <div className="profile-info">
-              <strong>{userProfile.name}</strong>
-              <span>{userProfile.email}</span>
+              <div className="profile-info-header">
+                <strong>{userProfile.name}</strong>
+                <span className="premium-badge">
+                  <i className="ri-vip-crown-fill"></i> Pro Member
+                </span>
+              </div>
+              <span className="profile-email">{userProfile.email}</span>
             </div>
+            
+            <div className="menu-divider"></div>
+            
+            <button
+              type="button"
+              className="menu-item"
+              role="menuitem"
+              onClick={() => { setProfileOpen(false); navigate('/problems'); }}
+            >
+              <i className="ri-dashboard-3-line"></i><span>Dashboard</span>
+            </button>
+
+            <button
+              type="button"
+              className="menu-item"
+              role="menuitem"
+              onClick={() => { setProfileOpen(false); alert("Settings coming soon! Stay tuned."); }}
+            >
+              <i className="ri-user-settings-line"></i><span>Account Settings</span>
+            </button>
+            
+            <div className="menu-divider"></div>
+            
             <button
               id="logout-btn"
               type="button"
