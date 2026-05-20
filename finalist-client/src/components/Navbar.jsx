@@ -72,12 +72,7 @@ export default function Navbar({ userProfile, elapsedTime, isRunning, toggleTime
           
           <div id="profile-menu" className={profileOpen ? "active" : ""} role="menu" aria-label="Profile">
             <div className="profile-info">
-              <div className="profile-info-header">
-                <strong>{userProfile.name}</strong>
-                <span className="premium-badge">
-                  <i className="ri-vip-crown-fill"></i> Pro Member
-                </span>
-              </div>
+              <strong>{userProfile.name}</strong>
               <span className="profile-email">{userProfile.email}</span>
             </div>
             
