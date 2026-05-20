@@ -93,7 +93,10 @@ export default function ProblemWorkspace() {
   const [activeTab, setActiveTab] = useState('desc');
 
   // Resizer
-  const [leftWidthPct, setLeftWidthPct] = useState(45);
+  const [leftWidthPct, setLeftWidthPct] = useState(() => {
+    const saved = sessionStorage.getItem(`finalist_layout_leftWidth_${slug}`);
+    return saved !== null ? parseFloat(saved) : 45;
+  });
   const [isDragging, setIsDragging] = useState(false);
 
   // Star & Solved states (synced with localStorage/API)
@@ -257,6 +260,38 @@ export default function ProblemWorkspace() {
 
   // Cleanup topic timer on unmount
   useEffect(() => { return () => clearTimeout(topicTimerRef.current); }, []);
+
+  // Sync leftWidthPct to sessionStorage when it changes
+  useEffect(() => {
+    if (slug) {
+      sessionStorage.setItem(`finalist_layout_leftWidth_${slug}`, leftWidthPct);
+    }
+  }, [leftWidthPct, slug]);
+
+  // Reset/sync leftWidthPct when slug changes
+  useEffect(() => {
+    if (slug) {
+      const saved = sessionStorage.getItem(`finalist_layout_leftWidth_${slug}`);
+      setLeftWidthPct(saved !== null ? parseFloat(saved) : 45);
+    }
+  }, [slug]);
+
+  // Handle clearing sessionStorage on navigation away, but not on refresh
+  useEffect(() => {
+    if (!slug) return;
+    let isUnloading = false;
+    const handleUnload = () => {
+      isUnloading = true;
+    };
+    window.addEventListener('beforeunload', handleUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      if (!isUnloading) {
+        sessionStorage.removeItem(`finalist_layout_leftWidth_${slug}`);
+      }
+    };
+  }, [slug]);
 
   // ── HANDLERS ─────────────────────────────────────────────────────────────
   const handleMouseDown = (e) => { e.preventDefault(); setIsDragging(true); };

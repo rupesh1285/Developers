@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 
 const editorStyles = `
   /* Force CodeMirror to respect flex container and hide scrollbars */
@@ -56,6 +57,8 @@ const editorStyles = `
 `;
 
 export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef, isSolved, onToggleSolved }) {
+  const { slug } = useParams();
+
   // 🌟 GLOBAL LANG: Default to the global preference, then the problem-specific one
   const getInitialLang = () => {
     return localStorage.getItem('finalist_global_lang') || localStorage.getItem(`finalist_lang_${problem?._id}`) || 'javascript';
@@ -68,7 +71,10 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
   const [executionTime, setExecutionTime] = useState(null);
 
   // Vertical resizer between editor and console
-  const [editorHeightPct, setEditorHeightPct] = useState(65);
+  const [editorHeightPct, setEditorHeightPct] = useState(() => {
+    const saved = sessionStorage.getItem(`finalist_layout_editorHeight_${slug}`);
+    return saved !== null ? parseFloat(saved) : 65;
+  });
   const [isConsoleResizing, setIsConsoleResizing] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const rightPaneRef = useRef(null);
@@ -163,6 +169,38 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     document.addEventListener('mouseup', handleMouseUp);
     return () => { document.removeEventListener('mousemove', handleMouseMove); document.removeEventListener('mouseup', handleMouseUp); };
   }, [isConsoleResizing]);
+
+  // Sync editorHeightPct to sessionStorage when it changes
+  useEffect(() => {
+    if (slug) {
+      sessionStorage.setItem(`finalist_layout_editorHeight_${slug}`, editorHeightPct);
+    }
+  }, [editorHeightPct, slug]);
+
+  // Reset/sync editorHeightPct when slug changes
+  useEffect(() => {
+    if (slug) {
+      const saved = sessionStorage.getItem(`finalist_layout_editorHeight_${slug}`);
+      setEditorHeightPct(saved !== null ? parseFloat(saved) : 65);
+    }
+  }, [slug]);
+
+  // Handle clearing sessionStorage on navigation away, but not on refresh
+  useEffect(() => {
+    if (!slug) return;
+    let isUnloading = false;
+    const handleUnload = () => {
+      isUnloading = true;
+    };
+    window.addEventListener('beforeunload', handleUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      if (!isUnloading) {
+        sessionStorage.removeItem(`finalist_layout_editorHeight_${slug}`);
+      }
+    };
+  }, [slug]);
 
   const handleLangChange = (newLang) => {
     if (!cmInstanceRef.current) return;
