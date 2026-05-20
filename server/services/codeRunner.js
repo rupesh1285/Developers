@@ -26,7 +26,8 @@ const runCode = (language, code, input = "") => {
             "text/x-csrc": { ext: "c", compiler: "clang", runner: "./main", args: ["-O0"] },
             "python": { ext: "py", runner: "python3", args: [] },
             "javascript": { ext: "js", runner: "node", args: [] },
-            "text/x-java": { ext: "java", compiler: "javac", runner: "java", className: "Solution", args: [] }
+            "text/x-java": { ext: "java", compiler: "javac", runner: "java", className: "Solution", args: [] },
+            "java": { ext: "java", compiler: "javac", runner: "java", className: "Solution", args: [] }
         };
 
         const lang = config[language] || config["javascript"];
@@ -86,7 +87,7 @@ const runCode = (language, code, input = "") => {
                         }
                         
                         const runCmd = language === "text/x-java" ? "java" : binPath;
-                        const runArgs = language === "text/x-java" ? [className] : [];
+                        const runArgs = language === "text/x-java" ? ["-cp", jobDir, className] : [];
 
                         execFile(runCmd, runArgs, { cwd: jobDir, timeout: 10000 }, (rErr, rOut, rErrOut) => {
                             const totalTime = Date.now() - startTime;
@@ -120,47 +121,71 @@ const runCode = (language, code, input = "") => {
                 };
 
                 if (lang.compiler) {
-                    // Try host compiler (g++ or javac)
-                    const hostCompiler = language === "text/x-java" ? "javac" : "g++";
-                    const outBin = process.platform === 'win32' ? 'main.exe' : './main';
-                    
-                    execFile(hostCompiler, [fileName, "-o", "main", "-O0"], { cwd: jobDir, timeout: 10000 }, (cErr) => {
-                        if (cErr && cErr.code === 'ENOENT') {
-                            // FALLBACK TO DOCKER
-                            console.log(`[CodeRunner] ${hostCompiler} not found. Falling back to Docker...`);
-                            const dockerImages = { "text/x-c++src": "gcc:latest", "text/x-csrc": "gcc:latest", "text/x-java": "openjdk:latest" };
-                            const dockerCmd = language === "text/x-java" 
-                                ? `javac ${fileName} && java ${className}`
-                                : `g++ ${fileName} -o main -O0 && ./main`;
+                    if (language === "text/x-java") {
+                        // ☕ JAVA: javac only takes the filename, no -o or -O flags
+                        execFile("javac", [fileName], { cwd: jobDir, timeout: 15000 }, (cErr, cOut, cErrOut) => {
+                            if (cErr && cErr.code === 'ENOENT') {
+                                // FALLBACK TO DOCKER
+                                console.log(`[CodeRunner] javac not found. Falling back to Docker...`);
+                                const dockerArgs = [
+                                    'run', '--rm', '-v', `${jobDir}:/app`, '-w', '/app',
+                                    'openjdk:latest', 'sh', '-c', `javac ${fileName} && java ${className}`
+                                ];
+                                return execFile('docker', dockerArgs, { timeout: 60000 }, (dErr, dOut, dErrOut) => {
+                                    const totalTime = Date.now() - startTime;
+                                    cleanup(jobDir);
+                                    if (dErr) return resolve({ success: false, output: dOut, error: "Docker Error: " + (dErrOut || dErr.message), executionTime: totalTime });
+                                    resolve({ success: true, output: dOut, error: null, executionTime: totalTime });
+                                });
+                            }
 
-                            const dockerArgs = [
-                                'run', '--rm', '-v', `${jobDir}:/app`, '-w', '/app',
-                                dockerImages[language] || "gcc:latest", 'sh', '-c', dockerCmd
-                            ];
+                            if (cErr) {
+                                cleanup(jobDir);
+                                return resolve({ success: false, output: cOut, error: "Compilation Error:\n" + (cErrOut || cErr.message), executionTime: Date.now() - startTime });
+                            }
 
-                            return execFile('docker', dockerArgs, { timeout: 60000 }, (dErr, dOut, dErrOut) => {
+                            // Run: java -cp <jobDir> ClassName
+                            execFile("java", ["-cp", jobDir, className], { cwd: jobDir, timeout: 10000 }, (rErr, rOut, rErrOut) => {
                                 const totalTime = Date.now() - startTime;
                                 cleanup(jobDir);
-                                if (dErr) return resolve({ success: false, output: dOut, error: "Docker Error: " + (dErrOut || dErr.message), executionTime: totalTime });
-                                resolve({ success: true, output: dOut, error: null, executionTime: totalTime });
+                                if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
+                                resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
                             });
-                        }
-
-                        if (cErr) {
-                            cleanup(jobDir);
-                            return resolve({ success: false, output: "", error: "Compilation Error: " + cErr.message, executionTime: Date.now() - startTime });
-                        }
-
-                        const runCmd = language === "text/x-java" ? "java" : outBin;
-                        const runArgs = language === "text/x-java" ? [className] : [];
-
-                        execFile(runCmd, runArgs, { cwd: jobDir, timeout: 5000 }, (rErr, rOut, rErrOut) => {
-                            const totalTime = Date.now() - startTime;
-                            cleanup(jobDir);
-                            if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
-                            resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
                         });
-                    });
+                    } else {
+                        // 🔧 C/C++: g++ with -o and optimization flags
+                        const outBin = process.platform === 'win32' ? 'main.exe' : './main';
+
+                        execFile("g++", [fileName, "-o", "main", "-O0"], { cwd: jobDir, timeout: 10000 }, (cErr) => {
+                            if (cErr && cErr.code === 'ENOENT') {
+                                // FALLBACK TO DOCKER
+                                console.log(`[CodeRunner] g++ not found. Falling back to Docker...`);
+                                const dockerCmd = `g++ ${fileName} -o main -O0 && ./main`;
+                                const dockerArgs = [
+                                    'run', '--rm', '-v', `${jobDir}:/app`, '-w', '/app',
+                                    'gcc:latest', 'sh', '-c', dockerCmd
+                                ];
+                                return execFile('docker', dockerArgs, { timeout: 60000 }, (dErr, dOut, dErrOut) => {
+                                    const totalTime = Date.now() - startTime;
+                                    cleanup(jobDir);
+                                    if (dErr) return resolve({ success: false, output: dOut, error: "Docker Error: " + (dErrOut || dErr.message), executionTime: totalTime });
+                                    resolve({ success: true, output: dOut, error: null, executionTime: totalTime });
+                                });
+                            }
+
+                            if (cErr) {
+                                cleanup(jobDir);
+                                return resolve({ success: false, output: "", error: "Compilation Error: " + cErr.message, executionTime: Date.now() - startTime });
+                            }
+
+                            execFile(outBin, [], { cwd: jobDir, timeout: 5000 }, (rErr, rOut, rErrOut) => {
+                                const totalTime = Date.now() - startTime;
+                                cleanup(jobDir);
+                                if (rErr) return resolve({ success: false, output: rOut, error: "Runtime Error:\n" + (rErrOut || rErr.message), executionTime: totalTime });
+                                resolve({ success: true, output: rOut, error: null, executionTime: totalTime });
+                            });
+                        });
+                    }
                 } else {
                     // Interpreted (Try python3 then python, then Docker)
                     const hostCmd = language === "python" ? (process.platform === 'win32' ? "python" : "python3") : lang.runner;
