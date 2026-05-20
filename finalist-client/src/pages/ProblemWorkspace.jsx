@@ -221,11 +221,15 @@ export default function ProblemWorkspace() {
     const handleSync = (e) => {
       if (!problem) return;
       const id = String(problem._id);
+
+      // 🌟 PREVENT STATE WIPE: Ignore events with empty, null, or undefined values
+      if (!e.newValue || e.newValue === 'undefined' || e.newValue === 'null') return;
+
       if (e.key === 'finalist_starred') {
-        try { setIsStarred(JSON.parse(e.newValue || '[]').includes(id)); } catch(_) {}
+        try { setIsStarred(JSON.parse(e.newValue).includes(id)); } catch(_) {}
       }
       if (e.key === 'finalist_solved') {
-        try { setIsSolved(JSON.parse(e.newValue || '[]').includes(id)); } catch(_) {}
+        try { setIsSolved(JSON.parse(e.newValue).includes(id)); } catch(_) {}
       }
     };
     window.addEventListener('storage', handleSync);

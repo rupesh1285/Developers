@@ -10,9 +10,28 @@ export default function Dashboard() {
 
   // --- REAL DATABASE STATE ---
   const [problemsData, setProblemsData] = useState([]);
-  const [solvedIds, setSolvedIds] = useState([]);
-  const [starredIds, setStarredIds] = useState([]);
-  const [analyticsData, setAnalyticsData] = useState({ streak: { current: 0, max: 0, timeSpentHrs: 0 }, heatmap: [], topics: [] });
+  const [solvedIds, setSolvedIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('finalist_solved') || '[]');
+    } catch (_) {
+      return [];
+    }
+  });
+  const [starredIds, setStarredIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('finalist_starred') || '[]');
+    } catch (_) {
+      return [];
+    }
+  });
+  const [analyticsData, setAnalyticsData] = useState(() => {
+    try {
+      const cached = localStorage.getItem('finalist_analytics_cache');
+      return cached ? JSON.parse(cached) : { streak: { current: 0, max: 0, timeSpentHrs: 0 }, heatmap: [], topics: [] };
+    } catch (_) {
+      return { streak: { current: 0, max: 0, timeSpentHrs: 0 }, heatmap: [], topics: [] };
+    }
+  });
   const [userProfile, setUserProfile] = useState(null);
 
   // 🌟 THE FIX 1: Lazy Cache for heavy problem descriptions
@@ -187,31 +206,68 @@ export default function Dashboard() {
       });
 
     fetch(`${API_BASE}/api/progress`, { headers: authHeaders })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch progress');
+        return res.json();
+      })
       .then(progress => {
-        const solved = progress.filter(p => p.solved).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem));
-        const starred = progress.filter(p => p.starred).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem));
-        setSolvedIds(solved);
-        setStarredIds(starred);
-        // Persist to localStorage so ProblemWorkspace can read correct initial state
-        localStorage.setItem('finalist_starred', JSON.stringify(starred));
-        localStorage.setItem('finalist_solved', JSON.stringify(solved));
-      }).catch(() => {});
+        if (Array.isArray(progress)) {
+          const solved = progress.filter(p => p.solved).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem));
+          const starred = progress.filter(p => p.starred).map(p => typeof p.problem === 'object' ? String(p.problem._id) : String(p.problem));
+          setSolvedIds(solved);
+          setStarredIds(starred);
+          // Persist to localStorage so ProblemWorkspace can read correct initial state
+          localStorage.setItem('finalist_starred', JSON.stringify(starred));
+          localStorage.setItem('finalist_solved', JSON.stringify(solved));
+        }
+      }).catch(err => console.error("Error loading progress:", err));
 
     fetch(`${API_BASE}/api/progress/analytics`, { headers: authHeaders })
-      .then(res => res.json())
-      .then(data => setAnalyticsData(data)).catch(() => {});
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch analytics');
+        return res.json();
+      })
+      .then(data => {
+        if (data && Array.isArray(data.heatmap) && Array.isArray(data.topics)) {
+          setAnalyticsData(data);
+          localStorage.setItem('finalist_analytics_cache', JSON.stringify(data));
+        }
+      }).catch(err => console.error("Error loading analytics:", err));
 
   }, [navigate]);
 
   // Sync star/solved state when toggled from ProblemWorkspace (which dispatches a StorageEvent)
   useEffect(() => {
     const handleStorageSync = (e) => {
+      // 🌟 PREVENT STATE WIPE: Ignore events with empty, null, or undefined values
+      if (!e.newValue || e.newValue === 'undefined' || e.newValue === 'null') return;
+
       if (e.key === 'finalist_starred') {
-        try { setStarredIds(JSON.parse(e.newValue || '[]')); } catch (_) {}
+        try { setStarredIds(JSON.parse(e.newValue)); } catch (_) {}
       }
       if (e.key === 'finalist_solved') {
-        try { setSolvedIds(JSON.parse(e.newValue || '[]')); } catch (_) {}
+        try {
+          const nextSolved = JSON.parse(e.newValue);
+          setSolvedIds(nextSolved);
+
+          // Dynamic background sync of analytics when solved state is updated in another tab/workspace
+          const token = localStorage.getItem('token');
+          if (token) {
+            const API_BASE = import.meta.env.VITE_API_URL;
+            const tzOffset = String(new Date().getTimezoneOffset());
+            fetch(`${API_BASE}/api/progress/analytics`, { headers: { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset } })
+              .then(res => {
+                if (!res.ok) throw new Error('Failed to fetch background analytics');
+                return res.json();
+              })
+              .then(data => {
+                if (data && Array.isArray(data.heatmap) && Array.isArray(data.topics)) {
+                  setAnalyticsData(data);
+                  localStorage.setItem('finalist_analytics_cache', JSON.stringify(data));
+                }
+              }).catch(() => {});
+          }
+        } catch (_) {}
       }
     };
     window.addEventListener('storage', handleStorageSync);
@@ -224,10 +280,14 @@ export default function Dashboard() {
   const handleToggleSolved = async (e, id) => {
     e.stopPropagation();
     const token = localStorage.getItem('token');
-    const isCurrentlySolved = solvedIds.includes(String(id));
-    const problem = problemsData.find(p => String(p._id) === String(id));
+    const idStr = String(id);
+    const problem = problemsData.find(p => String(p._id) === idStr);
     const problemTags = problem?.tags || [];
-    const nextSolved = isCurrentlySolved ? solvedIds.filter(i => i !== String(id)) : [...solvedIds, String(id)];
+
+    // 🌟 Read from localStorage (synchronously updated) to avoid stale closure on rapid clicks
+    const currentSolved = JSON.parse(localStorage.getItem('finalist_solved') || '[]');
+    const isCurrentlySolved = currentSolved.includes(idStr);
+    const nextSolved = isCurrentlySolved ? currentSolved.filter(i => i !== idStr) : [...currentSolved, idStr];
     
     setSolvedIds(nextSolved);
     localStorage.setItem('finalist_solved', JSON.stringify(nextSolved));
@@ -236,12 +296,18 @@ export default function Dashboard() {
     setAnalyticsData(prev => {
       if (!prev) return prev;
       const todayStr = new Date().toISOString().split('T')[0];
-      const newTopics = prev.topics.map(t => {
-        if (problemTags.includes(t.name)) return { ...t, value: Math.max(0, t.value + (isCurrentlySolved ? -1 : 1)) };
+      const topics = prev.topics || [];
+      const heatmap = prev.heatmap || [];
+
+      const newTopics = topics.map(t => {
+        if (problemTags.includes(t.name)) {
+          const currentSolvedCount = typeof t.solved === 'number' ? t.solved : 0;
+          return { ...t, solved: Math.max(0, currentSolvedCount + (isCurrentlySolved ? -1 : 1)) };
+        }
         return t;
       });
 
-      const newHeatmap = prev.heatmap.map(d => {
+      const newHeatmap = heatmap.map(d => {
         if (d.date === todayStr) {
           const newCount = Math.max(0, d.count + (isCurrentlySolved ? -1 : 1));
           let level = 0;
@@ -254,7 +320,9 @@ export default function Dashboard() {
         return d;
       });
 
-      return { ...prev, topics: newTopics, heatmap: newHeatmap };
+      const updated = { ...prev, topics: newTopics, heatmap: newHeatmap };
+      localStorage.setItem('finalist_analytics_cache', JSON.stringify(updated));
+      return updated;
     });
 
     try {
@@ -269,8 +337,12 @@ export default function Dashboard() {
   const handleToggleStar = async (e, id) => {
     e.stopPropagation();
     const token = localStorage.getItem('token');
-    const isCurrentlyStarred = starredIds.includes(String(id));
-    const nextStarred = isCurrentlyStarred ? starredIds.filter(i => i !== String(id)) : [...starredIds, String(id)];
+    const idStr = String(id);
+
+    // 🌟 Read from localStorage (synchronously updated) to avoid stale closure on rapid clicks
+    const currentStarred = JSON.parse(localStorage.getItem('finalist_starred') || '[]');
+    const isCurrentlyStarred = currentStarred.includes(idStr);
+    const nextStarred = isCurrentlyStarred ? currentStarred.filter(i => i !== idStr) : [...currentStarred, idStr];
 
     setStarredIds(nextStarred);
     localStorage.setItem('finalist_starred', JSON.stringify(nextStarred));
