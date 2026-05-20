@@ -120,7 +120,19 @@ export default function ProblemWorkspace() {
 
   // ── USER PROFILE ──────────────────────────────────────────────────────────
   const [userProfile, setUserProfile] = useState(null);
-  const [isProfileHovered, setIsProfileHovered] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+
+  // Click outside to close profile dropdown menu
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Fetch problem & sync states
   useEffect(() => {
@@ -413,44 +425,47 @@ export default function ProblemWorkspace() {
             </div>
           </div>
 
-          {/* RIGHT: Profile Icon */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: 1, position: 'relative' }}>
-             {/* PREMIUM HOVER PILL */}
-             {isProfileHovered && (
-               <div style={{ 
-                 position: 'absolute', top: '100%', right: '0', marginTop: '12px',
-                 backgroundColor: 'rgba(13, 17, 23, 0.9)', backdropFilter: 'blur(10px)',
-                 border: '1px solid rgba(88,166,255,0.3)', borderRadius: '20px',
-                 padding: '6px 14px', whiteSpace: 'nowrap', color: '#fff', fontSize: '11px', fontWeight: '700',
-                 boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(88,166,255,0.2)',
-                 animation: 'fadeIn 0.2s ease', pointerEvents: 'none', zIndex: 100,
-                 display: 'flex', alignItems: 'center', gap: '6px'
-               }}>
-                 <i className="ri-user-heart-line" style={{ color: '#58a6ff' }}></i>
-                 View Profile
-               </div>
-             )}
-
-             <div 
-               style={{ 
-                 width: '28px', 
-                 height: '28px', 
-                 borderRadius: '50%', 
-                 overflow: 'hidden', 
-                 border: '2px solid #58a6ff', 
-                 cursor: 'pointer',
-                 boxShadow: '0 0 10px rgba(88,166,255,0.3)',
-                 transition: 'transform 0.2s'
-               }}
-               onClick={() => navigate('/problems')}
-               onMouseEnter={() => { setIsProfileHovered(true); }}
-               onMouseLeave={() => { setIsProfileHovered(false); }}
+          {/* RIGHT: Profile Pill */}
+          <div className="profile-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: 1, position: 'relative' }} ref={profileRef}>
+             <button
+               id="profile-btn"
+               type="button"
+               className={profileOpen ? "active" : ""}
+               onClick={() => setProfileOpen(!profileOpen)}
+               aria-haspopup="menu"
+               aria-expanded={profileOpen}
+               aria-controls="profile-menu"
+               style={{ height: '32px', padding: '2px 10px 2px 4px' }}
              >
-                <img 
-                  src={getAvatarSrc(userProfile)} 
-                  alt="Profile" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
+               <div className="profile-avatar" id="nav-avatar-container" style={{ width: '24px', height: '24px', borderWidth: '1px' }}>
+                 <img
+                   src={getAvatarSrc(userProfile)}
+                   id="nav-avatar-img"
+                   alt="Profile"
+                   loading="lazy"
+                   decoding="async"
+                   style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                 />
+               </div>
+               {userProfile && <span className="profile-name" style={{ fontSize: '12px' }}>{userProfile.name}</span>}
+               <i className="ri-arrow-down-s-line chevron" style={{ fontSize: '14px' }}></i>
+             </button>
+             <div id="profile-menu" className={profileOpen ? "active" : ""} role="menu" aria-label="Profile" style={{ top: 'calc(100% + 8px)' }}>
+               {userProfile && (
+                 <div className="profile-info">
+                   <strong>{userProfile.name}</strong>
+                   <span>{userProfile.email}</span>
+                 </div>
+               )}
+               <button
+                 id="logout-btn"
+                 type="button"
+                 className="menu-item danger"
+                 role="menuitem"
+                 onClick={() => { localStorage.removeItem('token'); navigate('/'); }}
+               >
+                 <i className="ri-logout-box-r-line" aria-hidden="true"></i><span>Sign Out</span>
+               </button>
              </div>
           </div>
         </div>

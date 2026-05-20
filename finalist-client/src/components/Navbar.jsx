@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../dashboard.css';
 
 export default function Navbar({ userProfile, elapsedTime, isRunning, toggleTimer, resetTimer }) {
   const navigate = useNavigate();

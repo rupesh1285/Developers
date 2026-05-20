@@ -272,23 +272,8 @@ body {
   cursor: pointer;
   color: #fff;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
-
-.profile-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #1a1d27;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #3b82f6; /* Slimmer border */
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
-  flex-shrink: 0;
-}
-
 
 #profile-btn:hover,
 #profile-btn.active {
@@ -298,21 +283,20 @@ body {
 }
 
 .profile-avatar {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   overflow: hidden;
   background: linear-gradient(135deg, #1e3a8a 0%, #0a0a0a 100%);
-  /* Deep blue base */
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 15px;
   color: #fff;
-  /* 🌟 THE ACCENT RING */
-  border: 2px solid #3b82f6;
+  border: 1.5px solid #3b82f6;
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.4), inset 0 0 8px rgba(59, 130, 246, 0.5);
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 #nav-avatar-img {
@@ -320,7 +304,6 @@ body {
   height: 100%;
   object-fit: cover;
   border-radius: 50%;
-  /* Ensures the image doesn't overlap the glowing border */
   border: 1px solid transparent;
 }
 
@@ -342,21 +325,6 @@ body {
   display: flex;
   align-items: center;
   height: 100%;
-}
-
-.profile-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: linear-gradient(135deg, #1e3a8a 0%, #0a0a0a 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid #3b82f6;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
-  transition: all 0.3s ease;
-  flex-shrink: 0;
 }
 
 .chevron {
