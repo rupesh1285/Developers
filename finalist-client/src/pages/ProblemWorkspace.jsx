@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CodeEditor from '../components/CodeEditor';
 import AiTutor from '../components/AiTutor';
+import { fetchAnalytics } from '../utils/analytics';
 import '../dashboard.css';
 
 // ── Inline styles for the workspace-specific elements ────────────────────────
@@ -344,12 +345,16 @@ export default function ProblemWorkspace() {
 
     try {
       const token = localStorage.getItem('token');
-      await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, {
+      const tzOffset = String(new Date().getTimezoneOffset());
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token }
+        headers: { 'Authorization': `Bearer ${token}`, 'Timezone-Offset': tzOffset }
       });
+      if (!res.ok) throw new Error('Failed to update solved state');
+      await fetchAnalytics(import.meta.env.VITE_API_URL, token);
+      window.dispatchEvent(new Event('finalist:analytics-sync'));
     } catch (err) {
-      // Quiet fail
+      console.error('Error toggling solved:', err);
     }
   };
 

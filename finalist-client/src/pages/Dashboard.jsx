@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { clearFinalistSession } from '../utils/auth';
+import { applySolvedToggleToAnalytics, fetchAnalytics } from '../utils/analytics';
 import AnalyticsPanel from '../components/AnalyticsPanel';
 import TimerProvider from '../components/TimerProvider';
 import ProblemExplorer from '../components/ProblemExplorer';
@@ -236,6 +237,17 @@ export default function Dashboard() {
 
   }, [navigate]);
 
+  const refreshAnalytics = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const data = await fetchAnalytics(import.meta.env.VITE_API_URL, token);
+      setAnalyticsData(data);
+    } catch (err) {
+      console.error('Error refreshing analytics:', err);
+    }
+  }, []);
+
   // Sync star/solved state when toggled from ProblemWorkspace (which dispatches a StorageEvent)
   useEffect(() => {
     const handleStorageSync = (e) => {
@@ -247,32 +259,19 @@ export default function Dashboard() {
       }
       if (e.key === 'finalist_solved') {
         try {
-          const nextSolved = JSON.parse(e.newValue);
-          setSolvedIds(nextSolved);
-
-          // Dynamic background sync of analytics when solved state is updated in another tab/workspace
-          const token = localStorage.getItem('token');
-          if (token) {
-            const API_BASE = import.meta.env.VITE_API_URL;
-            const tzOffset = String(new Date().getTimezoneOffset());
-            fetch(`${API_BASE}/api/progress/analytics`, { headers: { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset } })
-              .then(res => {
-                if (!res.ok) throw new Error('Failed to fetch background analytics');
-                return res.json();
-              })
-              .then(data => {
-                if (data && Array.isArray(data.heatmap) && Array.isArray(data.topics)) {
-                  setAnalyticsData(data);
-                  localStorage.setItem('finalist_analytics_cache', JSON.stringify(data));
-                }
-              }).catch(() => {});
-          }
+          setSolvedIds(JSON.parse(e.newValue));
         } catch (_) {}
       }
     };
     window.addEventListener('storage', handleStorageSync);
     return () => window.removeEventListener('storage', handleStorageSync);
   }, []);
+
+  useEffect(() => {
+    const handleAnalyticsSync = () => { refreshAnalytics(); };
+    window.addEventListener('finalist:analytics-sync', handleAnalyticsSync);
+    return () => window.removeEventListener('finalist:analytics-sync', handleAnalyticsSync);
+  }, [refreshAnalytics]);
 
   // =========================================================================
   // 5. ENGINE: INTERACTION & DRAGGER
@@ -293,44 +292,17 @@ export default function Dashboard() {
     localStorage.setItem('finalist_solved', JSON.stringify(nextSolved));
     window.dispatchEvent(new StorageEvent('storage', { key: 'finalist_solved', newValue: JSON.stringify(nextSolved) }));
 
-    setAnalyticsData(prev => {
-      if (!prev) return prev;
-      const todayStr = new Date().toISOString().split('T')[0];
-      const topics = prev.topics || [];
-      const heatmap = prev.heatmap || [];
-
-      const newTopics = topics.map(t => {
-        if (problemTags.includes(t.name)) {
-          const currentSolvedCount = typeof t.solved === 'number' ? t.solved : 0;
-          return { ...t, solved: Math.max(0, currentSolvedCount + (isCurrentlySolved ? -1 : 1)) };
-        }
-        return t;
-      });
-
-      const newHeatmap = heatmap.map(d => {
-        if (d.date === todayStr) {
-          const newCount = Math.max(0, d.count + (isCurrentlySolved ? -1 : 1));
-          let level = 0;
-          if (newCount > 0) level = 1;
-          if (newCount >= 3) level = 2;
-          if (newCount >= 5) level = 3;
-          if (newCount >= 8) level = 4;
-          return { ...d, count: newCount, level };
-        }
-        return d;
-      });
-
-      const updated = { ...prev, topics: newTopics, heatmap: newHeatmap };
-      localStorage.setItem('finalist_analytics_cache', JSON.stringify(updated));
-      return updated;
-    });
+    setAnalyticsData(prev => applySolvedToggleToAnalytics(prev, problemTags, isCurrentlySolved));
 
     try {
       const tzOffset = String(new Date().getTimezoneOffset());
       const authHeaders = { "Authorization": "Bearer " + token, "Timezone-Offset": tzOffset };
-      fetch(`${import.meta.env.VITE_API_URL}/api/progress/toggle-solved/${id}`, { method: "POST", headers: authHeaders });
+      const API_BASE = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API_BASE}/api/progress/toggle-solved/${id}`, { method: "POST", headers: authHeaders });
+      if (!res.ok) throw new Error('Failed to update solved state');
+      await refreshAnalytics();
     } catch (err) {
-      // Quiet fail or handle error
+      console.error('Error toggling solved:', err);
     }
   };
 
