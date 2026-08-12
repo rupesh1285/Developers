@@ -1,10 +1,12 @@
 require("dotenv").config();
+const crypto = require("crypto");
 const express = require("express");
 const mongoose = require("mongoose");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const GitHubStrategy = require("passport-github2").Strategy;
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const cors = require("cors"); // 🌟 ADDED: CORS for security
 
 const progressRoutes = require("./routes/progressRoutes");
@@ -25,6 +27,16 @@ app.set("trust proxy", 1);
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const BACKEND_URL = (process.env.BACKEND_URL || "http://localhost:5000").replace(/\/$/, "");
 
+async function hashOAuthPassword() {
+  return bcrypt.hash(crypto.randomUUID(), 10);
+}
+
+const corsOrigins = [
+  FRONTEND_URL,
+  "http://localhost:5173",
+  "https://finalist-v1.vercel.app"
+].filter((origin, index, arr) => origin && arr.indexOf(origin) === index);
+
 const mongoStates = ["disconnected", "connected", "connecting", "disconnecting"];
 
 // 🌟 THE PULSE ENDPOINT: Keeps Render awake without touching MongoDB
@@ -44,7 +56,7 @@ app.get('/', (req, res) => {
 });
 // 🌟 FIX: Allow both the live Vercel site AND your local Vite server
 app.use(cors({
-  origin: [FRONTEND_URL, "http://localhost:5173"], 
+  origin: corsOrigins,
   credentials: true
 }));
 
@@ -75,7 +87,7 @@ passport.use(new GoogleStrategy({
         user = await User.create({
           name: profile.displayName || email.split("@")[0],
           email,
-          password: Math.random().toString(36).slice(-10) + (process.env.JWT_SECRET || "oauth"),
+          password: await hashOAuthPassword(),
           avatar: avatarUrl 
         });
       } else if (avatarUrl && user.avatar !== avatarUrl) {
@@ -111,7 +123,7 @@ passport.use(new GitHubStrategy({
         user = await User.create({
           name: profile.displayName || profile.username || email.split("@")[0], 
           email: email,
-          password: Math.random().toString(36).slice(-10) + (process.env.JWT_SECRET || "oauth"),
+          password: await hashOAuthPassword(),
           avatar: avatarUrl 
         });
       } else {

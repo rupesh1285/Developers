@@ -136,11 +136,7 @@ router.get("/github/callback", (req, res, next) => {
 // ================= GET PROFILE =================
 router.get("/profile", protect, async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).select("-password");
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        res.json(user);
+        res.json(req.user);
     } catch (error) {
         res.status(500).json({ message: "Server error fetching profile" });
     }

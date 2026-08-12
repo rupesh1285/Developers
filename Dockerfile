@@ -7,19 +7,17 @@ RUN apt-get update && apt-get install -y \
     openjdk-17-jdk \
     && rm -rf /var/lib/apt/lists/*
 
-# 🚀 PRE-COMPILE C++ HEADERS FOR INSTANT SPEED
-# Dynamically find stdc++.h and pre-compile it to a fixed location
+# Pre-compile C++ headers for faster C++ runs
 RUN STD_PATH=$(find /usr/include -name "stdc++.h" | head -n 1) && \
     clang++ -x c++-header "$STD_PATH" -o /usr/include/stdc++.h.pch -O0
 
-# Copy entire project first
 WORKDIR /app
-COPY . .
+COPY package.json package-lock.json ./
+RUN npm install --omit=dev
 
-# Then install server dependencies
-WORKDIR /app/server
-RUN npm install
+COPY server ./server
 
+ENV NODE_ENV=production
 EXPOSE 5000
 
-CMD ["node", "index.js"]
+CMD ["node", "server/index.js"]

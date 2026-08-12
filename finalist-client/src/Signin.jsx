@@ -21,6 +21,7 @@ export default function Signin() {
             server_error: 'Server error during login. Please try again.'
         };
         setErrorMsg(messages[oauthError] || 'Login failed. Please try again.');
+        window.history.replaceState({}, document.title, window.location.pathname);
     }, []);
 
     // 1. THE LAYOUT ENGINE

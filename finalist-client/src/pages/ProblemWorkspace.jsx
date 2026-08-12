@@ -170,8 +170,13 @@ export default function ProblemWorkspace() {
       fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
         headers: { "Authorization": "Bearer " + token }
       })
-      .then(res => res.json())
-      .then(data => setUserProfile(data))
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Profile unavailable');
+        return res.json();
+      })
+      .then(data => {
+        if (data?.name) setUserProfile(data);
+      })
       .catch(console.error);
     }
   }, [slug]);

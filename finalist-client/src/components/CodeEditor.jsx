@@ -216,7 +216,6 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
     if (!cmInstanceRef.current) return;
     // 🌍 Multi-language support enabled!
     setIsRunning(true); setRunError(null); setOutput(null); setExecutionTime(null);
-    setIsRunning(true); setRunError(null); setOutput(null); setExecutionTime(null);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/run`, {
@@ -224,9 +223,12 @@ export default React.memo(function CodeEditor({ problem, isActive, cmInstanceRef
         body: JSON.stringify({ language, code: cmInstanceRef.current.getValue() })
       });
       const data = await response.json();
+      if (!response.ok && !data.error) {
+        throw new Error(data.message || 'Code runner failed');
+      }
       if (data.success) { setOutput(data.output); setExecutionTime(data.executionTime); }
       else { setRunError(data.error); setOutput(data.output); }
-    } catch (err) { setRunError("Network error: " + err.message); }
+    } catch (err) { setRunError(err.message || 'Network error while running code'); }
     finally { setIsRunning(false); }
   };
 

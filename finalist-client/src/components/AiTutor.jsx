@@ -46,13 +46,15 @@ export default React.memo(function AiTutor({ problem, isActive, cmInstanceRef })
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({
           message: text,
-          code: cmInstanceRef.current ? cmInstanceRef.current.getValue() : '', // 🌟 Grabs code seamlessly!
+          code: cmInstanceRef.current ? cmInstanceRef.current.getValue() : '',
           problemTitle: problem.title,
           chatHistory: newChat.slice(0, -1)
         })
       });
       const aiData = await aiRes.json();
-      const fullReply = aiData.reply || aiData.error || "I encountered an error analyzing that.";
+      const fullReply = aiRes.ok
+        ? (aiData.reply || "I couldn't generate a response.")
+        : (aiData.error || "AI tutor is temporarily unavailable. Try again in a minute.");
 
       setIsAiThinking(false);
 

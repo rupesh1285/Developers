@@ -1,6 +1,7 @@
 const express = require("express");
 const Problem = require("../models/Problem");
 const protect = require("../middleware/authMiddleware");
+const admin = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
@@ -73,7 +74,7 @@ router.get("/:id", async (req, res) => {
 /* ==========================================================
    ADD NEW PROBLEM (Protected)
 ========================================================== */
-router.post("/", protect, async (req, res) => {
+router.post("/", protect, admin, async (req, res) => {
     try {
         const lastProblem = await Problem.findOne().sort({ problemNumber: -1 });
         const nextNumber = lastProblem && lastProblem.problemNumber 
@@ -99,7 +100,7 @@ router.post("/", protect, async (req, res) => {
 /* ==========================================================
    BULK INJECT PROBLEMS (Handles 50, 100, 200+ at once)
 ========================================================== */
-router.post("/bulk", protect, async (req, res) => {
+router.post("/bulk", protect, admin, async (req, res) => {
     try {
         const problemsArray = req.body;
 
@@ -136,7 +137,7 @@ router.post("/bulk", protect, async (req, res) => {
 /* ==========================================================
    UPDATE PROBLEM (Protected)
 ========================================================== */
-router.put("/:id", protect, async (req, res) => {
+router.put("/:id", protect, admin, async (req, res) => {
     try {
         const updatedProblem = await Problem.findByIdAndUpdate(
             req.params.id,
@@ -159,7 +160,7 @@ router.put("/:id", protect, async (req, res) => {
 /* ==========================================================
    DELETE PROBLEM (Protected)
 ========================================================== */
-router.delete("/:id", protect, async (req, res) => {
+router.delete("/:id", protect, admin, async (req, res) => {
     try {
         const problem = await Problem.findByIdAndDelete(req.params.id);
 

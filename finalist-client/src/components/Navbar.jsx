@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { logout } from '../utils/auth';
 import '../dashboard.css';
 
 export default function Navbar({ userProfile, elapsedTime, isRunning, toggleTimer, resetTimer }) {
@@ -103,7 +104,7 @@ export default function Navbar({ userProfile, elapsedTime, isRunning, toggleTime
               type="button"
               className="menu-item danger"
               role="menuitem"
-              onClick={() => { localStorage.removeItem('token'); navigate('/'); }}
+              onClick={() => { setProfileOpen(false); logout(navigate); }}
             >
               <i className="ri-logout-box-r-line" aria-hidden="true"></i><span>Sign Out</span>
             </button>

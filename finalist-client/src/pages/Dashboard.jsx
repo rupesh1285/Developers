@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { clearFinalistSession } from '../utils/auth';
 import AnalyticsPanel from '../components/AnalyticsPanel';
 import TimerProvider from '../components/TimerProvider';
 import ProblemExplorer from '../components/ProblemExplorer';
@@ -138,14 +139,8 @@ export default function Dashboard() {
   }, []);
 
   // =========================================================================
-  // 3. ENGINE: MOUSE GLOW & OAUTH
+  // 3. ENGINE: MOUSE GLOW
   // =========================================================================
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlToken = urlParams.get('token');
-    if (urlToken) { localStorage.setItem('token', urlToken); navigate('/problems', { replace: true }); }
-  }, [navigate]);
-
   useEffect(() => {
     let ticking = false;
     const handleMouseMove = (e) => {
@@ -180,29 +175,34 @@ export default function Dashboard() {
     }
 
     fetch(`${API_BASE}/api/problems`, { headers: authHeaders })
-      .then(res => res.json())
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Failed to fetch problems');
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error('Invalid problems payload');
+        return data;
+      })
       .then(data => {
         setProblemsData(data);
         localStorage.setItem('finalist_problems_cache', JSON.stringify(data));
         if (!cachedProblems) setIsLoading(false);
-      }).catch(err => { if (!cachedProblems) setIsLoading(false); });
+      }).catch(() => { if (!cachedProblems) setIsLoading(false); });
 
     fetch(`${API_BASE}/api/auth/profile`, { headers: authHeaders })
       .then(async res => {
         if (res.status === 401) {
-          localStorage.removeItem('token');
+          clearFinalistSession();
           navigate('/', { replace: true });
           throw new Error('Unauthorized');
         }
-        if (!res.ok) throw new Error('Server sleeping');
+        if (!res.ok) throw new Error('Profile unavailable');
         return res.json();
       })
-      .then(data => setUserProfile(data))
+      .then(data => {
+        if (data?.name) setUserProfile(data);
+      })
       .catch((err) => {
-        if (err.message !== 'Unauthorized') {
-          // If it's a network error (Render asleep), show a loading state instead of a fake account
-          setUserProfile({ name: 'Waking Server...', email: 'Loading...', avatar: '' });
-        }
+        if (err.message === 'Unauthorized') return;
+        setUserProfile({ name: 'Guest', email: '', avatar: '' });
       });
 
     fetch(`${API_BASE}/api/progress`, { headers: authHeaders })

@@ -12,6 +12,10 @@ const MODEL_FALLBACKS = [
 ];
 
 router.post('/ask', auth, async (req, res) => {
+    if (!process.env.GEMINI_API_KEY) {
+        return res.status(503).json({ error: "AI tutor is not configured on the server (missing GEMINI_API_KEY)." });
+    }
+
     const { message, code, problemTitle, chatHistory } = req.body;
 
     for (const modelName of MODEL_FALLBACKS) {
