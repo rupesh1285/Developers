@@ -6,6 +6,21 @@ const User = require("../models/User");
 const protect = require("../middleware/authMiddleware"); // 👈 The Bouncer
 
 const router = express.Router();
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+
+function redirectWithToken(res, user) {
+    try {
+        if (!process.env.JWT_SECRET) {
+            console.error("JWT_SECRET is missing");
+            return res.redirect(`${FRONTEND_URL}/signin?error=server_error`);
+        }
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+        return res.redirect(`${FRONTEND_URL}/problems?token=${token}`);
+    } catch (error) {
+        console.error("OAuth JWT sign failed:", error);
+        return res.redirect(`${FRONTEND_URL}/signin?error=server_error`);
+    }
+}
 
 // ================= SIGNUP (Manual) =================
 router.post("/signup", async (req, res) => {
@@ -82,39 +97,41 @@ router.post("/login", async (req, res) => {
 
 // ================= GOOGLE OAUTH =================
 // 1. React button sends user here
-router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }));
 
 // 2. Google sends user back here
 router.get("/google/callback", (req, res, next) => {
     passport.authenticate("google", { session: false }, (err, user, info) => {
         if (err) {
             console.error("Google OAuth Error:", err);
-            return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/signin?error=oauth_failed`);
+            return res.redirect(`${FRONTEND_URL}/signin?error=oauth_failed`);
         }
         if (!user) {
             console.error("Google OAuth: No user returned", info);
-            return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/signin?error=no_user`);
+            return res.redirect(`${FRONTEND_URL}/signin?error=no_user`);
         }
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
-        res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/problems?token=${token}`);
+        return redirectWithToken(res, user);
     })(req, res, next);
 });
 
 // ================= GITHUB OAUTH =================
 // 1. React button sends user here
-router.get("/github", passport.authenticate("github", { scope: ["user:email"] }));
+router.get("/github", passport.authenticate("github", { scope: ["user:email"], session: false }));
 
 // 2. GitHub sends user back here
-router.get("/github/callback", 
-    passport.authenticate("github", { session: false, failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:5173"}/signin` }),
-    (req, res) => {
-        // Generate JWT token for the OAuth user
-        const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
-        
-        // 🌟 THE CRITICAL FIX: Redirect to React Frontend
-        res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/problems?token=${token}`);
-    }
-);
+router.get("/github/callback", (req, res, next) => {
+    passport.authenticate("github", { session: false }, (err, user, info) => {
+        if (err) {
+            console.error("GitHub OAuth Error:", err);
+            return res.redirect(`${FRONTEND_URL}/signin?error=oauth_failed`);
+        }
+        if (!user) {
+            console.error("GitHub OAuth: No user returned", info);
+            return res.redirect(`${FRONTEND_URL}/signin?error=no_user`);
+        }
+        return redirectWithToken(res, user);
+    })(req, res, next);
+});
 
 // ================= GET PROFILE =================
 router.get("/profile", protect, async (req, res) => {

@@ -12,6 +12,17 @@ export default function Signin() {
     const [errorMsg, setErrorMsg] = useState('');
     const navigate = useNavigate();
 
+    useEffect(() => {
+        const oauthError = new URLSearchParams(window.location.search).get('error');
+        if (!oauthError) return;
+        const messages = {
+            oauth_failed: 'Google login failed. Database may be down — try again in a minute.',
+            no_user: 'Google login was cancelled or no account was returned.',
+            server_error: 'Server error during login. Please try again.'
+        };
+        setErrorMsg(messages[oauthError] || 'Login failed. Please try again.');
+    }, []);
+
     // 1. THE LAYOUT ENGINE
     useEffect(() => {
         const mobileQuery = window.matchMedia('(max-width: 950px), (max-width: 1200px) and (orientation: portrait)');
