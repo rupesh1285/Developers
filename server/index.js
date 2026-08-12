@@ -141,14 +141,28 @@ async function connectDB() {
     console.error("MONGO_URI is missing. Google login and all DB routes will fail.");
     return;
   }
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 8000
-    });
-    console.log("MongoDB Connected");
-  } catch (err) {
-    console.error("MongoDB connection failed:", err.message);
-  }
+
+  const uriKind = process.env.MONGO_URI.startsWith("mongodb+srv://")
+    ? "mongodb+srv"
+    : process.env.MONGO_URI.startsWith("mongodb://")
+      ? "mongodb"
+      : "invalid";
+  console.log(`Mongo URI loaded (${uriKind}), length=${process.env.MONGO_URI.length}`);
+
+  const tryConnect = async () => {
+    if (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2) return;
+    try {
+      await mongoose.connect(process.env.MONGO_URI, {
+        serverSelectionTimeoutMS: 8000
+      });
+      console.log("MongoDB Connected");
+    } catch (err) {
+      console.error("MongoDB connection failed:", err.message);
+    }
+  };
+
+  await tryConnect();
+  setInterval(tryConnect, 15000);
 }
 
 mongoose.connection.on("disconnected", () => {
